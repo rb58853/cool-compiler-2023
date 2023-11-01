@@ -11,5 +11,3 @@ print(content)
 lexer = cool_lexer.CoolLexer()
 for token in lexer.tokenize(content):
     print(token)
-
-    

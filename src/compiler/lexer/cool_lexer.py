@@ -4,8 +4,9 @@ from cool_error import CoolError
 class CoolLexer(Lexer):
     def __init__(self) -> None:
         super().__init__()
-        self.pos = 0
         self.lineno = 0
+        self.last_index = 0
+        self.end = 0
 
     tokens = {
         CLASS, INHERITS,
@@ -60,28 +61,41 @@ class CoolLexer(Lexer):
         else:
             token.type = "OBJECTID"
 
+        self.end = token.end
         return token
         
     def ignore_newline(self,token):
-        self.pos = 0
-        self.lineno += 1
+        self.new_line()
     
     def INT_CONST(self, token):
         token.value = int(token.value)
+        self.end = token.end
         return token
 
     def error(self, token):
+        self.end = self.index+1 #Cuando encuentre un caracter no valido este sera length=1 
+
         lex_error = CoolError(
             token = token, 
-            pos = self.pos, 
+            pos = self.get_pos(), 
             lineno = self.lineno,
             index= self.index,
-            end = self.index+1
+            end = self.end
             )
+        
         lex_error.lexical("Invalid Character")
-        self.index +=1 #Cuando encuentre un caracter no valido este sera length=1 
+        self.index = self.end 
         return lex_error
 
     def STRING(self, token):
-
         return token
+    
+    def new_line(self):
+        self.last_index = self.index
+        self.lineno +=1
+
+    def get_pos(self, index = None):
+        if index is None:
+            return self.end - self.last_index
+        else:
+            return index - self.last_index
