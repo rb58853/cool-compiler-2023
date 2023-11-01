@@ -1,9 +1,11 @@
 from sly import Lexer
+from cool_error import CoolError
 
 class CoolLexer(Lexer):
-    def __init__(self, error=None) -> None:
+    def __init__(self) -> None:
         super().__init__()
-        self.cool_error = error
+        self.pos = 0
+        self.lineno = 0
 
     tokens = {
         CLASS, INHERITS,
@@ -13,14 +15,14 @@ class CoolLexer(Lexer):
         CASE, OF, ESAC,
         ISVOID, NEW, NOT,
         TRUE, FALSE,
-        ID, NUMBER, TYPE,
-        ARROW, LOGICAR, LESS_OR, 
+        ID, INT_CONST, TYPE,
+        ASSIGN, MORE_EQUAL, LESS_EQUAL, 
         STRING
     }
 
     literals = {
         '{','}', '@', '.', ',', ';',
-        '=', '<', '~', '+', '-',
+        '=', '<','>','~', '+', '-',
         '*', '/', '(', ')', ':',
     }
 
@@ -34,27 +36,52 @@ class CoolLexer(Lexer):
     ]
 
     ignore = r' '
+    ignore_tab = r'\t'
     ignore_newline = r'\n'
 
     ID = r'[a-zA-Z][a-zA-Z0-9_]*'
-    NUMBER  = r'\d+'
+    INT_CONST  = r'\d+'
+    ASSIGN = r'<-'
+    
+    MORE_EQUAL = r'=>'
+    LESS_EQUAL = r'<='
 
+    STRING  = r'\"'
 
     def ID(self, token):
-        """ Se ejecuta para cualquier cadena de texto que se analiza la cual poseea letras o numeros solamente en su composicion por deficion de expresion regular para el token ID, ergo se analiza si estamos en presencia de una palabra clave o de in identificador"""
+        """ Se ejecuta para cualquier cadena de texto que se analiza la cual poseea letras, numeros o _ solamente en su composicion por deficion de expresion regular para el token ID, ergo se analiza si estamos en presencia de una palabra clave o de in identificador"""
 
-        #Por definicion dada, las keywords poseen el mismo nombre, en minusculas, del token que se le debe asociar, si estamos en presencia de un keyword hay que matchear
-        if token.value in self.keyword:
+        # Por definicion dada, las keywords poseen el mismo nombre, en minusculas, del token que se le debe asociar, si estamos en presencia de un keyword hay que matchear
+        # Se usa el .lower() por la definicion de los keywords de Cool #TODO
+        if token.value.lower() in self.keyword:
             token.type = token.value.upper()
+        elif not token.value[0].islower() and token.value[0] != '_':
+            token.type = "TYPEID"
+        else:
+            token.type = "OBJECTID"
 
-        return  token
+        return token
         
     def ignore_newline(self,token):
+        self.pos = 0
         self.lineno += 1
     
-    def tokenize(self, text, lineno=1, index=0):
-        return super().tokenize(text, lineno, index)    
+    def INT_CONST(self, token):
+        token.value = int(token.value)
+        return token
 
-lexer = CoolLexer()
-for token in lexer.tokenize("cLasS inherits"):
-    print(token)
+    def error(self, token):
+        lex_error = CoolError(
+            token = token, 
+            pos = self.pos, 
+            lineno = self.lineno,
+            index= self.index,
+            end = self.index+1
+            )
+        lex_error.lexical("Invalid Character")
+        self.index +=1 #Cuando encuentre un caracter no valido este sera length=1 
+        return lex_error
+
+    def STRING(self, token):
+
+        return token
