@@ -6,7 +6,7 @@ case_ = "lexer_test1.txt"
 dir = '/'.join(["src/compiler/lexer/test_cases",case_])
 with open(dir, "r") as f:
     content = f.read()
-print(content)
+print(content, end="\n\n")
 
 lexer = cool_lexer.CoolLexer()
 for token in lexer.tokenize(content):

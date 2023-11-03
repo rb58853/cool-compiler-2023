@@ -1,5 +1,5 @@
 from sly import Lexer
-from cool_error import CoolError
+from cool_error import LexicalError
 
 class CoolLexer(Lexer):
     def __init__(self) -> None:
@@ -75,15 +75,15 @@ class CoolLexer(Lexer):
     def error(self, token):
         self.end = self.index+1 #Cuando encuentre un caracter no valido este sera length=1 
 
-        lex_error = CoolError(
+        lex_error = LexicalError(
             token = token, 
             pos = self.get_pos(), 
             lineno = self.lineno,
             index= self.index,
             end = self.end
-            )
+        )
+        lex_error("Invalid Character")
         
-        lex_error.lexical("Invalid Character")
         self.index = self.end 
         return lex_error
 

@@ -2,22 +2,27 @@ from sly.lex import Token
 
 class CoolError (Token):
     ERRORS = []
-    def __init__(self, token = None, pos = 0, lineno = 0 , value = None, index = 0, end = 0) -> None:
-        if token is not None:
+    def __init__(self, token = None, pos = None, lineno = None , value = None, index = None, end = None) -> None:
+        if token is not None and value is None:
             self.value = token.value[0]
         else:
             self.value = value
         
-        self.end = None
-        self.index = None
+        self.end = end
+        self.index = index
         self.pos = pos
         self.lineno = lineno
+    
+    def __str__(self):
+        return f"ERROR({self.type}({self.lineno},{self.pos}): {self.text}='{self.value}')"
                 
-            
-    def lexical(self, text):
+class LexicalError(CoolError):
+    def __init__(self, token=None, pos=0, lineno=0, value=None, index=0, end=0) -> None:
+        super().__init__(token, pos, lineno, value, index, end)
+
+    def __call__(self, text):
         self.type = "LexicographicError"
         self.text = text
         CoolError.ERRORS.append(self)
     
-    def __str__(self):
-        return f"ERROR({self.type}({self.lineno},{self.pos}): {self.text}='{self.value}')"
+    
