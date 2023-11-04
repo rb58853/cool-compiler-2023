@@ -1,0 +1,6 @@
+"This is a class test"
+"This \
+is OK"
+"This is not
+OK"
+"This is a \n test"

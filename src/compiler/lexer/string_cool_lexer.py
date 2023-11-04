@@ -1,100 +1,116 @@
 from sly import Lexer
 from cool_error import LexicalError, Token
 
-class CoolStringLexer(Lexer):
-    def __init__(self, text) -> None:
-        self.text = text
+class StringToken (Token):
+    def __init__(self, pos, lineno, value, index, end) -> None:
+        self.type = "STRING"
+        self.value = value
+        self.end = end
+        self.index = index
+        self.pos = pos
+        self.lineno = lineno
     
-    tokens = {FORMFEED, TAB, BACKESPACE, NEWLINE}
+    def __str__(self):
+        return f"TOKEN(type='{self.type}', value = '{self.value}', lineo = {self.lineno}, index = {self.index}, end = {self.end})"
 
-    ignore = r' '
-    ignore_newline = r'\n'
-    ignore_close = r'"'
-    ignore_null = r'\0'
-    
-    FORMFEED = r'\\f'
-    TAB = r'\\t'
-    BACKESPACE = r'\\b'
-    NEWLINE = r'\\n'
-
-    def __init__(self, lexer ):
+# tab = \\t -> \t
+# back = \\b -> \b
+# new_line_str = \\\n -> \n 
+# new_line_ignore = \n -> error
+# null_error = \0 -> error
+class StringAnalizer():
+    def __init__(self,lexer):
         self.lexer = lexer
         self.init_index = lexer.index
-        self.end_str = Token()
-        self.error = None
-    
-    def ignore_close(self, token):
-        if self.error is not None:
-            return
-        self.lexer.end = token.end + self.init_index
-        
-        self.end_str.value = self.lexer.text[:token.index]
-        self.end_str.index = self.init_index
-        self.end_str.end = self.lexer.end
-        self.end_str.type = 'STRING'
-        self.end_str.lineno = self.lexer.lineno
+        self.index = 0
 
-    def ignore_newline(self, token):
-        self.error = self.create_error(token,"Unterminated string constant")
-        self.lexer.new_line()
-
-    def ignore_null(self, token):
-        self.error = self.create_error(token,"null string")
+        self.key_words = {
+            '\n':self.new_line_error,
+            '\\n':self.new_line_character,
+            '\\\n':self.new_line,
+            '\\b':self.new_line,
+            '\0': self.null_error,
+            '"': self.close
+            }
         
-    def FORMFEED(self, token):
-        token.value = '\f'
-        return token
-    
-    def TAB(self, token):
-        token.value = '\t'
-        return token
-    
-    def BACKESPACE(self, token):
-        token.value = '\b'
-        return token
-
-    def NEWLINE(self, token):
-        if self.error is not None:
-            return
+    def close(self):
+        self.end_str+='"'
+        self.lexer.index+=1
+        self.lexer.end+=1
+        token = StringToken(
+            value =  self.end_str,
+            pos = self.lexer.get_pos(), 
+            lineno = self.lexer.lineno,
+            index= self.init_index,
+            end = self.lexer.end
+            )
         
-        token.value = '\n'
-        self.lexer.end = token.end + self.init_index
-        self.lexer.new_line()
+        self.lexer.close_str = False
         return token
+        
+    def new_line_error(self):
+        self.lexer.new_line
+        self.lexer.index+=1
+        self.lexer.end += 1
+        
+        return self.create_error(self.end_str, "Unterminated String")
+    
+    def null_error(self):
+        self.lexer.index+=1
+        self.lexer.end += 1
+        
+        # self.lexer.close_str = False
+        return self.create_error(self.end_str, "Null Character")
+        
+    def new_line(self):
+        self.lexer.new_line
+        self.lexer.index+=1
+        self.lexer.end +=1
+        return None
+    
+    def new_line_character(self):
+        self.lexer.index+=1
+        self.lexer.end +=1
+        self.end_str += '\\n'
+        return None
     
     def __call__(self):
-        text = self.lexer.text[self.lexer.index:]
-        str_was_end = False
-        for char, i in zip (text, range(len(text))):
-            if char == '"':
-                text = text[:i]
-                str_was_end = True
-                break
-
-        end_token = self.tokenize(text)[-1]
-
-        if self.error is None:
-            if str_was_end:
-                return self.end_str
+        text = self.lexer.text[self.lexer.end:]
+        self.end_str = '"'
+        
+        while self.index < len(text): 
+            i = self.index
+            self.index+=1
+            token = self.generate_token(text[i:])
+            
+            if token['value'] in self.key_words.keys():
+                value = self.key_words[token['value']]()
+                if value is not None:
+                    return value
             else:
-                return self.create_error(end_token,"No cierra el string nunk")
-        else:
-            return self.error    
-    
-    def create_error(self, token, text):
-        if self.error is not None:
-            return self.error
-        self.lexer.index = token.index + self.init_index
-        self.lexer.end = token.end + self.init_index
-        value = self.lexer.text[:token.end]
-        end = self.lexer.end
+                self.lexer.index+=1
+                self.lexer.end+=1
+                self.end_str += token['str']
 
+                
+    def generate_token(self, text):
+        if text[0] != '\\':
+            return {'str': text[0], 'value':text[0]}
+        else:
+            self.index += 1
+            self.lexer.index+=1
+            self.lexer.end += 1
+            return {'str': text[1], 'value':'\\' + text[1]}
+        
+    def create_error(self, end_str, description):
+        value = end_str
+        end = self.lexer.end
         lex_error = LexicalError(
             value =  value,
-            pos = self.lexer.pos, 
+            pos = self.lexer.get_pos(), 
             lineno = self.lexer.lineno,
-            index= self.lexer.index,
+            index= self.init_index,
             end = end
             )
-        lex_error(text)
+        lex_error(description)
         return lex_error

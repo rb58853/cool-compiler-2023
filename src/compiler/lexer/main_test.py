@@ -1,6 +1,6 @@
 import cool_lexer
 
-case_ = "lexer_test1.txt"
+case_ = "string_1.txt"
 # case_ = "string_test.txt"
 
 dir = '/'.join(["src/compiler/lexer/test_cases",case_])

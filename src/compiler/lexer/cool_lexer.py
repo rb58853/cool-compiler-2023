@@ -1,5 +1,6 @@
 from sly import Lexer
 from cool_error import LexicalError
+from string_cool_lexer import StringAnalizer
 
 class CoolLexer(Lexer):
     def __init__(self) -> None:
@@ -7,6 +8,7 @@ class CoolLexer(Lexer):
         self.lineno = 0
         self.last_index = 0
         self.end = 0
+        self.close_str = True
 
     tokens = {
         CLASS, INHERITS,
@@ -83,12 +85,21 @@ class CoolLexer(Lexer):
             end = self.end
         )
         lex_error("Invalid Character")
-        
+
         self.index = self.end 
         return lex_error
 
     def STRING(self, token):
-        return token
+        self.index = token.index
+        self.end = token.end
+        
+        if self.close_str == True:
+            str_lex = StringAnalizer(self)
+            return str_lex()
+        else:
+            self.index +=1
+            self.end +=1
+            self.close_str = True
     
     def new_line(self):
         self.last_index = self.index
