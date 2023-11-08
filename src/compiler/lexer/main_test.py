@@ -14,5 +14,5 @@ for token in lexer.tokenize(content):
     print(token)
 
 print("\n-----------------ERRORS-----------------")
-for e in CoolError.ERRORS:
+for e in lexer.errors:
     print(e)

@@ -109,6 +109,7 @@ class StringAnalizer():
         value = end_str
         end = self.lexer.end
         lex_error = LexicalError(
+            by = self.lexer,
             value =  value,
             pos = self.lexer.get_pos(), 
             lineno = self.lexer.lineno,

@@ -9,6 +9,7 @@ class CoolLexer(Lexer):
         self.last_index = 0
         self.end = 0
         self.close_str = True
+        self.errors = []
 
     tokens = {
         CLASS, INHERITS,
@@ -78,6 +79,7 @@ class CoolLexer(Lexer):
         self.end = self.index+1 #Cuando encuentre un caracter no valido este sera length=1 
 
         lex_error = LexicalError(
+            by= self,
             token = token, 
             pos = self.get_pos(), 
             lineno = self.lineno,
