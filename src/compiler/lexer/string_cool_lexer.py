@@ -1,4 +1,3 @@
-from sly import Lexer
 from cool_error import LexicalError, Token
 
 class StringToken (Token):
