@@ -28,9 +28,10 @@ class StringAnalizer():
             '\n':self.new_line_error,
             '\\n':self.new_line_character,
             '\\\n':self.new_line,
-            '\\b':self.new_line,
             '\0': self.null_error,
             '"': self.close
+            # '\\b':self.b_func,
+            # '\\t':self.t_func,
             }
         
     def close(self):
@@ -49,23 +50,24 @@ class StringAnalizer():
         return token
         
     def new_line_error(self):
-        self.lexer.new_line
         self.lexer.index+=1
         self.lexer.end += 1
         
-        return self.create_error(self.end_str, "Unterminated String")
+        result=  self.create_error(self.end_str, "Unterminated string constant")
+        # self.lexer.new_line()
+        return result
     
     def null_error(self):
         self.lexer.index+=1
         self.lexer.end += 1
         
         # self.lexer.close_str = False
-        return self.create_error(self.end_str, "Null Character")
+        return self.create_error(self.end_str, "String contains null character")
         
     def new_line(self):
-        self.lexer.new_line
         self.lexer.index+=1
         self.lexer.end +=1
+        self.lexer.new_line()
         return None
     
     def new_line_character(self):
@@ -92,6 +94,7 @@ class StringAnalizer():
                 self.lexer.end+=1
                 self.end_str += token['str']
 
+        return self.create_error(self.end_str, "EOF in string constant")
                 
     def generate_token(self, text):
         if text[0] != '\\':

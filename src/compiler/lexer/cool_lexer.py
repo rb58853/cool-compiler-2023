@@ -92,7 +92,6 @@ class CoolLexer(Lexer):
     def STRING(self, token):
         self.index = token.index
         self.end = token.end
-        
         if self.close_str == True:
             str_lex = StringAnalizer(self)
             return str_lex()
@@ -101,6 +100,7 @@ class CoolLexer(Lexer):
             self.end +=1
             self.close_str = True
     
+
     def new_line(self):
         self.last_index = self.index
         self.lineno +=1
