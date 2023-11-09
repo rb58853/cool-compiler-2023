@@ -20,8 +20,9 @@ class StringToken (Token):
 class StringAnalizer():
     def __init__(self,lexer):
         self.lexer = lexer
-        self.init_index = lexer.index
+        self.init_index = lexer.index -1
         self.index = 0
+        self.null_err = None
 
         self.key_words = {
             '\n':self.new_line_error,
@@ -36,7 +37,7 @@ class StringAnalizer():
     def close(self):
         self.end_str+='"'
         self.lexer.index+=1
-        self.lexer.end+=1
+        self.lexer.end=self.lexer.index+1
         token = StringToken(
             value =  self.end_str,
             pos = self.lexer.get_pos(), 
@@ -46,37 +47,45 @@ class StringAnalizer():
             )
         
         self.lexer.close_str = False
+
+        #se cerro el string y se devueve el error
+        if self.null_err is not None:
+            self.null_err.value = self.end_str
+            return self.null_err
+        
         return token
         
     def new_line_error(self):
         self.lexer.index+=1
-        self.lexer.end += 1
+        self.lexer.end=self.lexer.index+1
         
         result=  self.create_error(self.end_str, "Unterminated string constant")
-        # self.lexer.new_line()
+        self.lexer.new_line()
         return result
     
     def null_error(self):
         self.lexer.index+=1
-        self.lexer.end += 1
-        
-        # self.lexer.close_str = False
-        return self.create_error(self.end_str, "String contains null character")
+        self.lexer.end=self.lexer.index+1
+        self.end_str+='\\0'
+        self.null_err = self.create_error(self.end_str, "String contains null character")
+        #hay que continuar analizand el striing, null es en tiempo de ejecucion
+        return None
+        # return self.create_error(self.end_str, "String contains null character")
         
     def new_line(self):
         self.lexer.index+=1
-        self.lexer.end +=1
+        self.lexer.end=self.lexer.index+1
         self.lexer.new_line()
         return None
     
     def new_line_character(self):
         self.lexer.index+=1
-        self.lexer.end +=1
+        self.lexer.end=self.lexer.index+1
         self.end_str += '\\n'
         return None
     
     def __call__(self):
-        text = self.lexer.text[self.lexer.end:]
+        text = self.lexer.text[self.lexer.index:]
         self.end_str = '"'
         
         while self.index < len(text): 
@@ -90,9 +99,11 @@ class StringAnalizer():
                     return value
             else:
                 self.lexer.index+=1
-                self.lexer.end+=1
+                self.lexer.end=self.lexer.index+1
                 self.end_str += token['str']
 
+        self.lexer.index+=1
+        self.lexer.end=self.lexer.index+1
         return self.create_error(self.end_str, "EOF in string constant")
                 
     def generate_token(self, text):
@@ -101,7 +112,7 @@ class StringAnalizer():
         else:
             self.index += 1
             self.lexer.index+=1
-            self.lexer.end += 1
+            self.lexer.end=self.lexer.index+1
             return {'str': text[1], 'value':'\\' + text[1]}
         
     def create_error(self, end_str, description):
@@ -110,7 +121,7 @@ class StringAnalizer():
         lex_error = LexicalError(
             by = self.lexer,
             value =  value,
-            pos = self.lexer.get_pos(), 
+            pos = self.lexer.get_pos()-1, 
             lineno = self.lexer.lineno,
             index= self.init_index,
             end = end

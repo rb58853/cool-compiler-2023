@@ -13,6 +13,8 @@ lexer = cool_lexer.CoolLexer()
 for token in lexer.tokenize(content):
     print(token)
 
+b = 1
 print("\n-----------------ERRORS-----------------")
 for e in lexer.errors:
     print(e)
+

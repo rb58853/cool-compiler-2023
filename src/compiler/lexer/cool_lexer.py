@@ -1,6 +1,7 @@
 from sly import Lexer
 from cool_error import LexicalError
 from string_cool_lexer import StringAnalizer
+from comment_cool_lexer import CommentAnalizer
 
 class CoolLexer(Lexer):
     def __init__(self) -> None:
@@ -42,6 +43,10 @@ class CoolLexer(Lexer):
     ignore = r' '
     ignore_tab = r'\t'
     ignore_newline = r'\n'
+    
+    ignore_comment = r'\(\*'
+    ignore_line = r'--.*\n'
+
 
     ID = r'[a-zA-Z][a-zA-Z0-9_]*'
     INT_CONST  = r'\d+'
@@ -67,6 +72,17 @@ class CoolLexer(Lexer):
         self.end = token.end
         return token
         
+    
+    def ignore_comment(self,token):
+        self.index = token.end
+        return CommentAnalizer(self)()
+        
+
+    def ignore_line(self, token):
+        # self.index = token.index
+        self.end = token.end
+        self.new_line()
+    
     def ignore_newline(self,token):
         self.new_line()
     
@@ -92,16 +108,11 @@ class CoolLexer(Lexer):
         return lex_error
 
     def STRING(self, token):
-        self.index = token.index
-        self.end = token.end
-        if self.close_str == True:
-            str_lex = StringAnalizer(self)
-            return str_lex()
-        else:
-            self.index +=1
-            self.end +=1
-            self.close_str = True
-    
+        self.index = token.end
+        self.end = token.end + 1
+
+        str_lex = StringAnalizer(self)
+        return str_lex()
 
     def new_line(self):
         self.last_index = self.index

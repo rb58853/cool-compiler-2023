@@ -22,79 +22,58 @@ class CommentAnalizer():
         
     def try_new_line(self):
         #TODO El caso cuando se pone \n dentro del cometario. Ademas ver si hay que seguir o declarar Error
-       
         if self.index + 1 < len(self.text):
             if self.text[self.index+1] == 'n':
                 self.index+=1
                 self.lexer.index+=1
-                self.lexer.end+=1
+                self.lexer.end=self.lexer.index+1
                 self.lexer.new_line()
     
-    
-    def basic_comment(self):
-        text = self.lexer.text[self.lexer.end:]
-        self.comment = '--'
-        while self.index < len(text): 
-            self.index+=1
-            self.lexer.index+=1
-            self.lexer.end+=1
-            i = self.index
-            
-            if text[i] == '\\':
-                if self.index + 1 < len(self.text):
-                    if self.text[self.index+1] == 'n':
-                        self.lexer.index-=1 #Termia el token antes del salto de linea por eso -=1
-                        self.lexer.end-=1
-                        break
-                        
-            self.comment += text[i]
+    def try_close(self):
+        i = self.index
+        text = self.text
+        if i + 1 < len(text):
+            if text[i+1] == '/)' or text[i+1] == ')':
+                self.close = True
+                self.lexer.index+=1
+                self.lexer.end=self.lexer.index+1
+                self.comment += '*)'
 
-        return CommentToken(
-            value =  self.comment,
-            pos = self.lexer.get_pos(), 
-            lineno = self.lexer.lineno,
-            index= self.init_index,
-            end = self.lexer.end
-            ) 
-
-
+   
     def __call__(self):
         ''' Use for `open/close` comments'''
-        text = self.lexer.text[self.lexer.end:]
+        text = self.lexer.text[self.lexer.index:]
         self.text = text
-        self.comment = '*'
-        close = False
+        self.comment = '(*'
+        self.close = False
         
-        while self.index < len(text): 
+        while self.index < len(text)-1: 
             self.index+=1
             self.lexer.index+=1
-            self.lexer.end+=1
+            self.lexer.end=self.lexer.index+1
             i = self.index
             
             if text[i] == '\\':
                 self.try_new_line()
-                continue
+            
+            if text[i] == '\*' or text[i] == '*':
+                self.try_close()
+                if self.close:
+                    break
             
             self.comment += text[i]
-
-            if text[i] == '*':
-                close = True
-                break
-
-        if close:
-            return CommentToken(
-            value =  self.comment,
-            pos = self.lexer.get_pos(), 
-            lineno = self.lexer.lineno,
-            index= self.init_index,
-            end = self.lexer.end
-            )
-        else:
-            return LexicalError(
+            
+        self.lexer.index+=1
+        self.lexer.end=self.lexer.index+1
+            
+        if not self.close:
+            error = LexicalError(
             by = self.lexer,
             value =  self.comment,
             pos = self.lexer.get_pos(), 
             lineno = self.lexer.lineno,
             index= self.init_index,
             end = self.lexer.end
-            )
+            ) 
+            error('comment error')
+            return error

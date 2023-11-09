@@ -14,7 +14,6 @@ class CoolError (Token):
         self.lineno = lineno
         by.errors.append(self)
 
-    
     def __str__(self):
         return f"ERROR({self.type}({self.lineno},{self.pos}): {self.text}='{self.value}')"
                 
