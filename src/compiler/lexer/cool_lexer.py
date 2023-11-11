@@ -1,7 +1,7 @@
 from sly import Lexer
-from cool_error import LexicalError
-from string_cool_lexer import StringAnalizer
-from comment_cool_lexer import CommentAnalizer
+from error.cool_error import LexicalError
+from lexer.string_cool_lexer import StringAnalizer
+from lexer.comment_cool_lexer import CommentAnalizer
 
 class CoolLexer(Lexer):
     def __init__(self) -> None:
@@ -105,7 +105,9 @@ class CoolLexer(Lexer):
         lex_error("Invalid Character")
 
         self.index = self.end 
-        return lex_error
+        
+        print(lex_error)
+        # return lex_error
 
     def STRING(self, token):
         self.index = token.end

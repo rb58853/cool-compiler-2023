@@ -25,5 +25,10 @@ class LexicalError(CoolError):
         self.type = "LexicographicError"
         self.text = text
         CoolError.ERRORS.append(self)
-    
+
+    def __str__(self):
+        if len(self.value)>11 and self.text != "String contains null character":
+            return f"ERROR({self.type}({self.lineno},{self.pos}): {self.text}='...{self.value[-10:]}')"
+        else:
+            return f"ERROR({self.type}({self.lineno},{self.pos}): {self.text}='{self.value}')"
     

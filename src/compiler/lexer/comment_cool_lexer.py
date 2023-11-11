@@ -1,4 +1,4 @@
-from cool_error import LexicalError, Token
+from error.cool_error import LexicalError, Token
 
 class CommentToken (Token):
     def __init__(self, pos, lineno, value, index, end) -> None:

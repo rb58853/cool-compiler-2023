@@ -1,4 +1,4 @@
-from cool_error import LexicalError, Token
+from error.cool_error import LexicalError, Token
 
 class StringToken (Token):
     def __init__(self, pos, lineno, value, index, end) -> None:
@@ -96,7 +96,9 @@ class StringAnalizer():
             if token['value'] in self.key_words.keys():
                 value = self.key_words[token['value']]()
                 if value is not None:
-                    return value
+                    print (value)
+                    return
+                    # return value
             else:
                 self.lexer.index+=1
                 self.lexer.end=self.lexer.index+1
@@ -104,7 +106,9 @@ class StringAnalizer():
 
         self.lexer.index+=1
         self.lexer.end=self.lexer.index+1
-        return self.create_error(self.end_str, "EOF in string constant")
+
+        print( self.create_error(self.end_str, "EOF in string constant"))
+        # return self.create_error(self.end_str, "EOF in string constant")
                 
     def generate_token(self, text):
         if text[0] != '\\':
