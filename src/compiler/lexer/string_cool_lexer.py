@@ -10,7 +10,7 @@ class StringToken (Token):
         self.lineno = lineno
     
     def __str__(self):
-        return f"TOKEN(type='{self.type}', value = '{self.value}', lineo = {self.lineno}, index = {self.index}, end = {self.end})"
+        return f"TOKEN(type='{self.type}', value = '{self.value}', lineno = {self.lineno}, index = {self.index}, end = {self.end})"
 
 # tab = \\t -> \t
 # back = \\b -> \b

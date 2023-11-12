@@ -3,6 +3,7 @@ from error.cool_error import LexicalError
 from lexer.string_cool_lexer import StringAnalizer
 from lexer.comment_cool_lexer import CommentAnalizer
 
+
 class CoolLexer(Lexer):
     def __init__(self) -> None:
         super().__init__()
@@ -21,7 +22,7 @@ class CoolLexer(Lexer):
         ISVOID, NEW, NOT,
         TRUE, FALSE,
         ID, INT_CONST, TYPE,
-        ASSIGN, MORE_EQUAL, LESS_EQUAL, 
+        ASSIGN, DARROW, LE, 
         STRING
     }
 
@@ -52,8 +53,8 @@ class CoolLexer(Lexer):
     INT_CONST  = r'\d+'
     ASSIGN = r'<-'
     
-    MORE_EQUAL = r'=>'
-    LESS_EQUAL = r'<='
+    DARROW = r'=>'
+    LE = r'<=' #LESS_OR_EQUAL
 
     STRING  = r'\"'
 
@@ -125,3 +126,5 @@ class CoolLexer(Lexer):
             return self.end - self.last_index
         else:
             return index - self.last_index
+        
+        
