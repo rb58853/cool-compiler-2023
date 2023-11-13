@@ -66,9 +66,9 @@ class CoolLexer(Lexer):
         if token.value.lower() in self.keyword:
             token.type = token.value.upper()
         elif not token.value[0].islower() and token.value[0] != '_':
-            token.type = "TYPEID"
+            token.type = "TYPE"
         else:
-            token.type = "OBJECTID"
+            token.type = "ID"
 
         self.end = token.end
         return token

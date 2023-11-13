@@ -28,27 +28,26 @@ class PlotNode():
                 self.childs()[0].draw_pos = (self.draw_pos[0], self.draw_pos[1] - PlotNode.HEIGTH)
                 self.childs()[0].set_childs_pos()
             else: 
-                mid = len(self.childs())/2
-
+                mid = len(self.childs())//2
+                index = int(mid)#rigth side
                 base_acumulate = 0
+                
                 if len(self.childs()) %2 == 1:
-                    mid = len(self.childs())//2
+                    # mid = len(self.childs())//2
                     base_acumulate = self.childs()[mid].get_width()/2 + PlotNode.SEPARATION
                     self.childs()[mid].draw_pos = (self.draw_pos[0], self.draw_pos[1] - PlotNode.HEIGTH)
+                    index+=1 
 
                 acumulate = base_acumulate
-                
                 for i in range(int(mid)-1, -1, -1):
                     child = self.childs()[i]
-                    child.pos_plt = 'l'
                     acumulate += child.get_width()/2 + PlotNode.SEPARATION
                     child.draw_pos = (self.draw_pos[0] -acumulate, self.draw_pos[1] - PlotNode.HEIGTH)
                     acumulate += child.get_width()/2 + PlotNode.SEPARATION
 
                 acumulate = base_acumulate
-                for i in range(int(mid), len(self.childs())):
+                for i in range(index, len(self.childs())):
                     child = self.childs()[i]
-                    child.pos_plt = 'r'
                     acumulate += child.get_width()/2 + PlotNode.SEPARATION
                     child.draw_pos = (self.draw_pos[0] + acumulate, self.draw_pos[1] - PlotNode.HEIGTH)
                     acumulate += child.get_width()/2 + PlotNode.SEPARATION
@@ -79,20 +78,31 @@ class PlotNode():
             child.print_node(fig, ax)
     
 class Node(PlotNode):
-    def __init__(self, value) -> None:
+    def __init__(self, value = None, values:list = []) -> None:
         super().__init__()
         self.father = None
-        # self.name = 'abstract'
-        # self.width = 2
-
-        try: value.father = self
-        except: pass
+        
+        if len(values) > 0:
+            for val in values:
+                try: val.father = self 
+                except: pass
+        else:
+            try: value.father = self 
+            except: pass
         
     def childs(self):
         return [self.value]
+   
+    def __str__(self) -> str:
+        return str(self.value)
     
+    def __repr__(self) -> str:
+        return self.name + ': ' + str(self.value)
+    
+    #region delete and generate AST
     def delete(self):
         if self.father is None:
+            # self = self.childs()[0]
             Exception('NO se puede eliminar el node raiz por ahora, se debe cambiar valores')
         else:
             self.father.delete_child(self)
@@ -104,21 +114,16 @@ class Node(PlotNode):
         self.value.father = self
 
     def generate_ast(self):
-        if self.name == '*':
-            pass
-
         for child in self.childs():
             child.generate_ast()
         
-        if len(self.childs()) == 1:
+        if self.delete_condition():
             self.delete()
 
-    def __str__(self) -> str:
-        return str(self.value)
-    
-    def __repr__(self) -> str:
-        return self.name + ': ' + str(self.value)
-    
+    def delete_condition(self):
+        return len(self.childs()) == 1
+    #endregion
+
 class BinOp(Node):
     def __init__(self, op, left, right):
         self.op = op
@@ -173,11 +178,103 @@ class expr(Node):
     def __str__(self) -> str:
         return 'expr\n<-' + str(self.value)    
 
+class CoolIf(Node):
+    def __init__(self, if_condition, then_generation, else_generation = None) -> None:
+        self.condition = if_condition
+        self.then_generation = then_generation
+        self.else_generation = else_generation
+        Node.__init__(self, values=[self.condition,self.then_generation,self.else_generation])
+    
+    def childs(self):
+        return [self.condition,self.then_generation,self.else_generation]
+    
+    def delete_child(self, child): #override in mutichlilds nodes
+        if child == self.condition:
+            self.condition = child.value
+            self.condition.father = self
+        
+        elif child == self.then_generation:
+            self.then_generation = child.value
+            self.then_generation.father = self
+        
+        elif child == self.else_generation:
+            self.else_generation = child.value
+            self.else_generation.father = self
+
+        else: Exception('Ocurrio un error al intentar eliminar un nodo')    
+    
+    def __str__(self) -> str:
+        return 'if - then - else'
+    
+    def __repr__(self) -> str:
+        return f'if {self.condition}: {self.then_generation} \telse: {self.else_generation}'
+
+class CoolWhile(Node):
+    def __init__(self, while_condition, loop_scope) -> None:
+        self.condition = while_condition
+        self.loop_scope = loop_scope
+        Node.__init__(self, values=[self.condition,self.loop_scope])
+    
+    def childs(self):
+        return [self.condition,self.loop_scope]
+    
+    def delete_child(self, child): #override in mutichlilds nodes
+        if child == self.condition:
+            self.condition = child.value
+            self.condition.father = self
+        
+        elif child == self.loop_scope:
+            self.loop_scope = child.value
+            self.loop_scope.father = self
+        
+        else: Exception('Ocurrio un error al intentar eliminar un nodo')    
+    
+    def __str__(self) -> str:
+        return 'While - Loop'
+    
+    def __repr__(self) -> str:
+        return f'while {self.condition}: {self.loop_scope}'
+
+class CoolNot(Node):
+    def __init__(self, value) -> None:
+        self.value =  value
+        # self.name = 'not'
+        # super().__init__(value)
+        Node.__init__(self,self.value)
+
+    def __str__(self) -> str:
+        return 'not'
+    
+    def __repr__(self) -> str:
+        return f'not {self.value}'
+    
+    def delete_condition(self):
+        return False
+
+class CoolUminus(Node):
+    def __init__(self, value) -> None:
+        self.value =  value
+        # self.name = 'not'
+        # super().__init__(value)
+        Node.__init__(self,self.value)
+
+    def __str__(self) -> str:
+        return '~'
+    
+    def __repr__(self) -> str:
+        return f'~{self.value}'
+    
+    def delete_condition(self):
+        return False
+
+
+
 class TypeNode(Node):
     def __init__(self, value, name) -> None:
         self.value =  value
         self.width = Node.WIDTH
         self.name = name
+        self.father = None
 
     def __str__(self) -> str:
         return f'{self.name}'+ '{' +f'{self.value}' +'}'
@@ -187,7 +284,19 @@ class TypeNode(Node):
     
     def childs(self):
         return []    
+
+class CoolID(TypeNode):
+    def __init__(self, value, type = None) -> None:
+        super().__init__(value,'id')
+        self.type = type
     
+    def __str__(self) -> str:
+        if self.type is None:
+            return super().__str__()
+        else:    
+            return f'{self.value}: {self.type}'
+    def childs(self):
+        return []   
 
 class IntNode(TypeNode):
     def __init__(self, value) -> None:
@@ -196,5 +305,9 @@ class IntNode(TypeNode):
 class CoolString(TypeNode):
     def __init__(self, value) -> None:
         super().__init__(value,'string')
-        
+
+class CoolBool(TypeNode):
+    def __init__(self, value) -> None:
+        super().__init__(value,'bool')        
+
 #endregion
