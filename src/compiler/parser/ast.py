@@ -178,7 +178,7 @@ class expr(Node):
     def __str__(self) -> str:
         return 'expr\n<-' + str(self.value)    
 
-class CoolIf(Node):
+class CoolIf(expr):
     def __init__(self, if_condition, then_generation, else_generation = None) -> None:
         self.condition = if_condition
         self.then_generation = then_generation
@@ -209,7 +209,7 @@ class CoolIf(Node):
     def __repr__(self) -> str:
         return f'if {self.condition}: {self.then_generation} \telse: {self.else_generation}'
 
-class CoolWhile(Node):
+class CoolWhile(expr):
     def __init__(self, while_condition, loop_scope) -> None:
         self.condition = while_condition
         self.loop_scope = loop_scope
@@ -235,11 +235,9 @@ class CoolWhile(Node):
     def __repr__(self) -> str:
         return f'while {self.condition}: {self.loop_scope}'
 
-class CoolNot(Node):
+class CoolNot(expr):
     def __init__(self, value) -> None:
         self.value =  value
-        # self.name = 'not'
-        # super().__init__(value)
         Node.__init__(self,self.value)
 
     def __str__(self) -> str:
@@ -251,7 +249,7 @@ class CoolNot(Node):
     def delete_condition(self):
         return False
 
-class CoolUminus(Node):
+class CoolUminus(expr):
     def __init__(self, value) -> None:
         self.value =  value
         # self.name = 'not'
@@ -267,9 +265,75 @@ class CoolUminus(Node):
     def delete_condition(self):
         return False
 
+class CoolIsVoid(expr):
+    def __init__(self, value) -> None:
+        self.value =  value
+        Node.__init__(self,self.value)
 
+    def __str__(self) -> str:
+        return 'isVoid'
+    
+    def __repr__(self) -> str:
+        return f'isVoid {self.value}'
+    
+    def delete_condition(self):
+        return False
 
-class TypeNode(Node):
+class CoolNew(expr):
+    def __init__(self, type) -> None:
+        self.type =  type
+        Node.__init__(self, self.type)
+
+    def __str__(self) -> str:
+        return 'new'
+    
+    def __repr__(self) -> str:
+        return f'new {self.type}'
+    
+    def delete_condition(self):
+        return False
+
+class CoolCallable(expr):
+    def __init__(self, ID, exprs) -> None:
+        self.ID =  ID
+        self.args = exprs
+        Node.__init__(self,values=self.args)
+
+    def __str__(self) -> str:
+        return f'{self.ID}()'
+    
+    def __repr__(self) -> str:
+        result = f'{self.ID}('
+        for a in self.args:
+            result += ', ' + str(a)
+        return result + ')'
+    
+    def delete_condition(self):
+        return False
+
+class CoolID(expr):
+    def __init__(self, id, type = None) -> None:
+        self.id = id
+        self.type = type
+        self.width = Node.WIDTH
+        self.father = None
+    
+    def __str__(self) -> str:
+        if self.type is not None:
+            return f'{self.id}: {self.type}'
+        else:
+            return f'id({self.id})'
+        
+    def set_type(self, type):
+        self.type= type
+    
+    def __repr__(self) -> str:
+        return str(self)
+    
+    def childs(self):
+        return []    
+
+class CoolConstant(expr):
     def __init__(self, value, name) -> None:
         self.value =  value
         self.width = Node.WIDTH
@@ -285,28 +349,15 @@ class TypeNode(Node):
     def childs(self):
         return []    
 
-class CoolID(TypeNode):
-    def __init__(self, value, type = None) -> None:
-        super().__init__(value,'id')
-        self.type = type
-    
-    def __str__(self) -> str:
-        if self.type is None:
-            return super().__str__()
-        else:    
-            return f'{self.value}: {self.type}'
-    def childs(self):
-        return []   
-
-class IntNode(TypeNode):
+class IntNode(CoolConstant):
     def __init__(self, value) -> None:
         super().__init__(value,'int')
     
-class CoolString(TypeNode):
+class CoolString(CoolConstant):
     def __init__(self, value) -> None:
         super().__init__(value,'string')
 
-class CoolBool(TypeNode):
+class CoolBool(CoolConstant):
     def __init__(self, value) -> None:
         super().__init__(value,'bool')        
 

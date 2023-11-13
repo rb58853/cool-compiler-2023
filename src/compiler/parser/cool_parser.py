@@ -23,16 +23,17 @@ class CoolParser(Parser):
         ('left', '.'),              #lv9
     )
 
-    '''expr can have the following forms'''
     
-    #region expr
+#region expr ------------------------------------------------------------------------------------------------------------------------
+    
     @_('ID ASSIGN expr')
     def expr(self, p):
+        #expr::= ID <- expr
         if self.all_steps: return expr(BinOp('<-', CoolID(p[0]),p[2]))
         return BinOp('<-', CoolID(p[0]), p[2])
         if self.all_steps: return expr(BinOp('<-', p[0],p[2]))
         return BinOp('<-', p[0], p[2])
-        
+         
     @_('expr "@" TYPE "." ID "(" expr_list ")"', 'expr "@" TYPE "." ID "(" ")"' )
     def expr(self, p):
         pass
@@ -40,19 +41,17 @@ class CoolParser(Parser):
     @_('expr "." ID "(" expr_list ")"', 'expr "." ID "(" ")"')
     def expr(self, p):
         pass
-        
+
+    @_('ID "(" ")"')
+    def expr(self, p):
+        #expr:: ID()
+        return CoolCallable(p.ID,[])
+    
     @_('ID "(" expr_list ")"', 'ID "(" ")"')
     def expr(self, p):
-        pass
+        #expr:: ID(expr, expr, ...expr)
+        return CoolCallable(p.ID, p.expr_list)
             
-    @_('expr "," expr_list')
-    def expr_list(self, p):
-        pass
-        
-    @_('expr')
-    def expr_list(self, p):
-        pass
-        
     @_('IF expr THEN expr ELSE expr FI')
     def expr(self, p):
         #expr:: if expr then expr else expr fi
@@ -65,17 +64,11 @@ class CoolParser(Parser):
         if self.all_steps: return expr(CoolWhile(while_condition=p[1],loop_scope=p[3]))
         return CoolWhile(while_condition=p[1],loop_scope=p[3])
         
-    # @_('"{" block_list "}"')
-    # def expr(self, p):
-    #     pass
-        
-    # @_('expr ";" block_list')
-    # def block_list(self, p):
-    #     pass
-        
-    # @_('expr ";" epsilon')
-    # def block_list(self, p):
-    #     pass
+    @_('"{" block_list "}"')
+    def expr(self, p):
+        #expr::= {expr; expr; ...expr;}
+        return p.block_list        
+  
         
     # @_('LET let_list IN expr')
     # def expr(self, p):
@@ -111,11 +104,13 @@ class CoolParser(Parser):
         
     @_('NEW TYPE')
     def expr(self, p):
-        pass
+        # expr ::= new TYPE
+        return CoolNew(p.TYPE)
         
     @_('ISVOID expr')
     def expr(self, p):
-        pass
+        # expr ::= isvoid expr
+        return CoolIsVoid(p.expr)
         
     @_('expr "+" expr')
     def expr(self, p):
@@ -206,5 +201,30 @@ class CoolParser(Parser):
         # expr ::= false
         if self.all_steps: return expr(CoolBool(p.FALSE))
         return CoolBool(p.FALSE)
-  
-    #endregion
+#endregion
+
+#region UTILS------------------------------------------------------------------------------------------------------------------------
+
+    #CREATE BLOCK_LISTS---------------------------------------       
+    @_('expr "," expr_list')
+    def expr_list(self, p):
+        result = [p.expr]
+        for exp in p.expr_list:
+            result.append(exp)
+        return result
+    @_('expr')
+    def expr_list(self, p):
+        return [p.expr]
+
+    #CREATE BLOCK_LISTS---------------------------------------       
+    @_('expr ";" block_list')
+    def block_list(self, p):
+        result = [p.expr]
+        for block in p.block_list:
+            result.append(block)
+        return result
+    # @_('expr ";" epsilon')
+    @_('expr ";"')
+    def block_list(self, p):
+        return [p.expr]
+#endregion

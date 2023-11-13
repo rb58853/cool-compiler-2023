@@ -6,7 +6,7 @@ parser = CoolParser(False)
 # text = 'while (3 + 5) * 6 < 17 + 18 * (false - true) loop if not if true then 1 else 0 fi then false else 18 fi pool'
 text = 'if not if true then ~(1 + 4 * 2) else 0 fi then false else 18 fi'
 # text = 'if while true loop 1 pool then false else 18 fi'
-text = 'a <- 4'
+# text = 'a <- 4'
 result = parser.parse(lexer.tokenize(text))
 # result.generate_ast()
 result.show_tree()
