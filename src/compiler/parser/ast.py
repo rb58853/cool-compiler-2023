@@ -93,7 +93,7 @@ class Node(PlotNode):
     
     def delete(self):
         if self.father is None:
-            Exception("NO se puede eliminar el node raiz por ahora, se debe cambiar valores")
+            Exception('NO se puede eliminar el node raiz por ahora, se debe cambiar valores')
         else:
             self.father.delete_child(self)
             self.father = None
@@ -104,7 +104,7 @@ class Node(PlotNode):
         self.value.father = self
 
     def generate_ast(self):
-        if self.name == "*":
+        if self.name == '*':
             pass
 
         for child in self.childs():
@@ -117,7 +117,7 @@ class Node(PlotNode):
         return str(self.value)
     
     def __repr__(self) -> str:
-        return self.name + ": " + str(self.value)
+        return self.name + ': ' + str(self.value)
     
 class BinOp(Node):
     def __init__(self, op, left, right):
@@ -143,11 +143,11 @@ class BinOp(Node):
         else: Exception('Ocurrio un error al intentar elimnar un nodo')    
 
     def __str__(self) -> str:
-        # return str(self.left) + " " + self.op + " "+ str(self.right)
+        # return str(self.left) + ' ' + self.op + ' '+ str(self.right)
         return str(self.op)
     
     def __repr__(self) -> str:
-        return "operation: " + str(self.left.__repr__()) + " " + self.op + " "+ str(self.right.__repr__())
+        return 'operation: ' + str(self.left.__repr__()) + ' ' + self.op + ' '+ str(self.right.__repr__())
     
     # def get_width (self):
     #     return max(self.left.get_width(),self.right.get_width())*2
@@ -158,27 +158,12 @@ class BetwPar(Node):
         Node.__init__(self,self.value)
     
     def __str__(self) -> str:
-        return "()"
+        return '()'
     
     def __repr__(self) -> str:
-        return "parents: " + "("+ str(self.value) +")"
+        return 'parents: ' + '('+ str(self.value) +')'
     
-class IntNode(Node):
-    def __init__(self, value) -> None:
-        self.value =  value
-        self.draw_pos = (None,None)
-        self.width = Node.WIDTH
-        self.name = 'int'
-
-    def __str__(self) -> str:
-        return f"int"+ "{" +f"{self.value}" +"}"
-    
-    def __repr__(self) -> str:
-        return str(self)
-    
-    def childs(self):
-        return []    
-    
+#region expr    
 class expr(Node):
     def __init__(self, value) -> None:
         self.value =  value
@@ -186,4 +171,30 @@ class expr(Node):
         Node.__init__(self,self.value)
     
     def __str__(self) -> str:
-        return "expr\n<-" + str(self.value)    
+        return 'expr\n<-' + str(self.value)    
+
+class TypeNode(Node):
+    def __init__(self, value, name) -> None:
+        self.value =  value
+        self.width = Node.WIDTH
+        self.name = name
+
+    def __str__(self) -> str:
+        return f'{self.name}'+ '{' +f'{self.value}' +'}'
+    
+    def __repr__(self) -> str:
+        return str(self)
+    
+    def childs(self):
+        return []    
+    
+
+class IntNode(TypeNode):
+    def __init__(self, value) -> None:
+        super().__init__(value,'int')
+    
+class CoolString(TypeNode):
+    def __init__(self, value) -> None:
+        super().__init__(value,'string')
+        
+#endregion

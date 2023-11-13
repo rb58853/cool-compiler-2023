@@ -1,0 +1,10 @@
+from parser.cool_parser import CoolLexer, CoolParser
+
+lexer = CoolLexer()
+parser = CoolParser()
+
+# text = '3 + 5'
+text = ' "abcd"'
+result = parser.parse(lexer.tokenize(text))
+result.generate_ast()
+result.show_tree()

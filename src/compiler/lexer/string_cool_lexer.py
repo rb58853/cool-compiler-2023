@@ -96,9 +96,9 @@ class StringAnalizer():
             if token['value'] in self.key_words.keys():
                 value = self.key_words[token['value']]()
                 if value is not None:
-                    print (value)
-                    return
-                    # return value
+                    # print (value)
+                    # return
+                    return value
             else:
                 self.lexer.index+=1
                 self.lexer.end=self.lexer.index+1

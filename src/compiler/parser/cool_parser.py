@@ -7,7 +7,7 @@ class CoolParser(Parser):
     # start = 'program' TODO
 
     precedence = (
-        ('right', 'ASSING'),        #lv1
+        ('right', 'ASSIGN'),        #lv1
         ('left','NOT'),             #lv2
         ('nonassoc', '=','<','LE'), #lv3
         ('left', '+', '-'),         #lv4
@@ -20,15 +20,9 @@ class CoolParser(Parser):
         ('left', '.'),              #lv9
     )
 
-    @_('"-" expr %prec UMINUS')
-    def expr(p):
-        return -p.expr
-    
-
-
     '''expr can have the following forms'''
     #region expr
-    @_('ID ARROW expr')
+    @_('ID ASSIGN expr')
     def expr(self, p):
         pass
         
@@ -60,31 +54,31 @@ class CoolParser(Parser):
     def expr(self, p):
         pass
         
-    @_('"{" block_list "}"')
-    def expr(self, p):
-        pass
+    # @_('"{" block_list "}"')
+    # def expr(self, p):
+    #     pass
         
-    @_('expr ";" block_list')
-    def block_list(self, p):
-        pass
+    # @_('expr ";" block_list')
+    # def block_list(self, p):
+    #     pass
         
-    @_('expr ";" epsilon')
-    def block_list(self, p):
-        pass
+    # @_('expr ";" epsilon')
+    # def block_list(self, p):
+    #     pass
         
-    @_('LET let_list IN expr')
-    def expr(self, p):
-        pass
+    # @_('LET let_list IN expr')
+    # def expr(self, p):
+    #     pass
         
-    @_('let_assign "," let_list')
-    def let_list(self, p):
-        pass
+    # @_('let_assign "," let_list')
+    # def let_list(self, p):
+    #     pass
         
-    @_('let_assign epsilon')
-    def let_list(self, p):
-        pass
+    # @_('let_assign epsilon')
+    # def let_list(self, p):
+    #     pass
         
-    @_('ID ":" TYPE ARROW expr')
+    @_('ID ":" TYPE ASSIGN expr')
     def let_assign(self, p):
         pass
         
@@ -92,17 +86,17 @@ class CoolParser(Parser):
     def let_assign(self, p):
         pass
         
-    @_('CASE expr OF case_list ESAC')
-    def expr(self, p):
-        pass
+    # @_('CASE expr OF case_list ESAC')
+    # def expr(self, p):
+    #     pass
         
-    @_('ID ":" TYPE LOGICAR expr ";" case_list')
-    def case_list(self, p):
-        pass
+    # @_('ID ":" TYPE LOGICAR expr ";" case_list')
+    # def case_list(self, p):
+    #     pass
         
-    @_('ID ":" TYPE LOGICAR expr ";"')
-    def case_list(self, p):
-        pass
+    # @_('ID ":" TYPE LOGICAR expr ";"')
+    # def case_list(self, p):
+    #     pass
         
     @_('NEW TYPE')
     def expr(self, p):
@@ -115,7 +109,7 @@ class CoolParser(Parser):
     @_('expr "+" expr')
     def expr(self, p):
         # expr ::= expr + expr
-        return BinOp('+', p.expr, p.expr)
+        return BinOp('+', p[0], p[2])
         
     @_('expr "-" expr')
     def expr(self, p):
@@ -137,7 +131,7 @@ class CoolParser(Parser):
     def expr(self, p):
         pass
         
-    @_('expr LESS_OR expr')
+    @_('expr LE expr')
     def expr(self, p):
         pass
         
@@ -159,11 +153,13 @@ class CoolParser(Parser):
         
     @_("INT_CONST")
     def expr(self, p):
-        return expr(IntNode( p.INT_CONST))
+        # expr ::= integer
+        return expr(IntNode(p.INT_CONST))
         
     @_("STRING")
     def expr(self, p):
-        pass
+        # expr ::= string
+        return expr(CoolString(p.STRING))
         
     @_("TRUE")
     def expr(self, p):
