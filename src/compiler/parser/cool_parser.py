@@ -46,8 +46,7 @@ class CoolParser(Parser):
     def expr(self, p):
         #expr:: ID()
         return CoolCallable(p.ID,[])
-    
-    @_('ID "(" expr_list ")"', 'ID "(" ")"')
+    @_('ID "(" expr_list ")"')
     def expr(self, p):
         #expr:: ID(expr, expr, ...expr)
         return CoolCallable(p.ID, p.expr_list)

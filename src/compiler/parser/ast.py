@@ -124,7 +124,17 @@ class Node(PlotNode):
         return len(self.childs()) == 1
     #endregion
 
-class BinOp(Node):
+#region expr    
+class expr(Node):
+    def __init__(self, value) -> None:
+        self.value =  value
+        self.name = 'expr'
+        Node.__init__(self,self.value)
+    
+    def __str__(self) -> str:
+        return 'expr\n<-' + str(self.value)    
+
+class BinOp(expr):
     def __init__(self, op, left, right):
         self.op = op
         self.name = op #debug
@@ -157,7 +167,7 @@ class BinOp(Node):
     # def get_width (self):
     #     return max(self.left.get_width(),self.right.get_width())*2
 
-class BetwPar(Node):
+class BetwPar(expr):
     def __init__(self, expr) -> None:
         self.value = expr
         Node.__init__(self,self.value)
@@ -167,16 +177,6 @@ class BetwPar(Node):
     
     def __repr__(self) -> str:
         return 'parents: ' + '('+ str(self.value) +')'
-    
-#region expr    
-class expr(Node):
-    def __init__(self, value) -> None:
-        self.value =  value
-        self.name = 'expr'
-        Node.__init__(self,self.value)
-    
-    def __str__(self) -> str:
-        return 'expr\n<-' + str(self.value)    
 
 class CoolIf(expr):
     def __init__(self, if_condition, then_generation, else_generation = None) -> None:
