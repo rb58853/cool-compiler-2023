@@ -8,6 +8,7 @@ class Node():
         self.draw_pos = (0,0)
         self.width = None
         self.father = None
+        # self.name = 'abstract'
         # self.width = 2
 
         try: value.father = self
@@ -29,17 +30,20 @@ class Node():
         self.value.father = self
 
     def generate_ast(self):
+        if self.name == "*":
+            pass
+
         for child in self.childs():
             child.generate_ast()
-            if len(child.childs()) == 1:
-                child.delete()
+        
+        if len(self.childs()) == 1:
+            self.delete()
 
     def __str__(self) -> str:
         return str(self.value)
     
     def __repr__(self) -> str:
-        return str(self.value)
-    
+        return self.name + ": " + str(self.value)
     
     
     #region show_tree
@@ -113,6 +117,7 @@ class Node():
 class BinOp(Node):
     def __init__(self, op, left, right):
         self.op = op
+        self.name = op #debug
         self.left = left
         self.right = right
         Node.__init__(self,self.left)
@@ -127,13 +132,18 @@ class BinOp(Node):
             self.left.father = self
         
         elif child == self.right:
-            self.left = child.value
-            self.left.father = self
+            self.right = child.value
+            self.right.father = self
         
         else: Exception('Ocurrio un error al intentar elimnar un nodo')    
 
     def __str__(self) -> str:
-        return str(self.op) 
+        # return str(self.left) + " " + self.op + " "+ str(self.right)
+        return str(self.op)
+    
+    def __repr__(self) -> str:
+        return "operation: " + str(self.left.__repr__()) + " " + self.op + " "+ str(self.right.__repr__())
+    
 
 
 class BetwPar(Node):
@@ -142,4 +152,24 @@ class BetwPar(Node):
         Node.__init__(self,self.value)
     
     def __str__(self) -> str:
-        return "()"
+        return str(self.value)
+    
+    def __repr__(self) -> str:
+        return "parents: " + "("+ str(self.value) +")"
+    
+    
+class IntNode(Node):
+    def __init__(self, value) -> None:
+        self.value =  value
+        self.draw_pos = (None,None)
+        self.width = Node.WIDTH
+        self.name = 'int'
+
+    def __str__(self) -> str:
+        return f"int"+ "{" +f"{self.value}" +"}"
+    
+    def __repr__(self) -> str:
+        return str(self)
+    
+    def childs(self):
+        return []    

@@ -1,48 +1,36 @@
 from sly import Parser
 from lexer.cool_lexer import CoolLexer 
-from parser.ast import Node, BinOp, BetwPar
+from parser.ast import Node, BinOp, BetwPar, IntNode
 
 
 class expr(Node):
     def __init__(self, value) -> None:
-        Node.__init__(self,value)
         self.value =  value
+        self.name = 'expr'
+        Node.__init__(self,self.value)
     
     def __str__(self) -> str:
         return "expr\n<-" + str(self.value)
 
 class term(Node):
     def __init__(self, value) -> None:
-        Node.__init__(self,value)
         self.value =  value
+        self.name = 'term'
+        Node.__init__(self,self.value)
     def __str__(self) -> str:
         return "term\n<-" + str(self.value)
 
 class factor(Node):
     def __init__(self, value) -> None:
-        Node.__init__(self,value)
         self.value =  value
+        self.name = 'factor'
+        Node.__init__(self,self.value)
 
     def __str__(self) -> str:
         return "factor\n<-" + str(self.value)
     
     def childs(self):
         return [self.value]
-    
-class IntNode(Node):
-    def __init__(self, value) -> None:
-        self.value =  value
-        self.draw_pos = (None,None)
-        self.width = Node.WIDTH
-
-    def __str__(self) -> str:
-        return f"int"+ "{" +f"{self.value}" +"}"
-    
-    def childs(self):
-        return []
-
-
-
 
 
 class CalcParser(Parser):
