@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 class PlotNode():
     HEIGTH = 2.5
     WIDTH = 2
-    SEPARATION = 0
+    SEPARATION = 0.1
     
     def __init__(self) -> None:
         self.draw_pos = (0,0)
@@ -150,8 +150,7 @@ class BinOp(Node):
         return "operation: " + str(self.left.__repr__()) + " " + self.op + " "+ str(self.right.__repr__())
     
     # def get_width (self):
-    #     return max(self.left.get_width(),self.right.get_width()) *2
-
+    #     return max(self.left.get_width(),self.right.get_width())*2
 
 class BetwPar(Node):
     def __init__(self, expr) -> None:
@@ -163,7 +162,6 @@ class BetwPar(Node):
     
     def __repr__(self) -> str:
         return "parents: " + "("+ str(self.value) +")"
-    
     
 class IntNode(Node):
     def __init__(self, value) -> None:
@@ -180,3 +178,12 @@ class IntNode(Node):
     
     def childs(self):
         return []    
+    
+class expr(Node):
+    def __init__(self, value) -> None:
+        self.value =  value
+        self.name = 'expr'
+        Node.__init__(self,self.value)
+    
+    def __str__(self) -> str:
+        return "expr\n<-" + str(self.value)    
