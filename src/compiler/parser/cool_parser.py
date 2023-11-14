@@ -23,7 +23,10 @@ class CoolParser(Parser):
         ('left', '.'),              #lv10
     )
 
-    
+#region formal ---------------------------------------------------------------------------------------------------------------------
+
+#endregion   
+
 #region expr ------------------------------------------------------------------------------------------------------------------------
     @_('ID ASSIGN expr')
     def expr(self, p):
@@ -186,7 +189,6 @@ class CoolParser(Parser):
         # expr ::= false
         if self.all_steps: return expr(CoolBool(p.FALSE))
         return CoolBool(p.FALSE)
-#endregion
 
 #region UTILS------------------------------------------------------------------------------------------------------------------------
 
@@ -243,4 +245,6 @@ class CoolParser(Parser):
     @_('ID ":" TYPE DARROW expr ";"')
     def case_list(self, p):
         return [CoolCase.new_case(ID= p.ID, type=p.TYPE, exp= p.expr)]
+#endregion
+
 #endregion
