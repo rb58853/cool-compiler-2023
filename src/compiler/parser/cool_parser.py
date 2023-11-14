@@ -1,6 +1,6 @@
 from sly import Parser
 from lexer.cool_lexer import CoolLexer
-from parser.ast import *
+from AST.ast import *
 
 class CoolParser(Parser):
     def __init__(self, all_steps = False):
