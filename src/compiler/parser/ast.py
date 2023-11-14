@@ -421,7 +421,7 @@ class CoolObject(expr):
             return [self.function]
 
         def __str__(self) -> str:
-            return f'{self.expr}: {self.type}.{self.function}'
+            return f'{self.expr}:{self.type}.{self.function}'
 
         def __repr__(self) -> str:
             return str(self)
