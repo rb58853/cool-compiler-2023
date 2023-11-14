@@ -8,7 +8,7 @@ class CoolParser(Parser):
         self.all_steps = all_steps
 
     tokens = CoolLexer.tokens
-    # start = 'program' TODO
+    start = 'expr'
 
     precedence = (
         ('right', 'ASSIGN'),        #lv1
@@ -23,8 +23,33 @@ class CoolParser(Parser):
         ('left', '.'),              #lv10
     )
 
-#region formal ---------------------------------------------------------------------------------------------------------------------
 
+#region features
+    @_('ID ":" TYPE')
+    def def_atr(self, p):
+        pass
+    @_('ID ":" TYPE ARROW expr')
+    def def_atr(self, p):
+        pass
+
+    @_('ID "(" param_list ")" ":" TYPE "{" expr "}"')
+    def def_func(self, p):
+        pass
+   
+    @_('ID "(" ")" ":" TYPE "{" expr "}"')
+    def def_func(self, p):
+        pass
+#endregion
+
+#region formal ---------------------------------------------------------------------------------------------------------------------
+    #named formal in the manual, here is `param`
+    @_('ID ":" TYPE "," param_list')
+    def param_list(self, p):
+        return [CoolID( id=p.ID,type= p.TYPE )] + p.param_list
+    
+    @_('ID ":" TYPE')
+    def param_list(self, p):
+        return [CoolID(id=p.ID, type=p.TYPE )] 
 #endregion   
 
 #region expr ------------------------------------------------------------------------------------------------------------------------
@@ -79,7 +104,6 @@ class CoolParser(Parser):
     def expr(self, p):
         #expr::= {expr; expr; ...expr;}
         return CoolBlockScope(p.block_list)        
-        return p.block_list        
   
     @_('LET let_list IN expr')
     def expr(self, p):
@@ -195,10 +219,7 @@ class CoolParser(Parser):
     #CREATE SIMPLE_LIST---------------------------------------       
     @_('expr "," expr_list')
     def expr_list(self, p):
-        result = [p.expr]
-        for exp in p.expr_list:
-            result.append(exp)
-        return result
+        return [p.expr] + p.expr_list
     @_('expr')
     def expr_list(self, p):
         return [p.expr]
@@ -206,10 +227,7 @@ class CoolParser(Parser):
     #CREATE BLOCKS_LIST---------------------------------------       
     @_('expr ";" block_list')
     def block_list(self, p):
-        result = [p.expr]
-        for block in p.block_list:
-            result.append(block)
-        return result
+        return [p.expr] + p.block_list
     @_('expr ";"') # @_('expr ";" epsilon')
     def block_list(self, p):
         return [p.expr]
@@ -217,10 +235,7 @@ class CoolParser(Parser):
     #CREATE LET_ASSIGN_LIST---------------------------------------       
     @_('let_assign "," let_list')
     def let_list(self, p):
-        result = [p.let_assign]
-        for let_assign in p.let_list:
-            result.append(let_assign)
-        return result
+        return [p.let_assign] + p.let_list
     @_('let_assign') # @_('let_assign epsilon')
     def let_list(self, p):
         return [p.let_assign]
@@ -228,20 +243,14 @@ class CoolParser(Parser):
     @_('ID ":" TYPE ASSIGN expr')
     def let_assign(self, p):
         return CoolLet.new_let(ID= p.ID, type=p.TYPE, exp=p.expr)
-        return {'ID': p.ID, 'Type':p.TYPE, 'expr':p.expr}
     @_('ID ":" TYPE')
     def let_assign(self, p):
         return CoolLet.new_let(ID= p.ID, type=p.TYPE, exp=None)
-        return {'ID': p.ID, 'Type':p.TYPE, 'expr':None}
 
     #CREATE CASE_LIST---------------------------------------------  
     @_('ID ":" TYPE DARROW expr ";" case_list')
     def case_list(self, p):
-        result = [CoolCase.new_case(ID= p.ID, type=p.TYPE, exp=p.expr)]
-        for case in p.case_list:
-            result.append(case)
-        return result
-   
+        return [CoolCase.new_case(ID= p.ID, type=p.TYPE, exp=p.expr)] + p.case_list
     @_('ID ":" TYPE DARROW expr ";"')
     def case_list(self, p):
         return [CoolCase.new_case(ID= p.ID, type=p.TYPE, exp= p.expr)]

@@ -1,5 +1,9 @@
 import matplotlib.pyplot as plt
 
+'''TODO
+    1- Refactorizar Node.__init__(self,...) por Node.__init__(self,self.childs()) cambiar nombre, quizas
+    2- Crear una estructura(class) para los let y los case, de ser posible usar la misma para classAtr
+''' 
 class PlotNode():
     HEIGTH = 2.5
     WIDTH = 2
@@ -55,8 +59,8 @@ class PlotNode():
                 for child in self.childs():
                     child.set_childs_pos()
 
-    def show_tree(self):
-        if self.father is not None:
+    def show_tree(self, only_root = False):
+        if self.father is not None and only_root:
             self.father.show_tree()
         else:
             self.set_childs_pos()
@@ -123,6 +127,70 @@ class Node(PlotNode):
     def delete_condition(self):
         return len(self.childs()) == 1
     #endregion
+
+class CoolClass(Node):
+    pass
+
+#region Features
+class CoolParamsScope(Node):
+        def __init__(self, exprs) -> None:
+            self.exprs = exprs
+            Node.__init__(self,values=self.exprs)
+
+        def childs(self):
+            return self.exprs
+
+        def __str__(self) -> str:
+            return '(param, param, ...)'
+
+        def __repr__(self) -> str:
+            result = "("
+            for p in self.params:
+                result+= str(p)+', '
+            return result+')'
+
+        def delete_condition(self):
+            return False  
+        
+class Feature(Node):
+    class CoolAtr(Node):
+        def __init__(self, id, type, value) -> None:
+            self.ID = CoolID(id=id, type=type)
+            self.value = value
+            Node.__init__(self,value= self.value)
+        
+        def set_class(self, _class:CoolClass):
+            self.father = _class 
+        def childs(self):
+            return self.value
+        def delete_condition(self):
+            return False
+        def __str__(self) -> str:
+            return f'{self.ID} = {self.value}'        
+        def __repr__(self) -> str:
+            return f'{self.ID} = {self.value}'        
+
+    class CoolDef(Node):
+        def __init__(self, id, type, params, scope) -> None:
+            self.ID = CoolID(id=id, type='Function')
+            self.type = type
+            self.scope = scope
+            self.params = CoolParamsScope(params)
+            Node.__init__(self,values= [params,scope])
+        
+        def set_class(self, _class:CoolClass):
+            self.father = _class
+
+        def childs(self):
+            return [self.params,self.scope]
+        
+        def delete_condition(self):
+            return False
+        def __str__(self) -> str:
+            return f'{self.ID} = {self.value}'        
+        def __repr__(self) -> str:
+            return f'{self.ID} = {self.value}'
+#endregion
 
 #region expr    
 class expr(Node):
