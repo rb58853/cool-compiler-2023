@@ -10,7 +10,6 @@ ast = parser.parse(lexer.tokenize(code))
 #Usa el AST para generar codigo, asume que no hay errores, es decir solo usa codigo correcto.
 cil = CoolToCil(ast)()
 
-
 '''
     El archivo .py donde puedes empezar a trabajar es /src/compiler/code_gen/cool_to_cil/test.py
 '''
