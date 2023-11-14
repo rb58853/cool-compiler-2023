@@ -235,6 +235,24 @@ class CoolWhile(expr):
     def __repr__(self) -> str:
         return f'while {self.condition}: {self.loop_scope}'
 
+class CoolCallable(expr):
+    def __init__(self, id, exprs) -> None:
+        self.id = id
+        self.exprs = exprs
+        Node.__init__(self,values= self.exprs)
+    
+    def childs(self):
+        return self.exprs
+    
+    def __str__(self) -> str:
+        return f'{self.id}()'
+    
+    def __repr__(self) -> str:
+        return f'not {self.value}'
+    
+    def delete_condition(self):
+        return False
+
 class CoolNot(expr):
     def __init__(self, value) -> None:
         self.value =  value
@@ -285,31 +303,89 @@ class CoolNew(expr):
         Node.__init__(self, self.type)
 
     def __str__(self) -> str:
-        return 'new'
+        return f'new {self.type}'
     
     def __repr__(self) -> str:
         return f'new {self.type}'
     
     def delete_condition(self):
         return False
+    
+    def childs(self):
+        return []
+    
+class CoolCase(expr): #TODO raificar o no los hijos segun la necesidad para semantica y codegen
+    def __init__(self, case, cases_list) -> None:
+        self.case = case
+        self.cases_list = cases_list
+        self.width = Node.WIDTH
+        self.father = None
+        self.draw_pos = (0,0)
 
-class CoolCallable(expr):
-    def __init__(self, ID, exprs) -> None:
-        self.ID =  ID
-        self.args = exprs
-        Node.__init__(self,values=self.args)
-
-    def __str__(self) -> str:
-        return f'{self.ID}()'
+    def childs(self):
+        return []
     
     def __repr__(self) -> str:
-        result = f'{self.ID}('
-        for a in self.args:
-            result += ', ' + str(a)
-        return result + ')'
+        return 'case of'
+    
+    def __str__(self) -> str:
+        result = f'case {self.case} of [\n'
+        for case in self.cases_list:
+            result+= f'{case["ID"]}: {case["Type"]} => {case["expr"]}\n'    
+        return result + ']'
     
     def delete_condition(self):
         return False
+    
+    def new_case(ID, type, exp):
+        return {'ID': ID, 'Type':type, 'expr':exp}
+
+class CoolLet(expr): #TODO raificar o no los hijos segun la necesidad para semantica y codegen 
+    def __init__(self, let, _in) -> None:
+        self.let = let
+        self.in_scope = _in    
+        Node.__init__(self,value=self.in_scope)
+    
+    def childs(self):
+        return [self.in_scope]
+
+    def __repr__(self) -> str:
+        return 'let in'
+    
+    def __str__(self) -> str:
+        result = 'let \n'
+        for assign in self.let:
+            if assign['expr'] is None:
+                result+= f'{assign["ID"]}: {assign["Type"]}\n'
+            else:
+                result+= f'{assign["ID"]}: {assign["Type"]} <- {assign["expr"]}\n'    
+        return result + ' in:'
+    
+    def delete_condition(self):
+        return False
+    
+    def new_let(ID, type, exp):
+        return {'ID': ID, 'Type':type, 'expr':exp}
+
+class CoolBlockScope(expr):
+    def __init__(self, exprs) -> None:
+        self.exprs = exprs
+        Node.__init__(self,values=self.exprs)
+    
+    def childs(self):
+        return self.exprs
+    
+    def __str__(self) -> str:
+        return '{expr; expr; ...'+'}'
+    
+    def __repr__(self) -> str:
+        result = "{"
+        for ex in self.exprs:
+            result+= str(ex)+'; '
+        return result+'}'
+    
+    def delete_condition(self):
+        return False    
 
 class CoolID(expr):
     def __init__(self, id, type = None) -> None:
@@ -322,7 +398,7 @@ class CoolID(expr):
         if self.type is not None:
             return f'{self.id}: {self.type}'
         else:
-            return f'id({self.id})'
+            return f'{self.id}'
         
     def set_type(self, type):
         self.type= type
@@ -333,6 +409,26 @@ class CoolID(expr):
     def childs(self):
         return []    
 
+class CoolObject(expr):
+    class MethodInvoque(expr):
+        def __init__(self, exp, type, function: CoolID) -> None:
+            self.expr = exp
+            self.type = type
+            self.function = function
+            Node.__init__(self,value=self.function)
+
+        def childs(self):
+            return [self.function]
+
+        def __str__(self) -> str:
+            return f'{self.expr}: {self.type}.{self.function}'
+
+        def __repr__(self) -> str:
+            return str(self)
+
+        def delete_condition(self):
+            return False
+           
 class CoolConstant(expr):
     def __init__(self, value, name) -> None:
         self.value =  value

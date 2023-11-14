@@ -19,13 +19,12 @@ class CoolParser(Parser):
         ('left', "ISVOID"),         #lv6
         ('left', '~'),              #lv7 
         ('left', '@'),              #lv8
-        # ('right', 'IN'),          #lv TODO
-        ('left', '.'),              #lv9
+        ('right', 'IN'),            #lv9  Se agrega esta precedence extra dado que let se puede declarar sin usar IN, luego hay que dar prioridad cuando este aparece
+        ('left', '.'),              #lv10
     )
 
     
 #region expr ------------------------------------------------------------------------------------------------------------------------
-    
     @_('ID ASSIGN expr')
     def expr(self, p):
         #expr::= ID <- expr
@@ -34,13 +33,23 @@ class CoolParser(Parser):
         if self.all_steps: return expr(BinOp('<-', p[0],p[2]))
         return BinOp('<-', p[0], p[2])
          
-    @_('expr "@" TYPE "." ID "(" expr_list ")"', 'expr "@" TYPE "." ID "(" ")"' )
+    @_('expr "@" TYPE "." ID "(" expr_list ")"')#, 'expr "@" TYPE "." ID "(" ")"' )
     def expr(self, p):
-        pass
-        
-    @_('expr "." ID "(" expr_list ")"', 'expr "." ID "(" ")"')
+        ID = CoolCallable(p.ID,p.expr_list)
+        return CoolObject.MethodInvoque(p.expr,p.TYPE,ID)
+    @_('expr "@" TYPE "." ID "(" ")"')
+    def expr(self,p):
+        ID = CoolCallable(p.ID,[])
+        return CoolObject.MethodInvoque(p.expr,p.TYPE,ID)
+    
+    @_('expr "." ID "(" expr_list ")"')
     def expr(self, p):
-        pass
+        ID = CoolCallable(p.ID,p.expr_list)
+        return CoolObject.MethodInvoque(p.expr,None,ID)
+    @_('expr "." ID "(" ")"')
+    def expr(self, p):
+        ID = CoolCallable(p.ID,[])
+        return CoolObject.MethodInvoque(p.expr,None,ID)
 
     @_('ID "(" ")"')
     def expr(self, p):
@@ -66,40 +75,17 @@ class CoolParser(Parser):
     @_('"{" block_list "}"')
     def expr(self, p):
         #expr::= {expr; expr; ...expr;}
+        return CoolBlockScope(p.block_list)        
         return p.block_list        
   
+    @_('LET let_list IN expr')
+    def expr(self, p):
+        #expr::= {let ID : TYPE [ <- expr ], let ID : TYPE [ <- expr ]....} in expr
+        return CoolLet(let = p.let_list, _in = p.expr)
         
-    # @_('LET let_list IN expr')
-    # def expr(self, p):
-    #     pass
-        
-    # @_('let_assign "," let_list')
-    # def let_list(self, p):
-    #     pass
-        
-    # @_('let_assign epsilon')
-    # def let_list(self, p):
-    #     pass
-        
-    # @_('ID ":" TYPE ASSIGN expr')
-    # def let_assign(self, p):
-    #     pass
-        
-    # @_('ID ":" TYPE')
-    # def let_assign(self, p):
-    #     pass
-        
-    # @_('CASE expr OF case_list ESAC')
-    # def expr(self, p):
-    #     pass
-        
-    # @_('ID ":" TYPE LOGICAR expr ";" case_list')
-    # def case_list(self, p):
-    #     pass
-        
-    # @_('ID ":" TYPE LOGICAR expr ";"')
-    # def case_list(self, p):
-    #     pass
+    @_('CASE expr OF case_list ESAC')
+    def expr(self, p):
+        return CoolCase(p.expr,p.case_list)
         
     @_('NEW TYPE')
     def expr(self, p):
@@ -174,8 +160,8 @@ class CoolParser(Parser):
     @_("ID")
     def expr(self, p):
         # expr ::= ID
-        if self.all_steps:  return expr(IntNode(p.ID))
-        return IntNode(p.ID)
+        if self.all_steps:  return expr(CoolID(p.ID))
+        return CoolID(p.ID)
         
     @_("INT_CONST")
     def expr(self, p):
@@ -204,7 +190,7 @@ class CoolParser(Parser):
 
 #region UTILS------------------------------------------------------------------------------------------------------------------------
 
-    #CREATE BLOCK_LISTS---------------------------------------       
+    #CREATE SIMPLE_LIST---------------------------------------       
     @_('expr "," expr_list')
     def expr_list(self, p):
         result = [p.expr]
@@ -215,15 +201,46 @@ class CoolParser(Parser):
     def expr_list(self, p):
         return [p.expr]
 
-    #CREATE BLOCK_LISTS---------------------------------------       
+    #CREATE BLOCKS_LIST---------------------------------------       
     @_('expr ";" block_list')
     def block_list(self, p):
         result = [p.expr]
         for block in p.block_list:
             result.append(block)
         return result
-    # @_('expr ";" epsilon')
-    @_('expr ";"')
+    @_('expr ";"') # @_('expr ";" epsilon')
     def block_list(self, p):
         return [p.expr]
+    
+    #CREATE LET_ASSIGN_LIST---------------------------------------       
+    @_('let_assign "," let_list')
+    def let_list(self, p):
+        result = [p.let_assign]
+        for let_assign in p.let_list:
+            result.append(let_assign)
+        return result
+    @_('let_assign') # @_('let_assign epsilon')
+    def let_list(self, p):
+        return [p.let_assign]
+        
+    @_('ID ":" TYPE ASSIGN expr')
+    def let_assign(self, p):
+        return CoolLet.new_let(ID= p.ID, type=p.TYPE, exp=p.expr)
+        return {'ID': p.ID, 'Type':p.TYPE, 'expr':p.expr}
+    @_('ID ":" TYPE')
+    def let_assign(self, p):
+        return CoolLet.new_let(ID= p.ID, type=p.TYPE, exp=None)
+        return {'ID': p.ID, 'Type':p.TYPE, 'expr':None}
+
+    #CREATE CASE_LIST---------------------------------------------  
+    @_('ID ":" TYPE DARROW expr ";" case_list')
+    def case_list(self, p):
+        result = [CoolCase.new_case(ID= p.ID, type=p.TYPE, exp=p.expr)]
+        for case in p.case_list:
+            result.append(case)
+        return result
+   
+    @_('ID ":" TYPE DARROW expr ";"')
+    def case_list(self, p):
+        return [CoolCase.new_case(ID= p.ID, type=p.TYPE, exp= p.expr)]
 #endregion
