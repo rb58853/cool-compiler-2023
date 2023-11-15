@@ -8,8 +8,8 @@ class CoolParser(Parser):
         self.all_steps = all_steps
 
     tokens = CoolLexer.tokens
-    # start = 'expr'
-    start = 'def_func'
+    start = 'program'
+    # start = 'cclass'
 
     precedence = (
         ('right', 'ASSIGN'),        #lv1
@@ -24,6 +24,28 @@ class CoolParser(Parser):
         ('left', '.'),              #lv10
     )
 
+##########__________________PROGRAM______________________##########    
+    @_('class_list')
+    def program(self, p): 
+        return CoolProgram(p.class_list)
+###################################################################
+
+#region class
+    @_('CLASS TYPE "{" class_feature "}"')
+    def cclass(self, p):
+        return CoolClass(type=p.TYPE,inherit=None,features=p.class_feature)
+    @_('CLASS TYPE INHERITS TYPE "{" class_feature "}"')
+    def cclass(self, p):
+        return CoolClass(type=p[1],inherit=p[3],features=p.class_feature)
+    
+    @_('cclass ";"')
+    def class_list(self, p):
+        return [p.cclass]
+    
+    @_('cclass ";" class_list')
+    def class_list(self, p):
+        return [p.cclass] + p.class_list
+#endregion
 
 #region features
     @_('def_atr ";" class_feature')
@@ -39,10 +61,10 @@ class CoolParser(Parser):
 
     @_('ID ":" TYPE')
     def def_atr(self, p):
-        return Feature.CoolAtr(i= p.ID, type= p.type,value= None)
+        return Feature.CoolAtr(id= p.ID, type= p.TYPE,value= None)
     @_('ID ":" TYPE ASSIGN expr')
     def def_atr(self, p):
-        return Feature.CoolAtr(i= p.ID, type= p.type,value= p.expr)
+        return Feature.CoolAtr(id= p.ID, type= p.TYPE,value= p.expr)
 
     @_('ID "(" param_list ")" ":" TYPE "{" expr "}"')
     def def_func(self, p):

@@ -1,7 +1,7 @@
 import matplotlib.pyplot as plt
 
 '''TODO
-    1- Refactorizar Node.__init__(self,...) por Node.__init__(self,self.childs()) cambiar nombre, quizas
+    1- Refactorizar Node.__init__(self,...) por Node.__init__(self,self.childs())en cada node, cambiar nombre, quizas
     2- Crear una estructura(class) para los let y los case, de ser posible usar la misma para classAtr
 ''' 
 class PlotNode():
@@ -539,5 +539,39 @@ class Feature():
 #endregion
 
 class CoolClass(Node):
-    pass
+    def __init__(self,type, inherit = None, features:list = None) -> None:
+        self.type = type
+        self.inherit = inherit
+        self.features = features
+        Node.__init__(self,values=self.childs())
 
+    def childs(self):
+        return self.features
+    
+    def __str__(self) -> str:
+        if self.inherit is None:
+            return f'class {self.type}:'
+        return f'class {self.type}({self.inherit}):'
+
+    def __repr__(self) -> str:
+        return str(self)
+
+    def delete_condition(self):
+        return False  
+
+class CoolProgram(Node):
+    def __init__(self, cclass_list:list[CoolClass]) -> None:
+        self.classes = cclass_list 
+        Node.__init__(self,values=self.childs())
+
+    def childs(self):
+        return self.classes
+    
+    def __str__(self) -> str:
+        return f'PROGRAM'
+
+    def __repr__(self) -> str:
+        return str(self)
+
+    def delete_condition(self):
+        return False  
