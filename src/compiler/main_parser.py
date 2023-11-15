@@ -15,7 +15,8 @@ _assign = 'a <- 4'
 _object_method = '{ c.a(); c@INT.a();c@INT.a(x, 2, 6*8);}'
 #endregion
 
-params = ""
-result = parser.parse(lexer.tokenize(params))
+scope = '{a<-1; b<-2; c<-a+b; case x of a:INT => 1; b:INT => 1; c:INT => 1; esac; }'
+_def = 'f(q:INT, w:INT):INT {'+ scope +'}'
+result = parser.parse(lexer.tokenize(_def))
 # result.generate_ast()
 result.show_tree()

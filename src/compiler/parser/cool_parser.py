@@ -8,7 +8,8 @@ class CoolParser(Parser):
         self.all_steps = all_steps
 
     tokens = CoolLexer.tokens
-    start = 'expr'
+    # start = 'expr'
+    start = 'def_func'
 
     precedence = (
         ('right', 'ASSIGN'),        #lv1
@@ -25,20 +26,31 @@ class CoolParser(Parser):
 
 
 #region features
+    @_('def_atr ";" class_feature')
+    def class_feature(self, p):
+        return [p.def_atr] + p.class_feature
+    
+    @_('def_func ";" class_feature')
+    def class_feature(self, p):
+        return [p.def_func] + p.class_feature
+    @_('')
+    def class_feature(self, p):
+        return []
+
     @_('ID ":" TYPE')
     def def_atr(self, p):
-        pass
-    @_('ID ":" TYPE ARROW expr')
+        return Feature.CoolAtr(i= p.ID, type= p.type,value= None)
+    @_('ID ":" TYPE ASSIGN expr')
     def def_atr(self, p):
-        pass
+        return Feature.CoolAtr(i= p.ID, type= p.type,value= p.expr)
 
     @_('ID "(" param_list ")" ":" TYPE "{" expr "}"')
     def def_func(self, p):
-        pass
+        return Feature.CoolDef(CoolID(id = p.ID),type=p.TYPE, params= p.param_list,scope=p.expr)
    
     @_('ID "(" ")" ":" TYPE "{" expr "}"')
     def def_func(self, p):
-        pass
+        return Feature.CoolDef(CoolID(id = p.ID),type=p.TYPE, params= [],scope=p.expr)
 #endregion
 
 #region formal ---------------------------------------------------------------------------------------------------------------------

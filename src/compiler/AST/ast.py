@@ -128,70 +128,6 @@ class Node(PlotNode):
         return len(self.childs()) == 1
     #endregion
 
-class CoolClass(Node):
-    pass
-
-#region Features
-class CoolParamsScope(Node):
-        def __init__(self, exprs) -> None:
-            self.exprs = exprs
-            Node.__init__(self,values=self.exprs)
-
-        def childs(self):
-            return self.exprs
-
-        def __str__(self) -> str:
-            return '(param, param, ...)'
-
-        def __repr__(self) -> str:
-            result = "("
-            for p in self.params:
-                result+= str(p)+', '
-            return result+')'
-
-        def delete_condition(self):
-            return False  
-        
-class Feature(Node):
-    class CoolAtr(Node):
-        def __init__(self, id, type, value) -> None:
-            self.ID = CoolID(id=id, type=type)
-            self.value = value
-            Node.__init__(self,value= self.value)
-        
-        def set_class(self, _class:CoolClass):
-            self.father = _class 
-        def childs(self):
-            return self.value
-        def delete_condition(self):
-            return False
-        def __str__(self) -> str:
-            return f'{self.ID} = {self.value}'        
-        def __repr__(self) -> str:
-            return f'{self.ID} = {self.value}'        
-
-    class CoolDef(Node):
-        def __init__(self, id, type, params, scope) -> None:
-            self.ID = CoolID(id=id, type='Function')
-            self.type = type
-            self.scope = scope
-            self.params = CoolParamsScope(params)
-            Node.__init__(self,values= [params,scope])
-        
-        def set_class(self, _class:CoolClass):
-            self.father = _class
-
-        def childs(self):
-            return [self.params,self.scope]
-        
-        def delete_condition(self):
-            return False
-        def __str__(self) -> str:
-            return f'{self.ID} = {self.value}'        
-        def __repr__(self) -> str:
-            return f'{self.ID} = {self.value}'
-#endregion
-
 #region expr    
 class expr(Node):
     def __init__(self, value) -> None:
@@ -475,7 +411,22 @@ class CoolID(expr):
         return str(self)
     
     def childs(self):
-        return []    
+        return []
+    
+class CoolVar(expr):
+    def __init__(self, ID:CoolID, value) -> None:
+        self.ID = ID
+        self.value = value
+        Node.__init__(self,value= self.value)
+        
+        def childs(self):
+            return [self.value]
+        def delete_condition(self):
+            return False
+        def __str__(self) -> str:
+            return f'{self.ID} = {self.value}'        
+        def __repr__(self) -> str:
+            return f'{self.ID} = {self.value}'        
 
 class CoolObject(expr):
     class MethodInvoque(expr):
@@ -524,5 +475,69 @@ class CoolString(CoolConstant):
 class CoolBool(CoolConstant):
     def __init__(self, value) -> None:
         super().__init__(value,'bool')        
-
 #endregion
+
+#region Features
+class CoolParamsScope(Node):
+        def __init__(self, exprs:list[CoolID] = None) -> None:
+            self.exprs = exprs
+            Node.__init__(self,values=self.exprs)
+
+        def childs(self):
+            return self.exprs
+
+        def __str__(self) -> str:
+            return '(param, param, ...)'
+
+        def __repr__(self) -> str:
+            result = "("
+            for p in self.params:
+                result+= str(p)+', '
+            return result+')'
+
+        def delete_condition(self):
+            return False  
+
+class Feature():
+    class CoolAtr(Node):
+        def __init__(self, id, type, value = None) -> None:
+            self.ID = CoolID(id=id, type=type)
+            self.value = value
+            Node.__init__(self,value= self.value)
+        
+        # def set_class(self, _class:CoolClass):
+        #     self.father = _class 
+        def childs(self):
+            return [self.value]
+        def delete_condition(self):
+            return False
+        def __str__(self) -> str:
+            return f'{self.ID} = {self.value}'        
+        def __repr__(self) -> str:
+            return f'{self.ID} = {self.value}'        
+
+    class CoolDef(Node):
+        def __init__(self, id, type, params, scope) -> None:
+            self.ID = CoolID(id=id, type='Function')
+            self.type = type
+            self.scope = scope
+            self.params = CoolParamsScope(params)
+            Node.__init__(self,values= [params, scope])
+        
+        # def set_class(self, _class:CoolClass):
+        #     self.father = _class
+
+        def childs(self):
+            return [self.params,self.scope]
+        
+        def delete_condition(self):
+            return False
+        def __str__(self) -> str:
+            return f'{self.ID}():{self.type}'        
+        def __repr__(self) -> str:
+            return f'{self.ID}({self.params}):{self.type}'
+#endregion
+
+class CoolClass(Node):
+    pass
+
