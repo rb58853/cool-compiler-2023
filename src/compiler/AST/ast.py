@@ -503,11 +503,13 @@ class Feature():
         def __init__(self, id, type, value = None) -> None:
             self.ID = CoolID(id=id, type=type)
             self.value = value
-            Node.__init__(self,value= self.value)
+            Node.__init__(self,values= self.childs())
         
         # def set_class(self, _class:CoolClass):
         #     self.father = _class 
         def childs(self):
+            if self.value is None:
+                return []
             return [self.value]
         def delete_condition(self):
             return False

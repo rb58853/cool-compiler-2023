@@ -1,16 +1,13 @@
 from sly import Parser
+from error.cool_error import SyntacticError
 from lexer.cool_lexer import CoolLexer
 from AST.ast import *
 
+#TODO Implementar de ser mas atractivo la deteccion de errores en modo de panico, por ejemplo seguir hasta un ';' despues de encontrar un error
+    
 class CoolParser(Parser):
-    def __init__(self, all_steps = False):
-        super().__init__()
-        self.all_steps = all_steps
-
     tokens = CoolLexer.tokens
     start = 'program'
-    # start = 'cclass'
-
     precedence = (
         ('right', 'ASSIGN'),        #lv1
         ('left','NOT'),             #lv2
@@ -23,6 +20,44 @@ class CoolParser(Parser):
         ('right', 'IN'),            #lv9  Se agrega esta precedence extra dado que let se puede declarar sin usar IN, luego hay que dar prioridad cuando este aparece
         ('left', '.'),              #lv10
     )
+    
+    def __init__(self, all_steps = False, lexer:CoolLexer = None, print_error:bool = False):
+        super().__init__()
+        self.all_steps = all_steps
+        self.errors = []
+        self.lexer = lexer
+        self.print_errors = print_error
+
+    def error(self, token):
+        def token_pos(token):
+            return token.index - self.lexer.init_index_line[token.lineno] + 1
+        
+        if token:
+            synt_error = SyntacticError(
+            by= self,
+            token = token, 
+            pos = token_pos(token), 
+            lineno = token.lineno,
+            index= token.index,
+            end = token.end
+            )
+            synt_error("ERROR at or near")
+        
+            if self.print_errors:
+                print(synt_error)
+        else:
+            synt_error = SyntacticError(
+            by= self,
+            value= '', 
+            pos = -1, 
+            lineno = -1,
+            index= -1,
+            end = -1
+            )
+            synt_error("EOF ERROR")
+        
+            if self.print_errors:
+                print(synt_error)
 
 ##########__________________PROGRAM______________________##########    
     @_('class_list')
@@ -289,5 +324,4 @@ class CoolParser(Parser):
     def case_list(self, p):
         return [CoolCase.new_case(ID= p.ID, type=p.TYPE, exp= p.expr)]
 #endregion
-
 #endregion

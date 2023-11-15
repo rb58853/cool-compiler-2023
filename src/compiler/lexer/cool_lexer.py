@@ -11,6 +11,7 @@ class CoolLexer(Lexer):
         self.last_index = 0
         self.end = 0
         self.close_str = True
+        self.init_index_line = [0,0]
         self.errors = []
 
     tokens = {
@@ -97,7 +98,7 @@ class CoolLexer(Lexer):
 
         lex_error = LexicalError(
             by= self,
-            token = token, 
+            value= token.value[0], 
             pos = self.get_pos(), 
             lineno = self.lineno,
             index= self.index,
@@ -120,6 +121,7 @@ class CoolLexer(Lexer):
     def new_line(self):
         self.last_index = self.index
         self.lineno +=1
+        self.init_index_line.append(self.last_index)
 
     def get_pos(self, index = None):
         if index is None:
