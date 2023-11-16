@@ -128,6 +128,22 @@ class Node(PlotNode):
         return len(self.childs()) == 1
     #endregion
 
+class CoolVar(Node):
+    def __init__(self, id:str,type, value) -> None:
+        self.id = id
+        self.typ = type
+        self.value = value
+        Node.__init__(self,value= self.value)
+        
+        def childs(self):
+            return [self.value]
+        def delete_condition(self):
+            return False
+        def __str__(self) -> str:
+            return f'{self.ID} = {self.value}'        
+        def __repr__(self) -> str:
+            return f'{self.ID} = {self.value}'       
+
 #region expr    
 class expr(Node):
     def __init__(self, value) -> None:
@@ -391,7 +407,7 @@ class CoolBlockScope(expr):
     def delete_condition(self):
         return False    
 
-class CoolID(expr):
+class CoolID(CoolVar):
     def __init__(self, id, type = None) -> None:
         self.id = id
         self.type = type
@@ -411,22 +427,7 @@ class CoolID(expr):
         return str(self)
     
     def childs(self):
-        return []
-    
-class CoolVar(expr):
-    def __init__(self, ID:CoolID, value) -> None:
-        self.ID = ID
-        self.value = value
-        Node.__init__(self,value= self.value)
-        
-        def childs(self):
-            return [self.value]
-        def delete_condition(self):
-            return False
-        def __str__(self) -> str:
-            return f'{self.ID} = {self.value}'        
-        def __repr__(self) -> str:
-            return f'{self.ID} = {self.value}'        
+        return [] 
 
 class CoolObject(expr):
     class MethodInvoque(expr):
@@ -452,7 +453,7 @@ class CoolConstant(expr):
     def __init__(self, value, name) -> None:
         self.value =  value
         self.width = Node.WIDTH
-        self.name = name
+        self.type = name
         self.father = None
 
     def __str__(self) -> str:
@@ -471,6 +472,12 @@ class IntNode(CoolConstant):
 class CoolString(CoolConstant):
     def __init__(self, value) -> None:
         super().__init__(value,'string')
+
+    def concatenate():    
+        type = 'string'
+        self = CoolID('self',type)
+        other = CoolID('other',type)
+        return Feature.CoolDef('concatenate',type, CoolParamsScope([self,other]), BinOp('+',self,other))
 
 class CoolBool(CoolConstant):
     def __init__(self, value) -> None:
@@ -499,9 +506,11 @@ class CoolParamsScope(Node):
             return False  
 
 class Feature():
-    class CoolAtr(Node):
+    class CoolAtr(CoolVar):
         def __init__(self, id, type, value = None) -> None:
             self.ID = CoolID(id=id, type=type)
+            self.id = id
+            self.type = type
             self.value = value
             Node.__init__(self,values= self.childs())
         
@@ -541,9 +550,9 @@ class Feature():
 #endregion
 
 class CoolClass(Node):
-    def __init__(self,type, inherit = None, features:list = None) -> None:
+    def __init__(self,type, inherit:str = None, features:list = None) -> None:
         self.type = type
-        self.inherit = inherit
+        self.inherit = inherit #type in str format
         self.features = features
         Node.__init__(self,values=self.childs())
 
