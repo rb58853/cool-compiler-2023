@@ -1,4 +1,5 @@
 import matplotlib.pyplot as plt
+        # from semantic.context import Context, CoolObject
 
 '''TODO
     1- Refactorizar Node.__init__(self,...) por Node.__init__(self,self.childs())en cada node, cambiar nombre, quizas
@@ -84,7 +85,10 @@ class PlotNode():
 class Node(PlotNode):
     def __init__(self, value = None, values:list = []) -> None:
         super().__init__()
+        self.type = 'object'
+        self.context = None
         self.father = None
+        self.name = 'empty'
         
         if len(values) > 0:
             for val in values:
@@ -93,7 +97,13 @@ class Node(PlotNode):
         else:
             try: value.father = self 
             except: pass
-        
+    
+    def get_type(self):
+        return self.type
+
+    def validate(self): #override this
+        return True
+
     def childs(self):
         return [self.value]
    
@@ -128,7 +138,17 @@ class Node(PlotNode):
         return len(self.childs()) == 1
     #endregion
 
-class CoolVar(Node):
+#region expr    
+class expr(Node):
+    def __init__(self, value) -> None:
+        self.value =  value
+        self.name = 'expr'
+        Node.__init__(self,self.value)
+    
+    def __str__(self) -> str:
+        return 'expr\n<-' + str(self.value)    
+
+class CoolVar(expr):
     def __init__(self, id:str,type, value) -> None:
         self.id = id
         self.typ = type
@@ -144,22 +164,12 @@ class CoolVar(Node):
         def __repr__(self) -> str:
             return f'{self.ID} = {self.value}'       
 
-#region expr    
-class expr(Node):
-    def __init__(self, value) -> None:
-        self.value =  value
-        self.name = 'expr'
-        Node.__init__(self,self.value)
-    
-    def __str__(self) -> str:
-        return 'expr\n<-' + str(self.value)    
-
 class BinOp(expr):
-    def __init__(self, op, left, right):
+    def __init__(self, op, left:expr, right:expr):
         self.op = op
         self.name = op #debug
-        self.left = left
-        self.right = right
+        self.left:expr = left
+        self.right:expr = right
         Node.__init__(self,self.left)
         Node.__init__(self,self.right)
 
@@ -258,11 +268,11 @@ class CoolWhile(expr):
 class CoolCallable(expr):
     def __init__(self, id, exprs) -> None:
         self.id = id
-        self.exprs = exprs
-        Node.__init__(self,values= self.exprs)
+        self.params = exprs
+        Node.__init__(self,values= self.params)
     
     def childs(self):
-        return self.exprs
+        return self.params
     
     def __str__(self) -> str:
         return f'{self.id}()'
@@ -320,6 +330,7 @@ class CoolIsVoid(expr):
 class CoolNew(expr):
     def __init__(self, type) -> None:
         self.type =  type
+        self.name = 'new'
         Node.__init__(self, self.type)
 
     def __str__(self) -> str:
@@ -409,6 +420,7 @@ class CoolBlockScope(expr):
 
 class CoolID(CoolVar):
     def __init__(self, id, type = None) -> None:
+        self.name = 'id'
         self.id = id
         self.type = type
         self.width = Node.WIDTH
@@ -429,25 +441,21 @@ class CoolID(CoolVar):
     def childs(self):
         return [] 
 
-class CoolObject(expr):
-    class MethodInvoque(expr):
-        def __init__(self, exp, type, function: CoolID) -> None:
-            self.expr = exp
-            self.type = type
-            self.function = function
-            Node.__init__(self,value=self.function)
-
-        def childs(self):
-            return [self.function]
-
-        def __str__(self) -> str:
-            return f'{self.expr}:{self.type}.{self.function}'
-
-        def __repr__(self) -> str:
-            return str(self)
-
-        def delete_condition(self):
-            return False
+class Dispatch(expr): #Dispatch
+    def __init__(self, exp, type, function: CoolCallable) -> None:
+        self.name = 'dispatch'
+        self.expr:expr = exp #Es un ID, NEW, string o IO, en otro caso es error semantico
+        self.type = type
+        self.function = function
+        Node.__init__(self,value=self.function)
+    def childs(self):
+        return [self.function]
+    def __str__(self) -> str:
+        return f'{self.expr}:{self.type}.{self.function}'
+    def __repr__(self) -> str:
+        return str(self)
+    def delete_condition(self):
+        return False
            
 class CoolConstant(expr):
     def __init__(self, value, name) -> None:
@@ -470,14 +478,15 @@ class IntNode(CoolConstant):
         super().__init__(value,'int')
     
 class CoolString(CoolConstant):
+    type = 'string'
     def __init__(self, value) -> None:
-        super().__init__(value,'string')
+        super().__init__(value,CoolString.type)
 
-    def concatenate():    
-        type = 'string'
+    def concat():    
+        type = CoolString.type
         self = CoolID('self',type)
         other = CoolID('other',type)
-        return Feature.CoolDef('concatenate',type, CoolParamsScope([self,other]), BinOp('+',self,other))
+        return Feature.CoolDef('concat',type, CoolParamsScope([self,other]), BinOp('+',self,other))
 
 class CoolBool(CoolConstant):
     def __init__(self, value) -> None:
@@ -550,7 +559,7 @@ class Feature():
 #endregion
 
 class CoolClass(Node):
-    def __init__(self,type, inherit:str = None, features:list = None) -> None:
+    def __init__(self,type, inherit:str = 'object', features:list = None) -> None:
         self.type = type
         self.inherit = inherit #type in str format
         self.features = features

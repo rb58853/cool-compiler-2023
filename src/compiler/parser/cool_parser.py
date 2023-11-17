@@ -1,7 +1,7 @@
 from sly import Parser
 from error.cool_error import SyntacticError
 from lexer.cool_lexer import CoolLexer
-from AST.ast import *
+from AST.ast import CoolBlockScope, CoolBool, CoolCallable,CoolCase, CoolClass, CoolID, CoolIf, CoolIsVoid, CoolNot,CoolLet, CoolNew, CoolProgram, CoolString, CoolUminus, CoolWhile, Dispatch, Feature, expr, IntNode, BinOp, BetwPar
 
 #TODO Implementar de ser mas atractivo la deteccion de errores en modo de panico, por ejemplo seguir hasta un ';' despues de encontrar un error
     
@@ -133,20 +133,20 @@ class CoolParser(Parser):
     @_('expr "@" TYPE "." ID "(" expr_list ")"')#, 'expr "@" TYPE "." ID "(" ")"' )
     def expr(self, p):
         ID = CoolCallable(p.ID,p.expr_list)
-        return CoolObject.MethodInvoque(p.expr,p.TYPE,ID)
+        return Dispatch(p.expr,p.TYPE,ID)
     @_('expr "@" TYPE "." ID "(" ")"')
     def expr(self,p):
         ID = CoolCallable(p.ID,[])
-        return CoolObject.MethodInvoque(p.expr,p.TYPE,ID)
+        return Dispatch(p.expr,p.TYPE,ID)
     
     @_('expr "." ID "(" expr_list ")"')
     def expr(self, p):
         ID = CoolCallable(p.ID,p.expr_list)
-        return CoolObject.MethodInvoque(p.expr,None,ID)
+        return Dispatch(p.expr,None,ID)
     @_('expr "." ID "(" ")"')
     def expr(self, p):
         ID = CoolCallable(p.ID,[])
-        return CoolObject.MethodInvoque(p.expr,None,ID)
+        return Dispatch(p.expr,None,ID)
 
     @_('ID "(" ")"')
     def expr(self, p):
