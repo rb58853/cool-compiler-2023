@@ -1,10 +1,9 @@
 from ...AST.ast import BinOp, CoolIf, CoolWhile, IntNode
 #tester
 try:
-    # Intenta crear una instancia o realizar alguna operación
+    # Test de instancias
     test_node = BinOp("+", IntNode(1), IntNode(2))
     print("Instancia de BinOp creada:", test_node)
-    # Agrega más pruebas si es necesario
     print("Las importaciones parecen estar funcionando correctamente.")
 except Exception as e:
     print("Hubo un error al importar o utilizar las clases de AST:", e)
