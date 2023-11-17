@@ -331,6 +331,7 @@ class CoolNew(expr):
     def __init__(self, type) -> None:
         self.type =  type
         self.name = 'new'
+        self.value = CoolVar(id = None, type = type, value= None)
         Node.__init__(self, self.type)
 
     def __str__(self) -> str:

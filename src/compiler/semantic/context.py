@@ -5,6 +5,7 @@ class TypeContext:
     def __init__(self) -> None:
         self.father = None
         self.types:dict = {}
+        # self.instances:dict = {}
         self.functions:dict = {}
         self.variables:dict = {}
 
@@ -66,7 +67,7 @@ class FunctionContext(TypeContext):
             return False #ERROR
 
     def is_defined_func(self, id):
-        #dependiendo si se acepta o no el override se debe analizar solo el contexto mas cercano o todos los padre, una funcion solo puede ser defina dentro de una clase, luego el contexto que abarca es o bien la clase en la cual es definida, o bien una clase desde la cal se hereda. Notese que pueden existir funciones de igual nombre en clases distintas y no abra conflctos mientras no haya herencia entre estas.
+        #Una funcion solo puede ser defina dentro de una clase, luego el contexto que abarca es o bien la clase en la cual es definida, o bien una clase desde la cal se hereda. Notese que pueden existir funciones de igual nombre en clases distintas y no abra conflctos mientras no haya herencia entre estas, en cuyo caso hay que analizar si es valido el override
         if self.functions.__contains__(id): return True
         if self.father is None: return False
         else: return self.father.is_defined_func(id)
@@ -101,6 +102,7 @@ class VariableContext(FunctionContext):
 class Context(VariableContext):
     def __init__(self, father = None) -> None:
         self.types:dict = {str: Context}
+        # self.instances:dict = {str: Context}
         self.functions:dict = {str: Feature.CoolDef}
         self.variables:dict = {str: CoolVar}
         self.father:Context = father
@@ -117,11 +119,15 @@ class Context(VariableContext):
             #cool_id = vvar #Esto es lo que me gustaria hacer 
             return True
         else:
-            return False
+            vvar = self.get_instance(cool_id.id)
+            if vvar != False:
+                pass
+            else:
+                return False
     
     def validate_op(self, op: BinOp):
         # return op.left.get_type() == op.right.get_type() 
-        if op.left.validate() and op.right.validate and op.left.get_type() == op.right.get_type():
+        if op.left.validate() and op.right.validate() and op.left.get_type() == op.right.get_type():
             op.type =  op.left.get_type()
             return True
         else:
@@ -132,7 +138,7 @@ class Context(VariableContext):
         if func != False:
             if len(func.params) == len(obj.params):
                 for param_func, param_call in zip(func.params, obj.params):
-                    if not param_call.validate(): return False #si el parametro no es valido entonces la llamada con este parametro no es valida, es necesario validar cad parametro xq con la validacion del mismo se llega a su tipo en caso de ser un id.               
+                    if not param_call.validate(): return False #si el parametro no es valido entonces la llamada con este parametro no es valida, es necesario validar cada parametro xq con la validacion del mismo se llega a su tipo en caso de ser un id.               
                     if param_func.type != param_call.get_type():
                         return False
             else: 
@@ -141,9 +147,29 @@ class Context(VariableContext):
         return True
     
     def validate_dispatch(self, dispatch: Dispatch):
-        name = dispatch.expr.name
-        
+        name = dispatch.expr.name 
+        cclass_type = 'object'
 
+        if name is 'new':
+            cclass_type = dispatch.expr.type
+            if self.is_defined_type(cclass_type):
+                return dispatch.function
+        else:
+            if name is 'id':
+                #dispatch.expr es un CoolID
+                if self.validate_id(dispatch.expr):
+                    type = dispatch.expr.type
+                    
+            if name is CoolString.type:
+                type = CoolString.type
+
+            if type != dispatch.type: return False #El tipo de la variable es diferente al tipo el cual se asume que debe ser [@TYPE]
+            context = self.get_type[type]#Si el type es valido, entonces quiero el cotexto
+            if context != False:
+                #este es exactamente el contexo al que pertenece la funcion que se esta llamando. 
+                return context.validate_callable(dispatch.function)
+            else:
+                return False
 
 
 
@@ -160,4 +186,6 @@ def info():
 
     \n PENDIENTES:
     - Implementar el metodo `is_function_override`
+    - Implementar el `dispatch` para todos los tipos base como `IO` y `string`
+    - Implementar el trato de `@` en el dispatch
     '''

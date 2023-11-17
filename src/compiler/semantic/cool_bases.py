@@ -2,10 +2,7 @@ from semantic.context import Context, CoolString, Feature, CoolVar, IntNode
 
 class BaseContext(Context):
     def __init__(self) -> None:
-        self.father = None
-        self.types:dict = {str: Context}
-        self.functions:dict = {str: Feature.CoolDef}
-        self.variables:dict = {str: CoolVar}
+        super().__init__(father= None)
         self.set_bases()
 
     def set_bases(self):
