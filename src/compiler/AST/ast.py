@@ -97,7 +97,7 @@ class Node(PlotNode):
         else:
             try: value.father = self 
             except: pass
-    
+
     def get_type(self):
         return self.type
 
@@ -268,7 +268,7 @@ class CoolWhile(expr):
 class CoolCallable(expr):
     def __init__(self, id, exprs) -> None:
         self.id = id
-        self.params = exprs
+        self.params:list[expr] = exprs
         Node.__init__(self,values= self.params)
     
     def childs(self):
@@ -538,10 +538,10 @@ class Feature():
             return f'{self.ID} = {self.value}'        
 
     class CoolDef(Node):
-        def __init__(self, id, type, params, scope) -> None:
+        def __init__(self, id, type = 'SELF_TYPE', params=[], scope= None) -> None:
             self.ID = CoolID(id=id, type='Function')
             self.type = type
-            self.scope = scope
+            self.scope:expr = scope
             self.params = CoolParamsScope(params)
             Node.__init__(self,values= [params, scope])
         
