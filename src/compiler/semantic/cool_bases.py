@@ -1,9 +1,10 @@
-from semantic.context import Context, CoolString, Feature, CoolVar, IntNode
+from semantic.context import Context, CoolString, IntNode, CoolBool
 
 class BaseContext(Context):
     def __init__(self) -> None:
         super().__init__(father= None)
         self.set_bases()
+        self.name = 'PROGRAM'
 
     def set_bases(self):
         self.set_object_context()
@@ -14,6 +15,8 @@ class BaseContext(Context):
     def set_object_context(self):
         key = 'object'
         context = Context(father=self)
+        context.type = key
+        context.name = 'OBJECT'
         self.types[key] = context
 
     def set_string_context(self):
@@ -24,16 +27,22 @@ class BaseContext(Context):
         func = CoolString.concat()
         context.functions[func.ID.id] = func
         #----------------------------------
+        context.type = key
+        context.name = 'STRING'
         self.types[key] = context
 
     def set_int_context(self):
-        key = 'int'
+        key = IntNode.type
         context = Context(father=self)
+        context.type = key
+        context.name = 'INT'
         self.types[key] = context
 
     def set_bool_context(self):
-        key = 'bool'
+        key = CoolBool.type
         context = Context(father=self)
+        context.type = key
+        context.name = 'BOOL'
         self.types[key] = context
     
 class Program:

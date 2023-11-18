@@ -68,7 +68,7 @@ class CoolParser(Parser):
 #region class
     @_('CLASS TYPE "{" class_feature "}"')
     def cclass(self, p):
-        return CoolClass(type=p.TYPE,inherit=None,features=p.class_feature)
+        return CoolClass(type=p.TYPE,inherit='object',features=p.class_feature)
     @_('CLASS TYPE INHERITS TYPE "{" class_feature "}"')
     def cclass(self, p):
         return CoolClass(type=p[1],inherit=p[3],features=p.class_feature)

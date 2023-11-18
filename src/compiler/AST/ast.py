@@ -1,24 +1,24 @@
 import matplotlib.pyplot as plt
-        # from semantic.context import Context, CoolObject
+# from semantic.context import Context
 
 '''TODO
     1- Refactorizar Node.__init__(self,...) por Node.__init__(self,self.childs())en cada node, cambiar nombre, quizas
     2- Crear una estructura(class) para los let y los case, de ser posible usar la misma para classAtr
-''' 
+'''
 class PlotNode():
     HEIGTH = 2.5
     WIDTH = 2
     SEPARATION = 0.1
-    
+
     def __init__(self) -> None:
         self.draw_pos = (0,0)
         self.width = None
-        self.pos_plt = 'm' #mid 
-  
+        self.pos_plt = 'm' #mid
+
     def get_width (self):
         if self.width is not None:
             return self.width
-        
+
         if len(self.childs()) ==0 or self.childs == None:
             return PlotNode.WIDTH
         else:
@@ -26,22 +26,22 @@ class PlotNode():
             for child in self.childs():
                 w+=child.get_width() + PlotNode.SEPARATION
             return w
-        
+
     def set_childs_pos(self):
         if len(self.childs()) != 0:
             if len(self.childs()) == 1:
                 self.childs()[0].draw_pos = (self.draw_pos[0], self.draw_pos[1] - PlotNode.HEIGTH)
                 self.childs()[0].set_childs_pos()
-            else: 
+            else:
                 mid = len(self.childs())//2
                 index = int(mid)#rigth side
                 base_acumulate = 0
-                
+
                 if len(self.childs()) %2 == 1:
                     # mid = len(self.childs())//2
                     base_acumulate = self.childs()[mid].get_width()/2 + PlotNode.SEPARATION
                     self.childs()[mid].draw_pos = (self.draw_pos[0], self.draw_pos[1] - PlotNode.HEIGTH)
-                    index+=1 
+                    index+=1
 
                 acumulate = base_acumulate
                 for i in range(int(mid)-1, -1, -1):
@@ -81,21 +81,21 @@ class PlotNode():
 
         for child in self.childs():
             child.print_node(fig, ax)
-    
+
 class Node(PlotNode):
     def __init__(self, value = None, values:list = []) -> None:
         super().__init__()
-        self.type = 'object'
-        self.context = None
-        self.father = None
+        self.type:str
+        self.context:Context = None
+        self.father:Node = None
         self.name = 'empty'
-        
+
         if len(values) > 0:
             for val in values:
-                try: val.father = self 
+                try: val.father = self
                 except: pass
         else:
-            try: value.father = self 
+            try: value.father = self
             except: pass
 
     def get_type(self):
@@ -106,13 +106,13 @@ class Node(PlotNode):
 
     def childs(self):
         return [self.value]
-   
+
     def __str__(self) -> str:
         return str(self.value)
-    
+
     def __repr__(self) -> str:
         return self.name + ': ' + str(self.value)
-    
+
     #region delete and generate AST
     def delete(self):
         if self.father is None:
@@ -130,7 +130,7 @@ class Node(PlotNode):
     def generate_ast(self):
         for child in self.childs():
             child.generate_ast()
-        
+
         if self.delete_condition():
             self.delete()
 
@@ -138,31 +138,31 @@ class Node(PlotNode):
         return len(self.childs()) == 1
     #endregion
 
-#region expr    
+#region expr
 class expr(Node):
     def __init__(self, value) -> None:
         self.value =  value
         self.name = 'expr'
         Node.__init__(self,self.value)
-    
+
     def __str__(self) -> str:
-        return 'expr\n<-' + str(self.value)    
+        return 'expr\n<-' + str(self.value)
 
 class CoolVar(expr):
     def __init__(self, id:str,type, value) -> None:
         self.id = id
         self.typ = type
-        self.value = value
+        self.value:expr = value
         Node.__init__(self,value= self.value)
-        
+
         def childs(self):
             return [self.value]
         def delete_condition(self):
             return False
         def __str__(self) -> str:
-            return f'{self.ID} = {self.value}'        
+            return f'{self.ID} = {self.value}'
         def __repr__(self) -> str:
-            return f'{self.ID} = {self.value}'       
+            return f'{self.ID} = {self.value}'
 
 class BinOp(expr):
     def __init__(self, op, left:expr, right:expr):
@@ -174,26 +174,26 @@ class BinOp(expr):
         Node.__init__(self,self.right)
 
     def childs(self):
-        return [self.left, self.right] 
-    
+        return [self.left, self.right]
+
     def delete_child(self, child): #override in mutichlilds nodes
         if child == self.left:
             self.left = child.value
             self.left.father = self
-        
+
         elif child == self.right:
             self.right = child.value
             self.right.father = self
-        
-        else: Exception('Ocurrio un error al intentar elimnar un nodo')    
+
+        else: Exception('Ocurrio un error al intentar elimnar un nodo')
 
     def __str__(self) -> str:
         # return str(self.left) + ' ' + self.op + ' '+ str(self.right)
         return str(self.op)
-    
+
     def __repr__(self) -> str:
         return 'operation: ' + str(self.left.__repr__()) + ' ' + self.op + ' '+ str(self.right.__repr__())
-    
+
     # def get_width (self):
     #     return max(self.left.get_width(),self.right.get_width())*2
 
@@ -201,10 +201,10 @@ class BetwPar(expr):
     def __init__(self, expr) -> None:
         self.value = expr
         Node.__init__(self,self.value)
-    
+
     def __str__(self) -> str:
         return '()'
-    
+
     def __repr__(self) -> str:
         return 'parents: ' + '('+ str(self.value) +')'
 
@@ -214,28 +214,28 @@ class CoolIf(expr):
         self.then_generation = then_generation
         self.else_generation = else_generation
         Node.__init__(self, values=[self.condition,self.then_generation,self.else_generation])
-    
+
     def childs(self):
         return [self.condition,self.then_generation,self.else_generation]
-    
+
     def delete_child(self, child): #override in mutichlilds nodes
         if child == self.condition:
             self.condition = child.value
             self.condition.father = self
-        
+
         elif child == self.then_generation:
             self.then_generation = child.value
             self.then_generation.father = self
-        
+
         elif child == self.else_generation:
             self.else_generation = child.value
             self.else_generation.father = self
 
-        else: Exception('Ocurrio un error al intentar eliminar un nodo')    
-    
+        else: Exception('Ocurrio un error al intentar eliminar un nodo')
+
     def __str__(self) -> str:
         return 'if - then - else'
-    
+
     def __repr__(self) -> str:
         return f'if {self.condition}: {self.then_generation} \telse: {self.else_generation}'
 
@@ -244,24 +244,24 @@ class CoolWhile(expr):
         self.condition = while_condition
         self.loop_scope = loop_scope
         Node.__init__(self, values=[self.condition,self.loop_scope])
-    
+
     def childs(self):
         return [self.condition,self.loop_scope]
-    
+
     def delete_child(self, child): #override in mutichlilds nodes
         if child == self.condition:
             self.condition = child.value
             self.condition.father = self
-        
+
         elif child == self.loop_scope:
             self.loop_scope = child.value
             self.loop_scope.father = self
-        
-        else: Exception('Ocurrio un error al intentar eliminar un nodo')    
-    
+
+        else: Exception('Ocurrio un error al intentar eliminar un nodo')
+
     def __str__(self) -> str:
         return 'While - Loop'
-    
+
     def __repr__(self) -> str:
         return f'while {self.condition}: {self.loop_scope}'
 
@@ -270,16 +270,16 @@ class CoolCallable(expr):
         self.id = id
         self.params:list[expr] = exprs
         Node.__init__(self,values= self.params)
-    
+
     def childs(self):
         return self.params
-    
+
     def __str__(self) -> str:
         return f'{self.id}()'
-    
+
     def __repr__(self) -> str:
         return f'not {self.value}'
-    
+
     def delete_condition(self):
         return False
 
@@ -290,10 +290,10 @@ class CoolNot(expr):
 
     def __str__(self) -> str:
         return 'not'
-    
+
     def __repr__(self) -> str:
         return f'not {self.value}'
-    
+
     def delete_condition(self):
         return False
 
@@ -306,10 +306,10 @@ class CoolUminus(expr):
 
     def __str__(self) -> str:
         return '~'
-    
+
     def __repr__(self) -> str:
         return f'~{self.value}'
-    
+
     def delete_condition(self):
         return False
 
@@ -320,10 +320,10 @@ class CoolIsVoid(expr):
 
     def __str__(self) -> str:
         return 'isVoid'
-    
+
     def __repr__(self) -> str:
         return f'isVoid {self.value}'
-    
+
     def delete_condition(self):
         return False
 
@@ -336,16 +336,16 @@ class CoolNew(expr):
 
     def __str__(self) -> str:
         return f'new {self.type}'
-    
+
     def __repr__(self) -> str:
         return f'new {self.type}'
-    
+
     def delete_condition(self):
         return False
-    
+
     def childs(self):
         return []
-    
+
 class CoolCase(expr): #TODO raificar o no los hijos segun la necesidad para semantica y codegen
     def __init__(self, case, cases_list) -> None:
         self.case = case
@@ -356,46 +356,46 @@ class CoolCase(expr): #TODO raificar o no los hijos segun la necesidad para sema
 
     def childs(self):
         return []
-    
+
     def __repr__(self) -> str:
         return 'case of'
-    
+
     def __str__(self) -> str:
         result = f'case {self.case} of [\n'
         for case in self.cases_list:
-            result+= f'{case["ID"]}: {case["Type"]} => {case["expr"]}\n'    
+            result+= f'{case["ID"]}: {case["Type"]} => {case["expr"]}\n'
         return result + ']'
-    
+
     def delete_condition(self):
         return False
-    
+
     def new_case(ID, type, exp):
         return {'ID': ID, 'Type':type, 'expr':exp}
 
-class CoolLet(expr): #TODO raificar o no los hijos segun la necesidad para semantica y codegen 
+class CoolLet(expr): #TODO raificar o no los hijos segun la necesidad para semantica y codegen
     def __init__(self, let, _in) -> None:
         self.let = let
-        self.in_scope = _in    
+        self.in_scope = _in
         Node.__init__(self,value=self.in_scope)
-    
+
     def childs(self):
         return [self.in_scope]
 
     def __repr__(self) -> str:
         return 'let in'
-    
+
     def __str__(self) -> str:
         result = 'let \n'
         for assign in self.let:
             if assign['expr'] is None:
                 result+= f'{assign["ID"]}: {assign["Type"]}\n'
             else:
-                result+= f'{assign["ID"]}: {assign["Type"]} <- {assign["expr"]}\n'    
+                result+= f'{assign["ID"]}: {assign["Type"]} <- {assign["expr"]}\n'
         return result + ' in:'
-    
+
     def delete_condition(self):
         return False
-    
+
     def new_let(ID, type, exp):
         return {'ID': ID, 'Type':type, 'expr':exp}
 
@@ -403,21 +403,21 @@ class CoolBlockScope(expr):
     def __init__(self, exprs) -> None:
         self.exprs = exprs
         Node.__init__(self,values=self.exprs)
-    
+
     def childs(self):
         return self.exprs
-    
+
     def __str__(self) -> str:
         return '{expr; expr; ...'+'}'
-    
+
     def __repr__(self) -> str:
         result = "{"
         for ex in self.exprs:
             result+= str(ex)+'; '
         return result+'}'
-    
+
     def delete_condition(self):
-        return False    
+        return False
 
 class CoolID(CoolVar):
     def __init__(self, id, type = None) -> None:
@@ -426,21 +426,21 @@ class CoolID(CoolVar):
         self.type = type
         self.width = Node.WIDTH
         self.father = None
-    
+
     def __str__(self) -> str:
         if self.type is not None:
             return f'{self.id}: {self.type}'
         else:
             return f'{self.id}'
-        
+
     def set_type(self, type):
         self.type= type
-    
+
     def __repr__(self) -> str:
         return str(self)
-    
+
     def childs(self):
-        return [] 
+        return []
 
 class Dispatch(expr): #Dispatch
     def __init__(self, exp, type, function: CoolCallable) -> None:
@@ -457,41 +457,46 @@ class Dispatch(expr): #Dispatch
         return str(self)
     def delete_condition(self):
         return False
-           
+
 class CoolConstant(expr):
     def __init__(self, value, name) -> None:
         self.value =  value
         self.width = Node.WIDTH
         self.type = name
+        self.name = name
         self.father = None
 
     def __str__(self) -> str:
         return f'{self.name}'+ '{' +f'{self.value}' +'}'
-    
+
     def __repr__(self) -> str:
         return str(self)
-    
+
     def childs(self):
-        return []    
+        return []
 
 class IntNode(CoolConstant):
+    type = 'INT'
+
     def __init__(self, value) -> None:
-        super().__init__(value,'int')
-    
+        super().__init__(value,'INT')
+
 class CoolString(CoolConstant):
-    type = 'string'
+    type = 'STRING'
     def __init__(self, value) -> None:
         super().__init__(value,CoolString.type)
 
-    def concat():    
+    def concat():
         type = CoolString.type
         self = CoolID('self',type)
         other = CoolID('other',type)
-        return Feature.CoolDef('concat',type, CoolParamsScope([self,other]), BinOp('+',self,other))
+        return Feature.CoolDef('concat',type, [self,other], BinOp('+',self,other))
 
 class CoolBool(CoolConstant):
+    type = 'STRING'
+
     def __init__(self, value) -> None:
-        super().__init__(value,'bool')        
+        super().__init__(value,'BOOL')
 #endregion
 
 #region Features
@@ -513,7 +518,8 @@ class CoolParamsScope(Node):
             return result+')'
 
         def delete_condition(self):
-            return False  
+            return False
+        
 
 class Feature():
     class CoolAtr(CoolVar):
@@ -523,9 +529,9 @@ class Feature():
             self.type = type
             self.value = value
             Node.__init__(self,values= self.childs())
-        
+
         # def set_class(self, _class:CoolClass):
-        #     self.father = _class 
+        #     self.father = _class
         def childs(self):
             if self.value is None:
                 return []
@@ -533,42 +539,42 @@ class Feature():
         def delete_condition(self):
             return False
         def __str__(self) -> str:
-            return f'{self.ID} = {self.value}'        
+            return f'{self.ID} = {self.value}'
         def __repr__(self) -> str:
-            return f'{self.ID} = {self.value}'        
+            return f'{self.ID} = {self.value}'
 
     class CoolDef(Node):
         def __init__(self, id, type = 'SELF_TYPE', params=[], scope= None) -> None:
             self.ID = CoolID(id=id, type='Function')
             self.type = type
-            self.scope:expr = scope
+            self.scope = scope
             self.params = CoolParamsScope(params)
             Node.__init__(self,values= [params, scope])
-        
+
         # def set_class(self, _class:CoolClass):
         #     self.father = _class
 
         def childs(self):
             return [self.params,self.scope]
-        
+
         def delete_condition(self):
             return False
         def __str__(self) -> str:
-            return f'{self.ID}():{self.type}'        
+            return f'{self.ID}():{self.type}'
         def __repr__(self) -> str:
             return f'{self.ID}({self.params}):{self.type}'
 #endregion
 
 class CoolClass(Node):
     def __init__(self,type, inherit:str = 'object', features:list = None) -> None:
+        self.features = features
         self.type = type
         self.inherit = inherit #type in str format
-        self.features = features
         Node.__init__(self,values=self.childs())
 
     def childs(self):
         return self.features
-    
+
     def __str__(self) -> str:
         if self.inherit is None:
             return f'class {self.type}:'
@@ -578,16 +584,28 @@ class CoolClass(Node):
         return str(self)
 
     def delete_condition(self):
-        return False  
+        return False
+   
+    def validate(self):
+        context = self.father.context.validate_class(cclass = self)
+        if context == False:
+            self.context = None
+            #Crear error semantico
+            return False
+        else:
+            self.context = context
+            return True
 
 class CoolProgram(Node):
     def __init__(self, cclass_list:list[CoolClass]) -> None:
-        self.classes = cclass_list 
+        self.classes = cclass_list
         Node.__init__(self,values=self.childs())
+        from semantic.cool_bases import Program #Esto va a dar error de importacion circular. En ese caso hay que reestructurar todo plp super feo
+        self.context = Program.context
 
     def childs(self):
         return self.classes
-    
+
     def __str__(self) -> str:
         return f'PROGRAM'
 
@@ -595,4 +613,6 @@ class CoolProgram(Node):
         return str(self)
 
     def delete_condition(self):
-        return False  
+        return False
+
+from semantic.context import Context

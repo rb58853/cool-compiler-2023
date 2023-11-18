@@ -1,29 +1,31 @@
 from parser.cool_parser import CoolLexer, CoolParser
+from AST.ast import CoolProgram
+from semantic.bfs_context import set_classes_context
 import os
 
+case = 'test1.cl'
+#compiler/semantic/test1.cl
 base_dir = os.getcwd()
-base_url = os.path.join(base_dir, "tests/parser/")
-cases = [case for case in os.listdir(base_url) if case.endswith('.cl')] 
-cases.sort()
+base_url = os.path.join(base_dir, "src/compiler/semantic")
+dir = os.path.join(base_url,case)
 
-for i in range(len(cases)):
-    case = cases[i]
-    case_error = case[:-3] + '_error.txt'
-    dir = '/'.join([base_url,case])
-    dir_error = '/'.join([base_url,case_error])
-    with open(dir, "r") as f:
-        code = f.read()
-    with open(dir_error, "r") as f:
-        error = f.read()
+with open(dir, "r") as f:
+    content = f.read()
 
-    lexer = CoolLexer()
-    parser = CoolParser(lexer = lexer)
+lexer = CoolLexer()
+parser = CoolParser(lexer = lexer)
+tokens = lexer.tokenize(content)
 
-    PROGRAM = parser.parse(lexer.tokenize(code))
+if len(lexer.errors) > 0: Exception(str(lexer.errors[0]))
 
-    print(f'\n\n\n######################### CASE {i+1} #############################')
-    print('----------------------PARSER ERRORS---------------------------')
-    for e in parser.errors:
-        print(e)
-    print ("\n---------------------EXPECTED ERRORS:-------------------------")
-    print(error) 
+program:CoolProgram = parser.parse(tokens)
+if len(parser.errors) > 0: Exception(str(parser.errors[0]))
+
+# program.show_tree()
+
+set_classes_context(program)
+program.context.print()
+
+for child in program.childs():
+    context = child.context
+    context.print()

@@ -1,20 +1,21 @@
 from AST.ast import Feature, CoolClass, CoolString, CoolVar, CoolID, BinOp, IntNode, CoolBool, CoolCallable, Dispatch
 
 class VariableContext():
-    def __init__(self) -> None:
-        self.father = None
-        self.types:dict = {}
-        # self.instances:dict = {}
-        self.functions:dict = {}
-        self.variables:dict = {}
+    def __init__(self, father) -> None:
+        self.types:dict[str:Context] = {}
+        self.functions:dict[str:Feature.CoolDef] = {}
+        self.variables:dict[str:CoolVar] = {}
+        self.father:Context = father
         self.type = 'object'
+        self.name = None
+        self.cclass = None
 
     def define_var(self, vvar:CoolVar):
-        #Las variables pueden repatirse en contextos hijos-padre, en caso de o ser asi usar la linea comentada y comentar la condicion que se usa actualmente
+        #Las variables pueden repetirse en contextos hijos-padre, en caso de o ser asi usar la linea comentada y comentar la condicion que se usa actualmente
         # if not self.is_defined_var(vvar.id):
         if not self.variables.__contains__(vvar.id):
             self.variables[vvar.id] = vvar
-            return self
+            return True
         else:
             return False #ERROR or Redefine
 
@@ -29,7 +30,8 @@ class VariableContext():
         else: return self.father.get_var(id)
 
 class TypeContext(VariableContext):
-    def define_type(self, cclass:CoolClass):
+# class TypeContext(VariableContext):
+    def define_type(self, cclass:CoolClass, use_inherit = True):
         '''
         USE: se llama desde `context_in` -contexto en el cual se va a definir la clase, el contexto del program en este caso\n
         INPUT: `self` -La propia clase en cuesion \n
@@ -39,9 +41,9 @@ class TypeContext(VariableContext):
         '''
         if not self.is_defined_type(cclass.type):
             contex:Context
-            if cclass.inherit is not None:
+            if cclass.inherit is not None and use_inherit:
                 if not self.is_defined_type(cclass.inherit):
-                    return False #La clase desde la cual se quiere heredar no esta definida
+                    return False #La clase desde la cual se quiere heredar no esta definida (Esto hay que cambiarlo en caso de que se pueda, entonces hay que hacer recorrido de clases dos veces)
                 else:
                     #Si esta heredando de una clase padre esta clase padre debe tener un padre que es exactamente el contexto self, Dado que una clase solo se declara en program entonces la clase o bien posee el contexto del program como padre o bien posee una clase que posee al contexto de program en algun padre sperior recursivamente. De esta forma se garantiza la herencia de contextos y del contexto padre final. Esto es posible xq en Cool dentro de una clase no se puden definir otras clases.
                     contex = self.get_type(cclass.inherit).create_context_child()
@@ -49,7 +51,9 @@ class TypeContext(VariableContext):
                 contex = self.create_context_child()
 
             #se crea un contexto propio para la clase que posee como padre un contexto mas amplio, este contexto padre solo tendra clases definidas o variables de una clase desde la cual se hace herencia.
+            print ("Agrego el tipo "+cclass.type)
             contex.type = cclass.type
+            contex.cclass = cclass
             self.types[cclass.type] = contex
             return contex
         else:
@@ -88,13 +92,20 @@ class FunctionContext(TypeContext):
             #Los parametros a la hora de crear una funcion siempre seran validos dado que sintacticamente estan reinstringidos a ser de a fora ID:TYPE
             for param in func.params.exprs:
                 p:CoolID = param
-                context.define_var(p)
-            if not func.scope.validate() or not self.is_defined_type(func.type):
-                return False #Error: El type de la funcion no existe en el contexto    
+                if self.valid_param(p):
+                    context.define_var(p)
+                else:
+                    return False #Error, el parametro p trata de usar un tipo no defnido    
+            
+            #Al no ser el recorrido en orden DFS no se puede tratar de validar el scope, luego una funcion es valida si lo son sus parametros y tipo    
+            # if not func.scope.validate() or not self.is_defined_type(func.type):
+            #     return False #Error: El type de la funcion no existe en el contexto    
 
             return context  #define la funcion y devuelve el nuevo contexto interno de esta, hijo del contexto desde el cual fue definida la funcion, lo cal seria el contexto de una clase
         else:
             return False #Error: El type de la funcion no existe en el contexto    
+    def valid_param(self, param: CoolID):
+        return self.is_defined_type(param.type)
 
     def is_defined_func(self, id):
         #Una funcion solo puede ser defina dentro de una clase, luego el contexto que abarca es o bien la clase en la cual es definida, o bien una clase desde la cal se hereda. Notese que pueden existir funciones de igual nombre en clases distintas y no abra conflctos mientras no haya herencia entre estas, en cuyo caso hay que analizar si es valido el override
@@ -111,14 +122,42 @@ class FunctionContext(TypeContext):
         if self.father is None: return False
         else: return self.father.get_func(id)
     
-class Context(FunctionContext):
+class PrintContext(FunctionContext):
+    def print(self):
+        print (f'_____________________________________________________________________________________')
+        print (f'{self} \n')
+        print('---------- TYPES ----------\n')
+        if len(self.types) == 0:
+            print('<empty>}\n')
+        else:
+            for type in self.types:
+                print(f'{type}: {self.types[type]}\n')
+        
+        print('\n---------- FUNTIONS ----------\n')
+        if len(self.functions) == 0:
+            print('<empty>}\n')
+        else:
+            for func in self.functions:
+                print(f'{func}: {self.functions[func]}\n')
+        
+        print('\n---------- VARIABLES ----------\n')
+        if len(self.variables) == 0:
+            print('<empty>}\n')
+        else:
+            for vvar in self.variables:
+                print(f'{vvar}: {self.variables[vvar]}\n')
+        
+        print (f'_____________________________________________________________________________________')
+
+    def __str__(self) -> str:
+        if self.name is not None:
+            return self.name
+        else:
+            return str(self.cclass)
+
+class Context(PrintContext):
     def __init__(self, father = None) -> None:
-        self.types:dict = {str: Context}
-        # self.instances:dict = {str: Context}
-        self.functions:dict = {str: Feature.CoolDef}
-        self.variables:dict = {str: CoolVar}
-        self.father:Context = father
-        self.type = 'object'
+        VariableContext.__init__(self=self, father=father)
 
     def validate_string(self, s: CoolString): return True
     def validate_int(self, x: IntNode): return True
@@ -164,12 +203,12 @@ class Context(FunctionContext):
         name = dispatch.expr.name 
         cclass_type = 'object'
 
-        if name is 'new':
+        if name == 'new':
             cclass_type = dispatch.expr.type
             if self.is_defined_type(cclass_type):
                 return dispatch.function
         else:
-            if name is 'id':
+            if name == 'id':
                 #dispatch.expr es un CoolID
                 if self.validate_id(dispatch.expr):
                     type = dispatch.expr.type
@@ -185,9 +224,11 @@ class Context(FunctionContext):
             else:
                 return False
     
-    def validate_var(self, atr: CoolVar):
-        pass
-
+    def validate_var(self, vvar: CoolVar):
+        '''Una vez se utiliza este metodo la variable se define en el contexto'''
+        if vvar.name == 'class_atr':
+            return vvar.value.validate() and vvar.value.get_type() == vvar.type and self.define_var(vvar)
+        return self.define_var(vvar)
 
     def validate_func(self, func: Feature.CoolDef):
         '''Si devuelve False entonces no es valido esta funcion, si no devuelve false entonces la salida es el contexto de esta funcion, por o tanto el metodo validate que usa este metodo como base debe encargarse de generar el nuevo contexto en caso de ser `not False` la salida desde aqui. Luego quedaria algo como:\n
@@ -203,7 +244,7 @@ class Context(FunctionContext):
         '''
         return self.define_func(func)
 
-    def validate_class(self, cclass: CoolClass):
+    def validate_class(self, cclass: CoolClass, use_inherit = True):
         '''Si devuelve False entonces no es valida esta clase, si no devuelve false entonces la salida es el contexto de la misma, por o tanto el metodo validate que usa este metodo como base debe encargarse de generar el nuevo contexto en caso de ser `not False` la salida desde aqui. Luego quedaria algo como:\n
             ```
             CoolClass.validate():
@@ -214,12 +255,13 @@ class Context(FunctionContext):
                     self.context = context
                     return True
             ```
+        - nota: si se `use_inherit = True` entonces la clase sera valida si existe de quien heredar declarado, en caso contrario no se tendra en cuenta de quien esta heredando. Esto sirve para hace un primer recorrido sin tener en cuenta la herencia para asi definir los tipos, y luego hacer el recorrido teniendo en cueta la herencia.    
         '''
         #asumiendo que Cool se comporta con forward-rule entonces se entra en DFS por los hijos de la clase para validar estos, en caso que sea distinto no se debe hacer esto, asi que las clases deben ser visitadas en orden de BFS
-        for feature in cclass.childs():
-            if not feature.validate():
-                return False
-        return self.define_type(cclass)
+        # for feature in cclass.childs():
+        #     if not feature.validate():
+        #         return False
+        return self.define_type(cclass, use_inherit)
     
     
 def info():
