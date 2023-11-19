@@ -8,14 +8,20 @@ class VariableContext():
         self.father:Context = father
         self.type = 'object'
         self.name = None
-        self.cclass = None
+        self.cclass:CoolClass = None
 
     def define_var(self, vvar:CoolVar):
         #Las variables pueden repetirse en contextos hijos-padre, en caso de o ser asi usar la linea comentada y comentar la condicion que se usa actualmente
         # if not self.is_defined_var(vvar.id):
         if not self.variables.__contains__(vvar.id):
-            self.variables[vvar.id] = vvar
-            return True
+            if vvar.value is None:
+                #por ahora las variables se inicializan en None, en futuros pasos se pueden inicializar con el valor default de cada type
+                self.variables[vvar.id] = vvar
+                return True
+            else:
+                if (vvar.value.validate() and vvar.value.get_type() == vvar.type):
+                    self.variables[vvar.id] = vvar
+                    return True
         else:
             return False #ERROR or Redefine
 
@@ -31,7 +37,7 @@ class VariableContext():
 
 class TypeContext(VariableContext):
 # class TypeContext(VariableContext):
-    def define_type(self, cclass:CoolClass, use_inherit = True):
+    def define_type(self, cclass:CoolClass, use_inherit = False):
         '''
         USE: se llama desde `context_in` -contexto en el cual se va a definir la clase, el contexto del program en este caso\n
         INPUT: `self` -La propia clase en cuesion \n
@@ -46,9 +52,9 @@ class TypeContext(VariableContext):
                     return False #La clase desde la cual se quiere heredar no esta definida (Esto hay que cambiarlo en caso de que se pueda, entonces hay que hacer recorrido de clases dos veces)
                 else:
                     #Si esta heredando de una clase padre esta clase padre debe tener un padre que es exactamente el contexto self, Dado que una clase solo se declara en program entonces la clase o bien posee el contexto del program como padre o bien posee una clase que posee al contexto de program en algun padre sperior recursivamente. De esta forma se garantiza la herencia de contextos y del contexto padre final. Esto es posible xq en Cool dentro de una clase no se puden definir otras clases.
-                    contex = self.get_type(cclass.inherit).create_context_child()
+                    contex = self.get_context_from_type(cclass.inherit).create_context_child()
             else:
-                contex = self.create_context_child()
+                contex = self.get_context_from_type('object').create_context_child()
 
             #se crea un contexto propio para la clase que posee como padre un contexto mas amplio, este contexto padre solo tendra clases definidas o variables de una clase desde la cual se hace herencia.
             print ("Agrego el tipo "+cclass.type)
@@ -58,6 +64,24 @@ class TypeContext(VariableContext):
             return contex
         else:
             return False #ERROR Ya esta definida esta clase no se puede usar el mismo nombre
+    
+    def set_inherit(self,type:str):
+        if type != 'object':
+            context_in = self.get_context_from_type(type)
+            if context_in != False:
+                cclass:CoolClass = context_in.cclass
+            else:
+                print ('error: No existe la clase desde la cual se quiere heredar') 
+                return False #La clase desde la cual se quiere heredar no esta definida (Esto hay que cambiarlo en caso de que se pueda, entonces hay que hacer recorrido de clases dos veces)
+
+            if cclass.have_father(cclass = self.cclass): 
+                raise Exception('Circular inherit')
+                return False
+            
+            #Si esta heredando de una clase padre esta clase padre debe tener un padre que es exactamente el contexto self, Dado que una clase solo se declara en program entonces la clase o bien posee el contexto del program como padre o bien posee una clase que posee al contexto de program en algun padre sperior recursivamente. De esta forma se garantiza la herencia de contextos y del contexto padre final. Esto es posible xq en Cool dentro de una clase no se puden definir otras clases.
+            self.father = self.get_context_from_type(cclass.type)
+            self.cclass.set_parent_class(cclass)
+            return True
 
     def is_defined_type(self,type):
         if type == 'SELF_TYPE': return True
@@ -67,15 +91,15 @@ class TypeContext(VariableContext):
 
     def create_context_child(self):
         #Estoy ubicado sobre el contexto en el cual se va a definir la clase, lo que sera el program o una clase padre
-        return Context(father = self)
+        return Context(father = self.get_context_from_type('object'))
 
-    def get_type(self, type):
+    def get_context_from_type(self, type):
         if self.types.__contains__(type):
             return self.types[type]
         elif self.father is None:
             Exception('No existe el type buscado en ningun contexto accesible')
         else:
-            return self.father.get_type(type)
+            return self.father.get_context_from_type(type)
 
 class FunctionContext(TypeContext):
     def define_func(self, func: Feature.CoolDef):
@@ -179,7 +203,7 @@ class Context(PrintContext):
     
     def validate_op(self, op: BinOp):
         # return op.left.get_type() == op.right.get_type() 
-        if op.left.validate() and op.right.validate() and op.left.get_type() == op.right.get_type():
+        if op.left.validate() and op.right.validate() and op.valid_types():
             op.type =  op.left.get_type()
             return True
         else:
@@ -217,17 +241,15 @@ class Context(PrintContext):
                 type = CoolString.type
 
             if type != dispatch.type: return False #El tipo de la variable es diferente al tipo el cual se asume que debe ser [@TYPE]
-            context = self.get_type[type]#Si el type es valido, entonces quiero el cotexto
+            context = self.get_context_from_type[type]#Si el type es valido, entonces quiero el cotexto
             if context != False:
                 #este es exactamente el contexo al que pertenece la funcion que se esta llamando. 
                 return context.validate_callable(dispatch.function)
             else:
                 return False
     
-    def validate_var(self, vvar: CoolVar):
+    def validate_class_atr(self, vvar: CoolVar):
         '''Una vez se utiliza este metodo la variable se define en el contexto'''
-        if vvar.name == 'class_atr':
-            return vvar.value.validate() and vvar.value.get_type() == vvar.type and self.define_var(vvar)
         return self.define_var(vvar)
 
     def validate_func(self, func: Feature.CoolDef):
@@ -244,7 +266,7 @@ class Context(PrintContext):
         '''
         return self.define_func(func)
 
-    def validate_class(self, cclass: CoolClass, use_inherit = True):
+    def validate_set_class(self, cclass: CoolClass, use_inherit = False):
         '''Si devuelve False entonces no es valida esta clase, si no devuelve false entonces la salida es el contexto de la misma, por o tanto el metodo validate que usa este metodo como base debe encargarse de generar el nuevo contexto en caso de ser `not False` la salida desde aqui. Luego quedaria algo como:\n
             ```
             CoolClass.validate():
@@ -257,11 +279,10 @@ class Context(PrintContext):
             ```
         - nota: si se `use_inherit = True` entonces la clase sera valida si existe de quien heredar declarado, en caso contrario no se tendra en cuenta de quien esta heredando. Esto sirve para hace un primer recorrido sin tener en cuenta la herencia para asi definir los tipos, y luego hacer el recorrido teniendo en cueta la herencia.    
         '''
-        #asumiendo que Cool se comporta con forward-rule entonces se entra en DFS por los hijos de la clase para validar estos, en caso que sea distinto no se debe hacer esto, asi que las clases deben ser visitadas en orden de BFS
-        # for feature in cclass.childs():
-        #     if not feature.validate():
-        #         return False
         return self.define_type(cclass, use_inherit)
+    
+    def validate_set_inherits_class(self, cclass_type: str):
+        return self.set_inherit(cclass_type)
     
     
 def info():

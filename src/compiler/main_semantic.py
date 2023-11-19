@@ -1,6 +1,6 @@
 from parser.cool_parser import CoolLexer, CoolParser
 from AST.ast import CoolProgram
-from semantic.bfs_context import set_classes_context
+from semantic.semantic_visitor import init_classes
 import os
 
 case = 'test1.cl'
@@ -23,11 +23,9 @@ if len(parser.errors) > 0: Exception(str(parser.errors[0]))
 
 # program.show_tree()
 
-set_classes_context(program)
+init_classes(program)
 program.context.print()
 
 for child in program.childs():
     context = child.context
     context.print()
-
-### test push rules    

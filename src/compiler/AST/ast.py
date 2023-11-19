@@ -170,6 +170,7 @@ class BinOp(expr):
         self.name = op #debug
         self.left:expr = left
         self.right:expr = right
+        self.valid_types_check = False
         Node.__init__(self,self.left)
         Node.__init__(self,self.right)
 
@@ -194,8 +195,23 @@ class BinOp(expr):
     def __repr__(self) -> str:
         return 'operation: ' + str(self.left.__repr__()) + ' ' + self.op + ' '+ str(self.right.__repr__())
 
-    # def get_width (self):
-    #     return max(self.left.get_width(),self.right.get_width())*2
+    def valid_types(self):
+        if self.valid_types_check: return True
+
+        l_type:str = self.left.get_type()
+        if ( l_type == self.right.get_type()):
+            self.type = l_type
+            self.valid_types_check = True
+            return True
+        else:
+            return False    
+    
+    def get_type(self):
+        if self.valid_types():
+            return self.type
+        else:
+            Exception('Invalid Operation')
+            return None    
 
 class BetwPar(expr):
     def __init__(self, expr) -> None:
@@ -493,7 +509,7 @@ class CoolString(CoolConstant):
         return Feature.CoolDef('concat',type, [self,other], BinOp('+',self,other))
 
 class CoolBool(CoolConstant):
-    type = 'STRING'
+    type = 'BOOL'
 
     def __init__(self, value) -> None:
         super().__init__(value,'BOOL')
@@ -528,6 +544,7 @@ class Feature():
             self.id = id
             self.type = type
             self.value = value
+            self.name = 'class_atr'
             Node.__init__(self,values= self.childs())
 
         # def set_class(self, _class:CoolClass):
@@ -542,7 +559,9 @@ class Feature():
             return f'{self.ID} = {self.value}'
         def __repr__(self) -> str:
             return f'{self.ID} = {self.value}'
-
+        def validate(self):
+            return self.context.validate_var(self)
+    
     class CoolDef(Node):
         def __init__(self, id, type = 'SELF_TYPE', params=[], scope= None) -> None:
             self.ID = CoolID(id=id, type='Function')
@@ -563,13 +582,28 @@ class Feature():
             return f'{self.ID}():{self.type}'
         def __repr__(self) -> str:
             return f'{self.ID}({self.params}):{self.type}'
+        
+        def validate(self):
+            context = self.father.context.validate_func(func= self)
+            if context == False:
+                self.context = None
+                #Crear error semantico
+                return False
+            else:
+                self.context = context
+                return True
 #endregion
 
 class CoolClass(Node):
-    def __init__(self,type, inherit:str = 'object', features:list = None) -> None:
+    def __init__(self,type, inherit:str = 'object', features:list = None, is_object = False) -> None:
         self.features = features
         self.type = type
         self.inherit = inherit #type in str format
+        if not is_object:
+            self.inherit_class = CoolObject.instance
+        else:
+            self.inherit_class = None
+
         Node.__init__(self,values=self.childs())
 
     def childs(self):
@@ -587,7 +621,7 @@ class CoolClass(Node):
         return False
    
     def validate(self):
-        context = self.father.context.validate_class(cclass = self)
+        context = self.father.context.validate_set_class(cclass = self)
         if context == False:
             self.context = None
             #Crear error semantico
@@ -595,7 +629,20 @@ class CoolClass(Node):
         else:
             self.context = context
             return True
+    
+    def set_parent_class(self, inherit):
+        self.inherit_class = inherit
 
+    def set_inherits(self):
+        return self.context.validate_set_inherits_class(self.inherit)
+    
+    def have_father(self,cclass = None, cclass_type = None):
+        if cclass is not None and self.inherit_class == cclass: return True
+        if cclass_type is not None and self.inherit == cclass_type: return True
+        
+        if self.inherit_class == None or self.inherit == 'object' : return False
+        return self.inherit_class.have_father(cclass,cclass_type)
+    
 class CoolProgram(Node):
     def __init__(self, cclass_list:list[CoolClass]) -> None:
         self.classes = cclass_list
@@ -615,4 +662,4 @@ class CoolProgram(Node):
     def delete_condition(self):
         return False
 
-from semantic.context import Context
+from semantic.cool_bases import Context, CoolObject

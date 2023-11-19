@@ -1,4 +1,8 @@
-from semantic.context import Context, CoolString, IntNode, CoolBool
+from semantic.context import Context, CoolString, IntNode, CoolBool, CoolClass, Feature
+
+class FeaturesObject:
+    def features() -> list[Feature]:
+        return []
 
 class BaseContext(Context):
     def __init__(self) -> None:
@@ -17,6 +21,7 @@ class BaseContext(Context):
         context = Context(father=self)
         context.type = key
         context.name = 'OBJECT'
+        context.cclass = CoolClass(type='object',inherit=None,features=FeaturesObject.features(),is_object=True)
         self.types[key] = context
 
     def set_string_context(self):
@@ -50,5 +55,6 @@ class Program:
     def set_context(obj):
         obj.context = Program.context
 
-class CoolObject:
-    type = 'object'
+class CoolObject(CoolClass):
+    instance = Program.context.types['object'].cclass
+    type = 'object'        
