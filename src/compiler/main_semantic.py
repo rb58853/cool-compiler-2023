@@ -1,6 +1,6 @@
 from parser.cool_parser import CoolLexer, CoolParser
 from AST.ast import CoolProgram
-from semantic.semantic_visitor import init_classes
+from semantic.semantic_visitor import init_classes, init_types
 import os
 
 case = 'test1.cl'
@@ -21,11 +21,17 @@ if len(lexer.errors) > 0: Exception(str(lexer.errors[0]))
 program:CoolProgram = parser.parse(tokens)
 if len(parser.errors) > 0: Exception(str(parser.errors[0]))
 
-# program.show_tree()
+init_types(program)
 
-init_classes(program)
+program.show_tree(print_context=False)
+
 program.context.print()
+# for child in program.childs():
+#     context = child.context
+#     context.print()
 
-for child in program.childs():
-    context = child.context
-    context.print()
+# for cclass in program.childs():
+#     for feature in cclass.childs():
+#         if feature.name == 'class_func':
+#             context = feature.context
+#             context.print()

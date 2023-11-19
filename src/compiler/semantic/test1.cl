@@ -11,13 +11,9 @@ class MyClass2 {
     f(y:INT):INT 
     { 
         y <- 1 
-    }; 
-};
-
-class MyClass2 { 
-    b:MyClass1; 
-    f(y:INT):INT 
-    { 
-        y <- 1 
-    }; 
+    };
+    --f(y:INT):INT 
+    --{ 
+    --    y <- 1 
+    --}; 
 };

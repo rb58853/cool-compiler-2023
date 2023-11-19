@@ -10,10 +10,9 @@ class VariableContext():
         self.name = None
         self.cclass:CoolClass = None
 
-    def define_var(self, vvar:CoolVar):
-        #Las variables pueden repetirse en contextos hijos-padre, en caso de o ser asi usar la linea comentada y comentar la condicion que se usa actualmente
-        # if not self.is_defined_var(vvar.id):
-        if not self.variables.__contains__(vvar.id):
+    def define_var(self, vvar:CoolVar, atr_case = False):
+        #Las variables pueden repetirse en contextos hijos-padre en caso de no ser un atributo de una clase(en dicho caso no queda claro), en caso de o ser asi usar la linea comentada y comentar la condicion que se usa actualmente
+        if (atr_case and not self.is_defined_var(vvar.id)) or (not atr_case and not self.variables.__contains__(vvar.id)):
             if vvar.value is None:
                 #por ahora las variables se inicializan en None, en futuros pasos se pueden inicializar con el valor default de cada type
                 self.variables[vvar.id] = vvar
@@ -34,6 +33,13 @@ class VariableContext():
         if self.variables.__contains__(id): return self.variables[id]
         if self.father is None: return False
         else: return self.father.get_var(id)
+
+    def initialize_class_atr(self, vvar: CoolVar):
+        '''Una vez se utiliza este metodo la variable se define en el contexto'''
+        return self.define_var(vvar,atr_case= True)
+    
+    def initialize_let_var(self):
+        pass
 
 class TypeContext(VariableContext):
 # class TypeContext(VariableContext):
@@ -102,6 +108,24 @@ class TypeContext(VariableContext):
             Exception('No existe el type buscado en ningun contexto accesible')
         else:
             return self.father.get_context_from_type(type)
+        
+    def initialize_class(self, cclass: CoolClass, use_inherit = False):
+        '''Si devuelve False entonces no es valida esta clase, si no devuelve false entonces la salida es el contexto de la misma, por o tanto el metodo validate que usa este metodo como base debe encargarse de generar el nuevo contexto en caso de ser `not False` la salida desde aqui. Luego quedaria algo como:\n
+            ```
+            CoolClass.validate():
+                context = context.validate_class(self)
+                if context == False:
+                    return False
+                esle:
+                    self.context = context
+                    return True
+            ```
+        - nota: si se `use_inherit = True` entonces la clase sera valida si existe de quien heredar declarado, en caso contrario no se tendra en cuenta de quien esta heredando. Esto sirve para hace un primer recorrido sin tener en cuenta la herencia para asi definir los tipos, y luego hacer el recorrido teniendo en cueta la herencia.    
+        '''
+        return self.define_type(cclass, use_inherit)
+    
+    def set_inherits_class(self, cclass_type: str):
+        return self.set_inherit(cclass_type)
 
 class FunctionContext(TypeContext):
     def define_func(self, func: Feature.CoolDef):
@@ -112,7 +136,11 @@ class FunctionContext(TypeContext):
         \nEJEMPLO:
         `context = father.context(self)`
         '''
-        if self.is_function_override(func.ID.id):
+        if self.is_function_writable(func):
+            if not self.is_defined_type(func.type):
+                raise Exception(f'El type {func.type} de la funcion {func} no existe en el contexto')
+                return False #Error, el parametro p trata de usar un tipo no defnido    
+            
             self.functions[func.ID.id] = func
             context:Context = self.create_context_child()
             #Los parametros a la hora de crear una funcion siempre seran validos dado que sintacticamente estan reinstringidos a ser de a fora ID:TYPE
@@ -121,15 +149,14 @@ class FunctionContext(TypeContext):
                 if self.valid_param(p):
                     context.define_var(p)
                 else:
+                    raise Exception(f'el parametro {p} trata de usar un tipo ({p.type}) no defnido en el contexto ')
                     return False #Error, el parametro p trata de usar un tipo no defnido    
-            
-            #Al no ser el recorrido en orden DFS no se puede tratar de validar el scope, luego una funcion es valida si lo son sus parametros y tipo    
-            # if not func.scope.validate() or not self.is_defined_type(func.type):
-            #     return False #Error: El type de la funcion no existe en el contexto    
-
+            context.name = str(func)
             return context  #define la funcion y devuelve el nuevo contexto interno de esta, hijo del contexto desde el cual fue definida la funcion, lo cal seria el contexto de una clase
         else:
+            raise Exception(f'El nombre {func.ID.id} ya es utilizado por otra funcion en el contexto, Cool no admite sobrecarga de metodos')
             return False #Error: El type de la funcion no existe en el contexto    
+    
     def valid_param(self, param: CoolID):
         return self.is_defined_type(param.type)
 
@@ -139,14 +166,28 @@ class FunctionContext(TypeContext):
         if self.father is None: return False
         else: return self.father.is_defined_func(id)
     
-    def is_function_override(self, func:Feature.CoolDef):
-        #esto no es lo que lleva
+    def is_function_writable(self, func:Feature.CoolDef):
+        #Hay que hacer lo de override
         return not self.is_defined_func(func.ID.id)
 
     def get_func(self, id):
         if self.variables.__contains__(id): return self.functions[id]
         if self.father is None: return False
         else: return self.father.get_func(id)
+
+    def initialize_func(self, func: Feature.CoolDef):
+        '''Si devuelve False entonces no es valido esta funcion, si no devuelve false entonces la salida es el contexto de esta funcion, por o tanto el metodo validate que usa este metodo como base debe encargarse de generar el nuevo contexto en caso de ser `not False` la salida desde aqui. Luego quedaria algo como:\n
+            ```
+            Feature.CoolDef.validate():
+                context = context.validate_func(self)
+                if context == False:
+                    return False
+                esle:
+                    self.context = context
+                    return True
+            ```
+        '''
+        return self.define_func(func)    
     
 class PrintContext(FunctionContext):
     def print(self):
@@ -180,6 +221,27 @@ class PrintContext(FunctionContext):
             return self.name
         else:
             return str(self.cclass)
+        
+    def str_for_node(self, dinstict_context = True):
+        if not dinstict_context: return 'same parent context'
+
+        result = ''
+        if len(self.types) > 0:
+            result+='TYPES:\n'
+            for type in self.types:
+                result+=f' -{type}:...\n'
+        
+        if len(self.functions) >0:
+            result+='\nFUNcTIONS:\n'
+            for func in self.functions:
+                result+=f'{func}: {self.functions[func]}\n'
+        
+        if len(self.variables) > 0:
+            result+='\nVARIABLES: \n'
+            for vvar in self.variables:
+                result+=f' -{vvar}: {self.variables[vvar]}\n'
+        
+        return result
 
 class Context(PrintContext):
     def __init__(self, father = None) -> None:
@@ -249,42 +311,6 @@ class Context(PrintContext):
                 return context.validate_callable(dispatch.function)
             else:
                 return False
-    
-    def validate_class_atr(self, vvar: CoolVar):
-        '''Una vez se utiliza este metodo la variable se define en el contexto'''
-        return self.define_var(vvar)
-
-    def validate_func(self, func: Feature.CoolDef):
-        '''Si devuelve False entonces no es valido esta funcion, si no devuelve false entonces la salida es el contexto de esta funcion, por o tanto el metodo validate que usa este metodo como base debe encargarse de generar el nuevo contexto en caso de ser `not False` la salida desde aqui. Luego quedaria algo como:\n
-            ```
-            Feature.CoolDef.validate():
-                context = context.validate_func(self)
-                if context == False:
-                    return False
-                esle:
-                    self.context = context
-                    return True
-            ```
-        '''
-        return self.define_func(func)
-
-    def validate_set_class(self, cclass: CoolClass, use_inherit = False):
-        '''Si devuelve False entonces no es valida esta clase, si no devuelve false entonces la salida es el contexto de la misma, por o tanto el metodo validate que usa este metodo como base debe encargarse de generar el nuevo contexto en caso de ser `not False` la salida desde aqui. Luego quedaria algo como:\n
-            ```
-            CoolClass.validate():
-                context = context.validate_class(self)
-                if context == False:
-                    return False
-                esle:
-                    self.context = context
-                    return True
-            ```
-        - nota: si se `use_inherit = True` entonces la clase sera valida si existe de quien heredar declarado, en caso contrario no se tendra en cuenta de quien esta heredando. Esto sirve para hace un primer recorrido sin tener en cuenta la herencia para asi definir los tipos, y luego hacer el recorrido teniendo en cueta la herencia.    
-        '''
-        return self.define_type(cclass, use_inherit)
-    
-    def validate_set_inherits_class(self, cclass_type: str):
-        return self.set_inherit(cclass_type)
     
     
 def info():
