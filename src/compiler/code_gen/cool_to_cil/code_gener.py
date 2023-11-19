@@ -28,12 +28,6 @@ def generate_code_for_coolwhile(node):
 def generate_code_for_int(node):
     return str(node.value)
 
-
-#.
-#.
-#.
-
-
 # Funcion general para la generacion de codigo
 def generate_code(node):
     if isinstance(node, BinOp):
