@@ -49,6 +49,7 @@ class TypeContext(VariableContext):
             contex:Context
             if cclass.inherit is not None and use_inherit:
                 if not self.is_defined_type(cclass.inherit):
+
                     return False #La clase desde la cual se quiere heredar no esta definida (Esto hay que cambiarlo en caso de que se pueda, entonces hay que hacer recorrido de clases dos veces)
                 else:
                     #Si esta heredando de una clase padre esta clase padre debe tener un padre que es exactamente el contexto self, Dado que una clase solo se declara en program entonces la clase o bien posee el contexto del program como padre o bien posee una clase que posee al contexto de program en algun padre sperior recursivamente. De esta forma se garantiza la herencia de contextos y del contexto padre final. Esto es posible xq en Cool dentro de una clase no se puden definir otras clases.
@@ -63,6 +64,7 @@ class TypeContext(VariableContext):
             self.types[cclass.type] = contex
             return contex
         else:
+            raise Exception(f'No se pueden definir clases con el mismo nombre, la clase {cclass.type} ya existe')
             return False #ERROR Ya esta definida esta clase no se puede usar el mismo nombre
     
     def set_inherit(self,type:str):
@@ -75,7 +77,7 @@ class TypeContext(VariableContext):
                 return False #La clase desde la cual se quiere heredar no esta definida (Esto hay que cambiarlo en caso de que se pueda, entonces hay que hacer recorrido de clases dos veces)
 
             if cclass.have_father(cclass = self.cclass): 
-                raise Exception('Circular inherit')
+                raise Exception(f'Circular inherit-> {self.cclass} inherits {cclass}')
                 return False
             
             #Si esta heredando de una clase padre esta clase padre debe tener un padre que es exactamente el contexto self, Dado que una clase solo se declara en program entonces la clase o bien posee el contexto del program como padre o bien posee una clase que posee al contexto de program en algun padre sperior recursivamente. De esta forma se garantiza la herencia de contextos y del contexto padre final. Esto es posible xq en Cool dentro de una clase no se puden definir otras clases.

@@ -6,7 +6,15 @@ class MyClass1 inherits MyClass2{
     }; 
 };
 
-class MyClass2 inherits MyClass1{ 
+class MyClass2 { 
+    b:MyClass1; 
+    f(y:INT):INT 
+    { 
+        y <- 1 
+    }; 
+};
+
+class MyClass2 { 
     b:MyClass1; 
     f(y:INT):INT 
     { 
