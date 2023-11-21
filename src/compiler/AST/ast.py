@@ -2,8 +2,7 @@ import matplotlib.pyplot as plt
 # from semantic.context import Context
 
 '''TODO
-    1- Refactorizar Node.__init__(self,...) por Node.__init__(self,self.childs())en cada node, cambiar nombre, quizas
-    2- Crear una estructura(class) para los let y los case, de ser posible usar la misma para classAtr
+    1- Crear una estructura(class) para los let y los case, de ser posible usar la misma para classAtr
 '''
 class PlotNode():
     HEIGTH = 2.5
@@ -93,16 +92,21 @@ class Node(PlotNode):
         self.context:Context = None
         self.father:Node = None
         self.name = 'empty'
+        self.is_valid = False
 
     def set_father(parent, childs:list):
         for child in childs:
             child.father = parent
-            child.context = parent.context
+            # child.context = parent.context
+    
+    def get_contex_from_father(self):
+        self.context =  self.father.context
 
     def get_type(self):
         return self.type
 
     def validate(self): #override this
+        self.is_valid = True
         return True
 
     def childs(self):
@@ -173,6 +177,8 @@ class CoolVar(expr):
         return f'{self.ID} = {self.value}'
     def __repr__(self) -> str:
         return f'{self.ID} = {self.value}'
+    
+
 
 class BinOp(expr):
     def __init__(self, op, left:expr, right:expr):
@@ -222,6 +228,24 @@ class BinOp(expr):
         else:
             Exception('Invalid Operation')
             return None    
+        
+    def validate(self):
+        self.get_contex_from_father()
+        return self.context.validate_op(self)    
+
+class Assign(BinOp):
+    def __init__(self, left:expr, right:expr):
+        Node.__init__(self)
+        self.name = 'assign' #debug
+        self.left:CoolID = left
+        self.right:expr = right
+        self.valid_types_check = False
+        Node.set_father(self,self.childs())
+    
+    def validate(self):
+        self.get_contex_from_father()
+
+        return super().validate()    
 
 class BetwPar(expr):
     def __init__(self, expr) -> None:
@@ -313,6 +337,10 @@ class CoolCallable(expr):
 
     def delete_condition(self):
         return False
+    
+    def validate(self):
+        self.get_contex_from_father()
+        return self.context.validate_callable(self)
 
 class CoolNot(expr):
     def __init__(self, value) -> None:
@@ -434,9 +462,9 @@ class CoolLet(expr): #TODO raificar o no los hijos segun la necesidad para seman
         return {'ID': ID, 'Type':type, 'expr':exp}
 
 class CoolBlockScope(expr):
-    def __init__(self, exprs) -> None:
+    def __init__(self, exprs:list[expr]) -> None:
         Node.__init__(self)
-        self.exprs = exprs
+        self.exprs:list[expr] = exprs
         Node.set_father(self,self.childs())
 
     def childs(self):
@@ -453,9 +481,18 @@ class CoolBlockScope(expr):
 
     def delete_condition(self):
         return False
+    
+    def validate(self):
+        self.get_contex_from_father()
+        result = True
+        for exp in self.childs():
+            if not exp.validate():
+                result = False
+        return result
 
 class CoolID(CoolVar):
     def __init__(self, id, type = None) -> None:
+        Node.__init__(self)
         self.name = 'id'
         self.id = id
         self.type = type
@@ -480,6 +517,10 @@ class CoolID(CoolVar):
 
     def childs(self):
         return []
+    
+    def validate(self):
+        self.get_contex_from_father()
+        return self.context.validate_id(self)
 
 class Dispatch(expr): #Dispatch
     def __init__(self, exp, type, function: CoolCallable) -> None:
@@ -487,7 +528,7 @@ class Dispatch(expr): #Dispatch
         self.name = 'dispatch'
         self.expr:expr = exp #Es un ID, NEW, string o IO, en otro caso es error semantico
         self.type = type
-        self.function = function
+        self.function:CoolCallable = function
         Node.set_father(self,self.childs())
 
     def childs(self):
@@ -498,6 +539,14 @@ class Dispatch(expr): #Dispatch
         return str(self)
     def delete_condition(self):
         return False
+    
+    def get_type(self):
+        return self.function.get_type()
+
+    def validate(self):
+        self.get_contex_from_father()
+        return self.context.validate_dispatch(self)
+
 
 class CoolConstant(expr):
     def __init__(self, value, name) -> None:
@@ -559,7 +608,6 @@ class CoolParamsScope(Node):
     def delete_condition(self):
         return False
         
-
 class Feature():
     class CoolAtr(CoolVar):
         def __init__(self, id, type, value = None) -> None:
@@ -571,8 +619,6 @@ class Feature():
             self.name = 'class_atr'
             Node.set_father(self,self.childs())
 
-        # def set_class(self, _class:CoolClass):
-        #     self.father = _class
         def childs(self):
             if self.value is None:
                 return []
@@ -585,18 +631,19 @@ class Feature():
             return f'{self.ID} = {self.value}'
         
         def initialize(self):
-            self.context = self.father.context
+            self.get_contex_from_father()
             return self.context.initialize_class_atr(self)
         
         def validate(self):
-            pass
+            #La valizacion de la variable se realiza en el proceso de inicializcion
+            return True
 
     class CoolDef(Node):
         def __init__(self, id, type = 'SELF_TYPE', params=[], scope= None) -> None:
             Node.__init__(self)
             self.ID = CoolID(id=id, type='Function')
             self.type = type
-            self.scope = scope
+            self.scope:expr = scope
             self.params = CoolParamsScope(params)
             Node.set_father(self,self.childs())
 
@@ -626,7 +673,7 @@ class Feature():
                 return True
             
         def validate(self):
-            pass
+            return self.scope.validate()
 #endregion
 
 class CoolClass(Node):
@@ -657,7 +704,14 @@ class CoolClass(Node):
 
     def delete_condition(self):
         return False
-   
+    
+    def validate(self):
+        result = True
+        for feature in self.childs():
+            if not feature.validate():
+                result = False
+        return result    
+
     def initialize_features(self):
         if self.features_was_initialized: return True #si trata de inicializar nuevamente los features.
         if self.inherit_class is not None and self.inherit_class != ObjectClass.instance:
@@ -665,9 +719,10 @@ class CoolClass(Node):
            self.inherit_class.initialize_features()
         
         for child in self.childs():
+            child.initialize()
             #En esta linea de la condicional el feature se inicializa, si da error al inicializarse devuelve False
-            if not child.initialize():
-                return False
+            # if not child.initialize():
+            #     return False
 
         self.features_was_initialized = True
         
@@ -696,7 +751,6 @@ class CoolClass(Node):
     
 class CoolProgram(Node):
     def __init__(self, cclass_list:list[CoolClass]) -> None:
-        from semantic.cool_bases import Program
         self.type:str= 'program'
         self.context:Context = Program.context
         self.father:Node = None
@@ -723,5 +777,13 @@ class CoolProgram(Node):
 
     def delete_condition(self):
         return False
+    
+    def validate(self):
+        result = True
+        for cclass in self.childs():
+            if not cclass.validate():
+                result = False
+        return result    
+
 
 from semantic.cool_bases import Context,ObjectClass, Program, base_classes

@@ -26,6 +26,7 @@ class StringClass:
     def features() ->list[Feature]:
         r_features = []
         r_features.append(StringClass.Features.concat())
+        r_features.append(StringClass.Features.length())
         return r_features
     
     def cclass() ->CoolClass:
@@ -34,12 +35,14 @@ class StringClass:
     
     class Features:
         def concat():
-            self = CoolID('self',StringClass.type)
             other = CoolID('other',StringClass.type)
-            self_id = CoolID('self')
+            # self_id = CoolID('self')
+            self_id = CoolString("self+")#TODO esto hay que cambiarlo despues
             other_id = CoolID('other')
+            return Feature.CoolDef('concat',StringClass.type, [other], BinOp('+',self_id, other_id))
 
-            return Feature.CoolDef('concat',StringClass.type, [self,other], BinOp('+',self_id, other_id))
+        def length():
+            return Feature.CoolDef('length',IntNode.type, [], IntNode(0))
 
 class IntClass:
     type = 'INT'

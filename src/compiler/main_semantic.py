@@ -1,6 +1,6 @@
 from parser.cool_parser import CoolLexer, CoolParser
 from AST.ast import CoolProgram
-from semantic.semantic_visitor import init_classes, init_types
+from semantic.semantic_visitor import init_classes, init_types, validate_program
 import os
 
 case = 'test1.cl'
@@ -16,11 +16,11 @@ lexer = CoolLexer()
 parser = CoolParser(lexer = lexer)
 tokens = lexer.tokenize(content)
 
-if len(lexer.errors) > 0: Exception(str(lexer.errors[0]))
+if len(lexer.errors) > 0: raise Exception(str(lexer.errors[0]))
 
 program:CoolProgram = parser.parse(tokens)
-if len(parser.errors) > 0: Exception(str(parser.errors[0]))
+if len(parser.errors) > 0: raise Exception(str(parser.errors[0]))
 
-init_types(program)
+validate_program(program)
 
-program.show_tree(print_context=True)
+program.show_tree(print_context=False)

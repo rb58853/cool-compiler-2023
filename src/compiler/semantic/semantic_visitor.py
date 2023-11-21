@@ -1,5 +1,9 @@
 from AST.ast import CoolProgram
 
+def validate_program(program:CoolProgram):
+    init_types(program)
+    return program.validate()
+
 def init_types(program:CoolProgram):
     '''Con esta funcion se inicializan todas las clases y fuciones del programa'''
     init_classes(program)

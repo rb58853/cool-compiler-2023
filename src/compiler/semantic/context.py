@@ -1,4 +1,4 @@
-from AST.ast import Feature, CoolClass, CoolString, CoolVar, CoolID, BinOp, IntNode, CoolBool, CoolCallable, Dispatch
+from AST.ast import Feature, CoolClass, CoolString, CoolVar, CoolID, BinOp, IntNode, CoolBool, CoolCallable, Dispatch, Assign
 
 class VariableContext():
     def __init__(self, father) -> None:
@@ -257,31 +257,39 @@ class Context(PrintContext):
     def validate_id(self, cool_id: CoolID):
         vvar = self.get_var(cool_id.id)
         if vvar != False:
-            cool_id.value = vvar.value #esto le da valor al id. 
             cool_id.type = vvar.type #esto le da type al id. 
+            cool_id.value = vvar.value #esto le da valor al id. Valorar quitar esto
             #cool_id = vvar #Esto es lo que me gustaria hacer 
             return True
         else:
-            vvar = self.get_instance(cool_id.id)
+            vvar = self.get_var(cool_id.id)
             if vvar != False:
                 pass
             else:
                 return False
     
-    def validate_op(self, op: BinOp):
-        # return op.left.get_type() == op.right.get_type() 
+    def validate_op(self, op: BinOp, e:str = None):
+        
         if op.left.validate() and op.right.validate() and op.valid_types():
-            op.type =  op.left.get_type()
             return True
         else:
-            return False    
+            if not op.valid_types():
+                raise Exception(f'No se puede usar el operador {op.op} para valores de tipo {op.left.get_type()} y {op.right.get_type()}')
     
+    def validate_assign(self, assing:Assign):
+        valid_types = assing.valid_types()
+        if not valid_types:
+            raise Exception(f'Se esta intentando hacer una asignacion al id {assing.left.id} un valor de tipo {assing.right.get_type()}')
+        
+        return assing.left.validate() and assing.right.validate() and valid_types
+    
+
     def validate_callable(self, obj: CoolCallable):
         #Cada parametro llama a la funcion validate que esta tiene su propio contexto, es decir en caso de dispach los parametros se evaluara si existen en su contexto
         func:Feature.CoolDef = self.get_func(obj.id)
         if func != False:
-            if len(func.params) == len(obj.params):
-                for param_func, param_call in zip(func.params, obj.params):
+            if len(func.params.childs()) == len(obj.params):
+                for param_func, param_call in zip(func.params.childs(), obj.params):
                     if not param_call.validate(): return False #si el parametro no es valido entonces la llamada con este parametro no es valida, es necesario validar cada parametro xq con la validacion del mismo se llega a su tipo en caso de ser un id.               
                     if param_func.type != param_call.get_type():
                         return False
@@ -291,29 +299,25 @@ class Context(PrintContext):
         return True
     
     def validate_dispatch(self, dispatch: Dispatch):
+        #TODO este dispatch funciona bien para la semantica, pero de ser posible: implementarlo para encaminar mejor la generacion de codigo
         name = dispatch.expr.name 
-        cclass_type = 'object'
 
-        if name == 'new':
-            cclass_type = dispatch.expr.type
-            if self.is_defined_type(cclass_type):
-                return dispatch.function
+        if name == 'id':
+            #dispatch.expr es un CoolID, entonces hay que validarlo
+            if not self.validate_id(dispatch.expr):
+                raise Exception(f'El id {dispatch.expr} no esta definido')
+                return False    
+        
+        type = dispatch.expr.type
+                
+        if type != dispatch.type: return False #El tipo de la variable es diferente al tipo el cual se asume que debe ser [@TYPE]
+        context = self.get_context_from_type[type]#Si el type es valido, entonces quiero el cotexto
+        if context != False:
+            #este es exactamente el contexo al que pertenece la funcion que se esta llamando. 
+            return context.validate_callable(dispatch.function)
         else:
-            if name == 'id':
-                #dispatch.expr es un CoolID
-                if self.validate_id(dispatch.expr):
-                    type = dispatch.expr.type
-                    
-            if name is CoolString.type:
-                type = CoolString.type
-
-            if type != dispatch.type: return False #El tipo de la variable es diferente al tipo el cual se asume que debe ser [@TYPE]
-            context = self.get_context_from_type[type]#Si el type es valido, entonces quiero el cotexto
-            if context != False:
-                #este es exactamente el contexo al que pertenece la funcion que se esta llamando. 
-                return context.validate_callable(dispatch.function)
-            else:
-                return False
+            raise Exception(f'El tipo {type} no esta definido')
+            return False
     
     
 def info():
