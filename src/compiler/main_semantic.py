@@ -23,7 +23,7 @@ if len(parser.errors) > 0: Exception(str(parser.errors[0]))
 
 init_types(program)
 
-program.show_tree(print_context=False)
+program.show_tree(print_context=True)
 
 program.context.print()
 # for child in program.childs():

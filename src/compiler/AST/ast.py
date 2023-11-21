@@ -72,10 +72,11 @@ class PlotNode():
 
     def print_node(self,fig, ax, print_context):
         # Crear un nodo en la posición draw_pos
-        ax.add_patch(plt.Circle(self.draw_pos, 1, fill=True, zorder=2))
         if print_context:
-            ax.text(self.draw_pos[0], self.draw_pos[1], self.context_str(), ha='center', va='center')
+            ax.add_patch(plt.Circle(self.draw_pos, 1, fill=True, zorder=2))
+            ax.text(self.draw_pos[0]-1, self.draw_pos[1], self.context_str(), ha='left', va='center')
         else:
+            ax.add_patch(plt.Circle(self.draw_pos, 1, fill=True, zorder=2))
             ax.text(self.draw_pos[0], self.draw_pos[1], str(self), ha='center', va='center')
 
         for child in self.childs():
@@ -89,16 +90,14 @@ class Node(PlotNode):
     def __init__(self) -> None:
         super().__init__()
         self.type:str
-        self.context:Context
+        self.context:Context = None
         self.father:Node = None
         self.name = 'empty'
 
     def set_father(parent, childs:list):
         for child in childs:
-            try: 
-                child.parent = parent
-                child.context = parent.context
-            except: pass
+            child.father = parent
+            child.context = parent.context
 
     def get_type(self):
         return self.type
@@ -531,12 +530,6 @@ class CoolString(CoolConstant):
     def __init__(self, value) -> None:
         super().__init__(value,CoolString.type)
 
-    def concat():
-        type = CoolString.type
-        self = CoolID('self',type)
-        other = CoolID('other',type)
-        return Feature.CoolDef('concat',type, [self,other], BinOp('+',self,other))
-
 class CoolBool(CoolConstant):
     type = 'BOOL'
 
@@ -643,7 +636,7 @@ class CoolClass(Node):
         self.type = type
         self.inherit = inherit #type in str format
         if not is_object:
-            self.inherit_class:CoolClass = CoolObject.instance
+            self.inherit_class:CoolClass = ObjectClass.instance
         else:
             self.inherit_class:CoolClass = None
 
@@ -667,7 +660,7 @@ class CoolClass(Node):
    
     def initialize_features(self):
         if self.features_was_initialized: return True #si trata de inicializar nuevamente los features.
-        if self.inherit_class is not None and self.inherit_class != CoolObject.instance:
+        if self.inherit_class is not None and self.inherit_class != ObjectClass.instance:
            #Si hereda de una clase primero debe ser inicializada la clase padre, para usar los features de la misma, por ejemplo, para el caso de override funciones
            self.inherit_class.initialize_features()
         
@@ -703,11 +696,22 @@ class CoolClass(Node):
     
 class CoolProgram(Node):
     def __init__(self, cclass_list:list[CoolClass]) -> None:
-        Node.__init__(self)
-        self.classes = cclass_list
-        self.context = Program.context
+        from semantic.cool_bases import Program
+        self.type:str= 'program'
+        self.context:Context = Program.context
+        self.father:Node = None
+        self.name = 'program'
+        self.draw_pos = (0,0)
+
+        self.classes = self.set_classes(cclass_list)
         Node.set_father(self,self.childs())
 
+    def set_classes(self, input_classes):
+        classes = [cclass for cclass in base_classes()]
+        for cclass in input_classes: classes.append(cclass)
+        return classes
+
+        
     def childs(self):
         return self.classes
 
@@ -720,4 +724,4 @@ class CoolProgram(Node):
     def delete_condition(self):
         return False
 
-from semantic.cool_bases import Context, CoolObject, Program
+from semantic.cool_bases import Context,ObjectClass, Program, base_classes

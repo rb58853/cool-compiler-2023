@@ -61,7 +61,10 @@ class TypeContext(VariableContext):
                     #Si esta heredando de una clase padre esta clase padre debe tener un padre que es exactamente el contexto self, Dado que una clase solo se declara en program entonces la clase o bien posee el contexto del program como padre o bien posee una clase que posee al contexto de program en algun padre sperior recursivamente. De esta forma se garantiza la herencia de contextos y del contexto padre final. Esto es posible xq en Cool dentro de una clase no se puden definir otras clases.
                     contex = self.get_context_from_type(cclass.inherit).create_context_child()
             else:
-                contex = self.get_context_from_type('object').create_context_child()
+                if cclass.type != 'object':
+                    contex = self.get_context_from_type('object').create_context_child()
+                else:
+                    contex = self.create_context_child()
 
             #se crea un contexto propio para la clase que posee como padre un contexto mas amplio, este contexto padre solo tendra clases definidas o variables de una clase desde la cual se hace herencia.
             print ("Agrego el tipo "+cclass.type)
@@ -74,7 +77,7 @@ class TypeContext(VariableContext):
             return False #ERROR Ya esta definida esta clase no se puede usar el mismo nombre
     
     def set_inherit(self,type:str):
-        if type != 'object':
+        if type != 'object' and type != None:
             context_in = self.get_context_from_type(type)
             if context_in != False:
                 cclass:CoolClass = context_in.cclass
@@ -99,7 +102,7 @@ class TypeContext(VariableContext):
 
     def create_context_child(self):
         #Estoy ubicado sobre el contexto en el cual se va a definir la clase, lo que sera el program o una clase padre
-        return Context(father = self.get_context_from_type('object'))
+        return Context(father = self)
 
     def get_context_from_type(self, type):
         if self.types.__contains__(type):
