@@ -1,6 +1,7 @@
 from AST.ast import CoolProgram
 
 def init_types(program:CoolProgram):
+    '''Con esta funcion se inicializan todas las clases y fuciones del programa'''
     init_classes(program)
     init_features(program)
 
