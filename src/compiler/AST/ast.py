@@ -322,9 +322,12 @@ class CoolWhile(expr):
 class CoolCallable(expr):
     def __init__(self, id, exprs) -> None:
         Node.__init__(self)
-        self.id = id
+        self.id:CoolID = CoolID(id)
         self.params:list[expr] = exprs
         Node.set_father(self,self.childs())
+
+    def get_type(self):
+        return self.id.type
 
     def childs(self):
         return self.params
@@ -526,13 +529,15 @@ class Dispatch(expr): #Dispatch
     def __init__(self, exp, type, function: CoolCallable) -> None:
         Node.__init__(self)
         self.name = 'dispatch'
-        self.expr:expr = exp #Es un ID, NEW, string o IO, en otro caso es error semantico
+        self.expr:expr = exp 
         self.type = type
+        self.return_type = None
         self.function:CoolCallable = function
         Node.set_father(self,self.childs())
 
     def childs(self):
-        return [self.function]
+        return [self.expr,self.function]
+    
     def __str__(self) -> str:
         return f'{self.expr}:{self.type}.{self.function}'
     def __repr__(self) -> str:
@@ -541,7 +546,8 @@ class Dispatch(expr): #Dispatch
         return False
     
     def get_type(self):
-        return self.function.get_type()
+        self.return_type = self.function.get_type()
+        return self.return_type
 
     def validate(self):
         self.get_contex_from_father()

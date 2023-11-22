@@ -11,8 +11,9 @@ class VariableContext():
         self.cclass:CoolClass = None
 
     def define_var(self, vvar:CoolVar, atr_case = False):
-        #Las variables pueden repetirse en contextos hijos-padre en caso de no ser un atributo de una clase(en dicho caso no queda claro), en caso de o ser asi usar la linea comentada y comentar la condicion que se usa actualmente
-        if (atr_case and not self.is_defined_var(vvar.id)) or (not atr_case and not self.variables.__contains__(vvar.id)):
+        #Las variables pueden repetirse en contextos hijos-padre en caso de no ser un atributo de una clase(en dicho caso no queda claro), en caso de no ser asi usar la linea comentada y comentar la condicion que se usa actualmente
+        # if (atr_case and not self.is_defined_var(vvar.id)) or (not atr_case and not self.variables.__contains__(vvar.id)):
+        if not self.variables.__contains__(vvar.id):
             if vvar.value is None:
                 #por ahora las variables se inicializan en None, en futuros pasos se pueden inicializar con el valor default de cada type
                 self.variables[vvar.id] = vvar
@@ -174,7 +175,8 @@ class FunctionContext(TypeContext):
         return not self.is_defined_func(func.ID.id)
 
     def get_func(self, id):
-        if self.variables.__contains__(id): return self.functions[id]
+        if self.functions.__contains__(id): 
+            return self.functions[id]
         if self.father is None: return False
         else: return self.father.get_func(id)
 
@@ -262,11 +264,8 @@ class Context(PrintContext):
             #cool_id = vvar #Esto es lo que me gustaria hacer 
             return True
         else:
-            vvar = self.get_var(cool_id.id)
-            if vvar != False:
-                pass
-            else:
-                return False
+            raise Exception(f"El id {cool_id.id} no esta definido")
+            return False
     
     def validate_op(self, op: BinOp, e:str = None):
         
@@ -287,7 +286,9 @@ class Context(PrintContext):
     def validate_callable(self, obj: CoolCallable):
         #Cada parametro llama a la funcion validate que esta tiene su propio contexto, es decir en caso de dispach los parametros se evaluara si existen en su contexto
         func:Feature.CoolDef = self.get_func(obj.id)
+        
         if func != False:
+            obj.type = func.get_type()
             if len(func.params.childs()) == len(obj.params):
                 for param_func, param_call in zip(func.params.childs(), obj.params):
                     if not param_call.validate(): return False #si el parametro no es valido entonces la llamada con este parametro no es valida, es necesario validar cada parametro xq con la validacion del mismo se llega a su tipo en caso de ser un id.               
@@ -302,16 +303,18 @@ class Context(PrintContext):
         #TODO este dispatch funciona bien para la semantica, pero de ser posible: implementarlo para encaminar mejor la generacion de codigo
         name = dispatch.expr.name 
 
-        if name == 'id':
-            #dispatch.expr es un CoolID, entonces hay que validarlo
-            if not self.validate_id(dispatch.expr):
-                raise Exception(f'El id {dispatch.expr} no esta definido')
-                return False    
+        if not dispatch.expr.validate():
+            raise Exception(f'La expresion del dispatch {dispatch.expr} no es valida')
+            return False    
         
-        type = dispatch.expr.type
-                
+        type = dispatch.expr.get_type()
+        
+        if dispatch.type is None:
+            dispatch.type = type
+
         if type != dispatch.type: return False #El tipo de la variable es diferente al tipo el cual se asume que debe ser [@TYPE]
-        context = self.get_context_from_type[type]#Si el type es valido, entonces quiero el cotexto
+        
+        context:Context = self.get_context_from_type(type)#Si el type es valido, entonces quiero el cotexto
         if context != False:
             #este es exactamente el contexo al que pertenece la funcion que se esta llamando. 
             return context.validate_callable(dispatch.function)
