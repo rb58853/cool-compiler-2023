@@ -103,11 +103,11 @@ class CoolParser(Parser):
 
     @_('ID "(" param_list ")" ":" TYPE "{" expr "}"')
     def def_func(self, p):
-        return Feature.CoolDef(CoolID(id = p.ID),type=p.TYPE, params= p.param_list,scope=p.expr)
+        return Feature.CoolDef(p.ID,type=p.TYPE, params= p.param_list,scope=p.expr)
    
     @_('ID "(" ")" ":" TYPE "{" expr "}"')
     def def_func(self, p):
-        return Feature.CoolDef(CoolID(id = p.ID),type=p.TYPE, params= [],scope=p.expr)
+        return Feature.CoolDef(id = p.ID,type=p.TYPE, params= [],scope=p.expr)
 #endregion
 
 #region formal ---------------------------------------------------------------------------------------------------------------------

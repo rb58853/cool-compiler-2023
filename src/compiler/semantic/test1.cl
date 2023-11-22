@@ -5,8 +5,9 @@ class MyClass1 inherits MyClass2{
 
     f1(y:INT):INT { 
         {
-            y <- 1;
-            s <- b.s();
+            --y <- 1;
+            s <- b.s().length();
+            a <- b.s().length();
         }
     }; 
 };

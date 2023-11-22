@@ -227,6 +227,9 @@ class PrintContext(FunctionContext):
         else:
             return str(self.cclass)
         
+    def __repr__(self) -> str:
+        return self.__str__()
+        
     def str_for_node(self, dinstict_context = True):
         if not dinstict_context: return 'same parent context'
 
@@ -285,18 +288,23 @@ class Context(PrintContext):
 
     def validate_callable(self, obj: CoolCallable):
         #Cada parametro llama a la funcion validate que esta tiene su propio contexto, es decir en caso de dispach los parametros se evaluara si existen en su contexto
-        func:Feature.CoolDef = self.get_func(obj.id)
+        func:Feature.CoolDef = self.get_func(obj.id.id)
+        obj.id.set_type(func.type)
         
         if func != False:
             obj.type = func.get_type()
             if len(func.params.childs()) == len(obj.params):
                 for param_func, param_call in zip(func.params.childs(), obj.params):
                     if not param_call.validate(): return False #si el parametro no es valido entonces la llamada con este parametro no es valida, es necesario validar cada parametro xq con la validacion del mismo se llega a su tipo en caso de ser un id.               
-                    if param_func.type != param_call.get_type():
+                    if param_func.get_type() != param_call.get_type():
+                        raise Exception (f'Los parametros {param_func} y {param_call} tienen tipo diferente ')
                         return False
             else: 
+                raise Exception (f'La cantidad de parametros con los cuales se llama {obj.id.id} es invalida ')
                 return False            
-        else: return False
+        else: 
+            raise Exception (f'El la funcion {obj.id.id} no esta definida en la clase {self.cclass}')
+            return False
         return True
     
     def validate_dispatch(self, dispatch: Dispatch):

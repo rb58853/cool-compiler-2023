@@ -325,9 +325,11 @@ class CoolCallable(expr):
         self.id:CoolID = CoolID(id)
         self.params:list[expr] = exprs
         Node.set_father(self,self.childs())
+        Node.set_father(self,[self.id])
+
 
     def get_type(self):
-        return self.id.type
+        return self.id.get_type()
 
     def childs(self):
         return self.params
@@ -336,7 +338,7 @@ class CoolCallable(expr):
         return f'{self.id}()'
 
     def __repr__(self) -> str:
-        return f'not {self.value}'
+        return f'{self.id}({self.params})'
 
     def delete_condition(self):
         return False
@@ -504,10 +506,7 @@ class CoolID(CoolVar):
         self.father = None
 
     def __str__(self) -> str:
-        if self.type is not None:
-            return f'{self.id}: {self.type}'
-        else:
-            return f'{self.id}'
+        return f'{self.id}: {self.type}'
 
     # def context_str(self):
     #     return self.name
