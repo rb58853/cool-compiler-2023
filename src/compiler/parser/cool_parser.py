@@ -1,15 +1,13 @@
 from sly import Parser
+from error.cool_error import SyntacticError
 from lexer.cool_lexer import CoolLexer
-from AST.ast import *
+from AST.ast import CoolBlockScope, CoolBool, CoolCallable,CoolCase, CoolClass, CoolID, CoolIf, CoolIsVoid, CoolNot,CoolLet, CoolNew, CoolProgram, CoolString, CoolUminus, CoolWhile, Dispatch, Feature, expr, IntNode, BinOp, BetwPar
 
+#TODO Implementar de ser mas atractivo la deteccion de errores en modo de panico, por ejemplo seguir hasta un ';' despues de encontrar un error
+    
 class CoolParser(Parser):
-    def __init__(self, all_steps = False):
-        super().__init__()
-        self.all_steps = all_steps
-
     tokens = CoolLexer.tokens
-    # start = 'program' TODO
-
+    start = 'program'
     precedence = (
         ('right', 'ASSIGN'),        #lv1
         ('left','NOT'),             #lv2
@@ -22,9 +20,105 @@ class CoolParser(Parser):
         ('right', 'IN'),            #lv9  Se agrega esta precedence extra dado que let se puede declarar sin usar IN, luego hay que dar prioridad cuando este aparece
         ('left', '.'),              #lv10
     )
+    
+    def __init__(self, all_steps = False, lexer:CoolLexer = None, print_error:bool = False):
+        super().__init__()
+        self.all_steps = all_steps
+        self.errors = []
+        self.lexer = lexer
+        self.print_errors = print_error
+
+    def error(self, token):
+        def token_pos(token):
+            return token.index - self.lexer.init_index_line[token.lineno] + 1
+        
+        if token:
+            synt_error = SyntacticError(
+            by= self,
+            token = token, 
+            pos = token_pos(token), 
+            lineno = token.lineno,
+            index= token.index,
+            end = token.end
+            )
+            synt_error("ERROR at or near")
+        
+            if self.print_errors:
+                print(synt_error)
+        else:
+            synt_error = SyntacticError(
+            by= self,
+            value= '', 
+            pos = -1, 
+            lineno = -1,
+            index= -1,
+            end = -1
+            )
+            synt_error("EOF ERROR")
+        
+            if self.print_errors:
+                print(synt_error)
+
+##########__________________PROGRAM______________________##########    
+    @_('class_list')
+    def program(self, p): 
+        return CoolProgram(p.class_list)
+###################################################################
+
+#region class
+    @_('CLASS TYPE "{" class_feature "}"')
+    def cclass(self, p):
+        return CoolClass(type=p.TYPE,inherit='object',features=p.class_feature)
+    @_('CLASS TYPE INHERITS TYPE "{" class_feature "}"')
+    def cclass(self, p):
+        return CoolClass(type=p[1],inherit=p[3],features=p.class_feature)
+    
+    @_('cclass ";"')
+    def class_list(self, p):
+        return [p.cclass]
+    
+    @_('cclass ";" class_list')
+    def class_list(self, p):
+        return [p.cclass] + p.class_list
+#endregion
+
+#region features
+    @_('def_atr ";" class_feature')
+    def class_feature(self, p):
+        return [p.def_atr] + p.class_feature
+    
+    @_('def_func ";" class_feature')
+    def class_feature(self, p):
+        return [p.def_func] + p.class_feature
+    @_('')
+    def class_feature(self, p):
+        return []
+
+    @_('ID ":" TYPE')
+    def def_atr(self, p):
+        return Feature.CoolAtr(id= p.ID, type= p.TYPE,value= None)
+    @_('ID ":" TYPE ASSIGN expr')
+    def def_atr(self, p):
+        return Feature.CoolAtr(id= p.ID, type= p.TYPE,value= p.expr)
+
+    @_('ID "(" param_list ")" ":" TYPE "{" expr "}"')
+    def def_func(self, p):
+        return Feature.CoolDef(CoolID(id = p.ID),type=p.TYPE, params= p.param_list,scope=p.expr)
+   
+    @_('ID "(" ")" ":" TYPE "{" expr "}"')
+    def def_func(self, p):
+        return Feature.CoolDef(CoolID(id = p.ID),type=p.TYPE, params= [],scope=p.expr)
+#endregion
 
 #region formal ---------------------------------------------------------------------------------------------------------------------
-
+    #named formal in the manual, here is `param`
+    @_('ID ":" TYPE "," param_list')
+    def param_list(self, p):
+        return [CoolID( id=p.ID,type= p.TYPE )] + p.param_list
+    
+    @_('ID ":" TYPE')
+    def param_list(self, p):
+        return [CoolID(id=p.ID, type=p.TYPE )] 
 #endregion   
 
 #region expr ------------------------------------------------------------------------------------------------------------------------
@@ -39,20 +133,20 @@ class CoolParser(Parser):
     @_('expr "@" TYPE "." ID "(" expr_list ")"')#, 'expr "@" TYPE "." ID "(" ")"' )
     def expr(self, p):
         ID = CoolCallable(p.ID,p.expr_list)
-        return CoolObject.MethodInvoque(p.expr,p.TYPE,ID)
+        return Dispatch(p.expr,p.TYPE,ID)
     @_('expr "@" TYPE "." ID "(" ")"')
     def expr(self,p):
         ID = CoolCallable(p.ID,[])
-        return CoolObject.MethodInvoque(p.expr,p.TYPE,ID)
+        return Dispatch(p.expr,p.TYPE,ID)
     
     @_('expr "." ID "(" expr_list ")"')
     def expr(self, p):
         ID = CoolCallable(p.ID,p.expr_list)
-        return CoolObject.MethodInvoque(p.expr,None,ID)
+        return Dispatch(p.expr,None,ID)
     @_('expr "." ID "(" ")"')
     def expr(self, p):
         ID = CoolCallable(p.ID,[])
-        return CoolObject.MethodInvoque(p.expr,None,ID)
+        return Dispatch(p.expr,None,ID)
 
     @_('ID "(" ")"')
     def expr(self, p):
@@ -79,7 +173,6 @@ class CoolParser(Parser):
     def expr(self, p):
         #expr::= {expr; expr; ...expr;}
         return CoolBlockScope(p.block_list)        
-        return p.block_list        
   
     @_('LET let_list IN expr')
     def expr(self, p):
@@ -195,10 +288,7 @@ class CoolParser(Parser):
     #CREATE SIMPLE_LIST---------------------------------------       
     @_('expr "," expr_list')
     def expr_list(self, p):
-        result = [p.expr]
-        for exp in p.expr_list:
-            result.append(exp)
-        return result
+        return [p.expr] + p.expr_list
     @_('expr')
     def expr_list(self, p):
         return [p.expr]
@@ -206,10 +296,7 @@ class CoolParser(Parser):
     #CREATE BLOCKS_LIST---------------------------------------       
     @_('expr ";" block_list')
     def block_list(self, p):
-        result = [p.expr]
-        for block in p.block_list:
-            result.append(block)
-        return result
+        return [p.expr] + p.block_list
     @_('expr ";"') # @_('expr ";" epsilon')
     def block_list(self, p):
         return [p.expr]
@@ -217,10 +304,7 @@ class CoolParser(Parser):
     #CREATE LET_ASSIGN_LIST---------------------------------------       
     @_('let_assign "," let_list')
     def let_list(self, p):
-        result = [p.let_assign]
-        for let_assign in p.let_list:
-            result.append(let_assign)
-        return result
+        return [p.let_assign] + p.let_list
     @_('let_assign') # @_('let_assign epsilon')
     def let_list(self, p):
         return [p.let_assign]
@@ -228,23 +312,16 @@ class CoolParser(Parser):
     @_('ID ":" TYPE ASSIGN expr')
     def let_assign(self, p):
         return CoolLet.new_let(ID= p.ID, type=p.TYPE, exp=p.expr)
-        return {'ID': p.ID, 'Type':p.TYPE, 'expr':p.expr}
     @_('ID ":" TYPE')
     def let_assign(self, p):
         return CoolLet.new_let(ID= p.ID, type=p.TYPE, exp=None)
-        return {'ID': p.ID, 'Type':p.TYPE, 'expr':None}
 
     #CREATE CASE_LIST---------------------------------------------  
     @_('ID ":" TYPE DARROW expr ";" case_list')
     def case_list(self, p):
-        result = [CoolCase.new_case(ID= p.ID, type=p.TYPE, exp=p.expr)]
-        for case in p.case_list:
-            result.append(case)
-        return result
-   
+        return [CoolCase.new_case(ID= p.ID, type=p.TYPE, exp=p.expr)] + p.case_list
     @_('ID ":" TYPE DARROW expr ";"')
     def case_list(self, p):
         return [CoolCase.new_case(ID= p.ID, type=p.TYPE, exp= p.expr)]
 #endregion
-
 #endregion
