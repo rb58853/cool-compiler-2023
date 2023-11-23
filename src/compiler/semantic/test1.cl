@@ -6,8 +6,9 @@ class MyClass1 inherits MyClass2{
     f1(y:INT):INT { 
         {
             --y <- 1;
-            s <- b.s().length();
-            a <- b.s().length();
+            --s <- b.s(y);
+            --s <- b.s(y).length(); -- Esto tiene que dar error
+            a <- b.s(y).length();
         }
     }; 
 };
@@ -19,7 +20,7 @@ class MyClass2 {
         y <- 1 
     };
 
-    s():STRING 
+    s(x:INT):STRING 
     { 
         "y <- 1" 
     }; 

@@ -346,6 +346,11 @@ class CoolCallable(expr):
     def validate(self):
         self.get_contex_from_father()
         return self.context.validate_callable(self)
+    
+    def validate_in_context(self, context):
+        self.get_contex_from_father()
+        return context.validate_callable(self)
+
 
 class CoolNot(expr):
     def __init__(self, value) -> None:
@@ -510,6 +515,15 @@ class CoolID(CoolVar):
 
     # def context_str(self):
     #     return self.name
+    def get_type(self):
+        if self.type == None:
+            try:
+                self.type = self.context.get_var(self.id)
+            except:pass
+            try:
+                self.type = self.context.get_func(self.id)
+            except:pass
+        return self.type
 
     def set_type(self, type):
         self.type= type

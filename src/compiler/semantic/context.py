@@ -325,7 +325,8 @@ class Context(PrintContext):
         context:Context = self.get_context_from_type(type)#Si el type es valido, entonces quiero el cotexto
         if context != False:
             #este es exactamente el contexo al que pertenece la funcion que se esta llamando. 
-            return context.validate_callable(dispatch.function)
+            # return context.validate_callable(dispatch.function)
+            return dispatch.function.validate_in_context(context)
         else:
             raise Exception(f'El tipo {type} no esta definido')
             return False
