@@ -1,4 +1,4 @@
-from AST.ast import Feature, CoolClass, CoolString, CoolVar, CoolID, BinOp, IntNode, CoolBool, CoolCallable, Dispatch, Assign, Node
+from AST.ast import Feature, CoolClass, CoolString, CoolVar, CoolID, BinOp, IntNode, CoolBool, CoolCallable, Dispatch, Assign, Node, CoolLet
 
 class VariableContext():
     def __init__(self, father) -> None:
@@ -22,7 +22,11 @@ class VariableContext():
                 if (vvar.value.validate() and vvar.value.get_type() == vvar.type):
                     self.variables[vvar.id] = vvar
                     return True
+                else:
+                    raise Exception(f"La variable se intenta definir con un tipo diferentes: {vvar.type} distinto de {vvar.value.get_type()}")
+                    
         else:
+            raise Exception(f"la variable {vvar.id} ya esta definida")
             return False #ERROR or Redefine
 
     def is_defined_var(self, id):
@@ -195,8 +199,12 @@ class FunctionContext(TypeContext):
             ```
         '''
         return self.define_func(func)    
-    
-class PrintContext(FunctionContext):
+
+class LetContext(FunctionContext):
+    def define_let(self, let: CoolLet):
+        pass    
+
+class PrintContext(LetContext):
     def print(self):
         print (f'_____________________________________________________________________________________')
         print (f'{self} \n')
@@ -274,7 +282,6 @@ class Context(PrintContext):
             return False
     
     def validate_op(self, op: BinOp, e:str = None):
-        
         if op.left.validate() and op.right.validate() and op.valid_types():
             return True
         else:
@@ -292,10 +299,10 @@ class Context(PrintContext):
     def validate_callable(self, obj: CoolCallable):
         #Cada parametro llama a la funcion validate que esta tiene su propio contexto, es decir en caso de dispach los parametros se evaluara si existen en su contexto
         func:Feature.CoolDef = self.get_func(obj.id.id)
-        obj.id.set_type(func.type)
         
         if func != False:
-            obj.type = func.get_type()
+            obj.id.set_type(func.type)
+            # obj.type = func.get_type()
             if len(func.params.childs()) == len(obj.params):
                 for param_func, param_call in zip(func.params.childs(), obj.params):
                     if not param_call.validate(): return False #si el parametro no es valido entonces la llamada con este parametro no es valida, es necesario validar cada parametro xq con la validacion del mismo se llega a su tipo en caso de ser un id.               
@@ -323,7 +330,7 @@ class Context(PrintContext):
         if dispatch.type is None:
             dispatch.type = type
 
-        if type != dispatch.type: return False #El tipo de la variable es diferente al tipo el cual se asume que debe ser [@TYPE]
+        # if type != dispatch.type: return False #El tipo de la variable es diferente al tipo el cual se asume que debe ser [@TYPE]
         
         context:Context = self.get_context_from_type(type)#Si el type es valido, entonces quiero el cotexto
         if context != False:

@@ -1,4 +1,5 @@
 from semantic.context import Context, CoolString, IntNode, CoolBool, CoolClass, Feature, CoolID, BinOp, CoolVar, Node
+import AST.environment as env
 
 #TODO Hay que cambiar todo este sistema y crear una clase para cada una de las clases base, una clase de COOL no solo de python, dentro de esta clase se le meten todos los features y lo que necesite en una instancia, cada clase hereda de object, y object no hereda de nadie.
 
@@ -24,10 +25,9 @@ class ObjectClass:
     class Features:
         def type_name():
             return Feature.CoolDef('type_name',StringClass.type, [], CoolString(""))
-
     
 class StringClass:
-    type = 'STRING'
+    type = env.string_type_name
     def features() ->list[Feature]:
         r_features = []
         r_features.append(StringClass.Features.concat())
@@ -47,10 +47,10 @@ class StringClass:
             return Feature.CoolDef('concat',StringClass.type, [other], BinOp('+',self_id, other_id))
 
         def length():
-            return Feature.CoolDef('length',IntNode.type, [], IntNode(0))
+            return Feature.CoolDef('length',IntClass.type, [], IntNode(0))
 
 class IntClass:
-    type = 'INT'
+    type = env.int_type_name
     def features() -> list[Feature]:
         return []
     
@@ -61,10 +61,24 @@ class IntClass:
     class Features:
         pass        
 
-class IOClass:
-    type = 'IO'
+class BoolClass:
+    type = env.bool_type_name
     def features() -> list[Feature]:
         return []
+    
+    def cclass() ->CoolClass:
+        int_class = CoolBool(type= BoolClass.type, inherit=ObjectClass.type, features= BoolClass.features())
+        return int_class
+    
+    class Features:
+        pass        
+
+class IOClass:
+    type = env.io_type_name
+    def features() -> list[Feature]:
+        r_features = []
+        r_features.append(IOClass.Features.out_string())
+        return r_features
     
     def cclass() ->CoolClass:
         int_class = CoolClass(type= IOClass.type, inherit=ObjectClass.type, features= IOClass.features())

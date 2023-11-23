@@ -6,9 +6,10 @@ class MyClass1 inherits MyClass2{
     f1(y:INT):INT { 
         {
             --y <- 1;
-            s <- b.s(y);
+            --s <- b.s(y);
             --s <- b.s(y).length(); -- Esto tiene que dar error
-            --a <- new MyClass2.s(y).length();
+            a <- new MyClass2.s(y).length();
+            --a <- new INT.s(y).length(); -- Error s no esta definido en INT
         }
     }; 
 };

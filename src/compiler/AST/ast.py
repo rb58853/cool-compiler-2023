@@ -164,7 +164,7 @@ class CoolVar(expr):
     def __init__(self, id:str,type, value) -> None:
         Node.__init__(self)
         self.id = id
-        self.typ = type
+        self.type = type
         self.value:expr = value
         Node.set_father(self,self.childs())
 
@@ -329,7 +329,8 @@ class CoolCallable(expr):
 
 
     def get_type(self):
-        return self.id.get_type()
+        self.type = self.id.get_type()
+        return self.type
 
     def childs(self):
         return self.params
@@ -402,7 +403,7 @@ class CoolNew(expr):
         Node.__init__(self)
         self.type =  type
         self.name = 'new'
-        self.value = CoolVar(id = None, type = type, value= None)
+        # self.value = CoolVar(id = None, type = type, value= None)
         Node.set_father(self,self.childs())
 
     def __str__(self) -> str:
@@ -416,7 +417,11 @@ class CoolNew(expr):
 
     def childs(self):
         return []
-
+    
+    def validate(self):
+        self.get_contex_from_father()
+        return self.context.is_defined_type(self.type)
+    
 class CoolCase(expr): #TODO raificar o no los hijos segun la necesidad para semantica y codegen
     def __init__(self, case, cases_list) -> None:
         self.case = case
@@ -588,21 +593,16 @@ class CoolConstant(expr):
         return []
 
 class IntNode(CoolConstant):
-    type = 'INT'
-
     def __init__(self, value) -> None:
-        super().__init__(value,'INT')
+        super().__init__(value,IntClass.type)
 
 class CoolString(CoolConstant):
-    type = 'STRING'
     def __init__(self, value) -> None:
-        super().__init__(value,CoolString.type)
+        super().__init__(value,StringClass.type)
 
 class CoolBool(CoolConstant):
-    type = 'BOOL'
-
     def __init__(self, value) -> None:
-        super().__init__(value,'BOOL')
+        super().__init__(value,BoolClass.type)
 #endregion
 
 #region Features
@@ -807,4 +807,4 @@ class CoolProgram(Node):
         return result    
 
 
-from semantic.cool_bases import Context,ObjectClass, Program, base_classes
+from semantic.cool_bases import Context,ObjectClass,IntClass, StringClass,BoolClass, Program, base_classes

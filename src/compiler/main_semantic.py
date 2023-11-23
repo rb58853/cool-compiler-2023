@@ -3,7 +3,7 @@ from AST.ast import CoolProgram
 from semantic.semantic_visitor import init_classes, init_types, validate_program
 import os
 
-case = 'test1.cl'
+case = 'test2.cl'
 #compiler/semantic/test1.cl
 base_dir = os.getcwd()
 base_url = os.path.join(base_dir, "src/compiler/semantic")
