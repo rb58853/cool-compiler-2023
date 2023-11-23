@@ -1,27 +1,28 @@
 class MyClass1 inherits MyClass2{ 
-    a:INT <- 2; 
+    a:Int <- 2; 
     b:MyClass2;
-    s:STRING;
+    s:String;
 
-    f1(y:INT):INT { 
+    f1(y:Int):Int { 
         {
+            let x: Int, y:String <-"123", a:Bool, x:Int<-1 in y.length();
             --y <- 1;
             --s <- b.s(y);
             --s <- b.s(y).length(); -- Esto tiene que dar error
             a <- new MyClass2.s(y).length();
-            --a <- new INT.s(y).length(); -- Error s no esta definido en INT
+            --a <- new INT.s(y).length(); -- Error s no esta definido en Int
         }
     }; 
 };
 
 class MyClass2 { 
     b:MyClass1; 
-    f2(y:INT):INT 
+    f2(y:Int):Int 
     { 
         y <- 1 
     };
 
-    s(x:INT):STRING 
+    s(x:Int):String 
     { 
         "y <- 1" 
     }; 

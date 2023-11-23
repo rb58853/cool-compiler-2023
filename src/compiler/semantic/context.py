@@ -201,8 +201,27 @@ class FunctionContext(TypeContext):
         return self.define_func(func)    
 
 class LetContext(FunctionContext):
+    def define_let_var(self,vvar:CoolVar):
+        #las variables en el let se sobreescriben, por ejemplo let x:Int<-1, x:Int<-2 in x.... x sera 2 y no dara error por usarla dos veces
+        if vvar.value is None:
+            self.variables[vvar.id] = vvar
+            return True
+        else:
+            if (vvar.value.validate() and vvar.value.get_type() == vvar.type):
+                self.variables[vvar.id] = vvar
+                return True
+            else:
+                raise Exception(f"La variable se intenta definir con un tipo diferentes: {vvar.type} distinto de {vvar.value.get_type()}")
+            
     def define_let(self, let: CoolLet):
-        pass    
+        left = let.let
+        scope = let.in_scope
+        context:Context = let.context.create_context_child()
+        for vvar in left:
+            context.define_let_var(vvar)
+        let.context = context
+        
+        return scope.validate()    
 
 class PrintContext(LetContext):
     def print(self):

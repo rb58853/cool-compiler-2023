@@ -1,4 +1,5 @@
 import matplotlib.pyplot as plt
+import AST.environment as env
 # from semantic.context import Context
 
 '''TODO
@@ -122,7 +123,7 @@ class Node(PlotNode):
         return str(self.value)
 
     def __repr__(self) -> str:
-        return self.name + ': ' + str(self.value)
+        return str(self)
 
     #region delete and generate AST
     def delete(self):
@@ -166,7 +167,8 @@ class CoolVar(expr):
         self.id = id
         self.type = type
         self.value:expr = value
-        Node.set_father(self,self.childs())
+        if self.value is not None:
+            Node.set_father(self,self.childs())
 
     def childs(self):
         return [self.value]
@@ -175,11 +177,10 @@ class CoolVar(expr):
         return False
     def __str__(self) -> str:
         return f'{self.ID} = {self.value}'
+    
     def __repr__(self) -> str:
         return f'{self.ID} = {self.value}'
     
-
-
 class BinOp(expr):
     def __init__(self, op, left:expr, right:expr):
         Node.__init__(self)
@@ -352,7 +353,6 @@ class CoolCallable(expr):
         self.get_contex_from_father()
         return context.validate_callable(self)
 
-
 class CoolNot(expr):
     def __init__(self, value) -> None:
         Node.__init__(self)
@@ -451,10 +451,18 @@ class CoolCase(expr): #TODO raificar o no los hijos segun la necesidad para sema
 class CoolLet(expr): #TODO raificar o no los hijos segun la necesidad para semantica y codegen
     def __init__(self, let, _in) -> None:
         Node.__init__(self)
-        self.let = let
-        self.in_scope = _in
+        self.type = None #En este caso no va void, sino que es None por evaluar
+        self.let = self.convert_to_vars(let)
+        self.in_scope:expr = _in
         Node.set_father(self,self.childs())
 
+    def convert_to_vars(self, let_list):
+        vvars = []
+        for let in let_list:
+            vvars.append(CoolVar(let['ID'],let['Type'],let['expr']))
+        Node.set_father(self,vvars)    
+        return vvars
+        
     def childs(self):
         return [self.in_scope]
 
@@ -464,10 +472,10 @@ class CoolLet(expr): #TODO raificar o no los hijos segun la necesidad para seman
     def __str__(self) -> str:
         result = 'let \n'
         for assign in self.let:
-            if assign['expr'] is None:
-                result+= f'{assign["ID"]}: {assign["Type"]}\n'
+            if assign.value is None:
+                result+= f'{assign.id}: {assign.type}\n'
             else:
-                result+= f'{assign["ID"]}: {assign["Type"]} <- {assign["expr"]}\n'
+                result+= f'{assign.id}: {assign.type} <- {assign.value}\n'
         return result + ' in:'
 
     def delete_condition(self):
@@ -475,6 +483,19 @@ class CoolLet(expr): #TODO raificar o no los hijos segun la necesidad para seman
 
     def new_let(ID, type, exp):
         return {'ID': ID, 'Type':type, 'expr':exp}
+    
+    def validate(self):
+        return self.initialize()
+    
+    def initialize(self):
+        self.get_contex_from_father()
+        return self.context.define_let(self)
+    
+    def get_type(self):
+        if self.type is not None:
+            return self.type
+        self.type = self.in_scope.get_type()
+        return self.type
 
 class CoolBlockScope(expr):
     def __init__(self, exprs:list[expr]) -> None:
@@ -805,6 +826,5 @@ class CoolProgram(Node):
             if not cclass.validate():
                 result = False
         return result    
-
 
 from semantic.cool_bases import Context,ObjectClass,IntClass, StringClass,BoolClass, Program, base_classes
