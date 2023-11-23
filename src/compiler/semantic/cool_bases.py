@@ -1,25 +1,30 @@
-from semantic.context import Context, CoolString, IntNode, CoolBool, CoolClass, Feature, CoolID, BinOp, CoolVar
+from semantic.context import Context, CoolString, IntNode, CoolBool, CoolClass, Feature, CoolID, BinOp, CoolVar, Node
 
 #TODO Hay que cambiar todo este sistema y crear una clase para cada una de las clases base, una clase de COOL no solo de python, dentro de esta clase se le meten todos los features y lo que necesite en una instancia, cada clase hereda de object, y object no hereda de nadie.
 
 def object_class():
-        object_class = CoolClass(type= 'object', inherit=None, features= [], is_object=True)
-        return object_class
+    object_class = CoolClass(type= 'object', inherit=None, features= [], is_object=True)
+    return object_class
 
 class ObjectClass:
     type = 'object'
     instance: CoolClass = object_class()
     
     def features() -> list[Feature]:
-        return []
+        r_features = []
+        r_features.append(ObjectClass.Features.type_name())
+        return r_features
     
     def cclass() -> CoolClass:
         object_class = ObjectClass.instance
         object_class.features = ObjectClass.features()
+        Node.set_father(object_class, object_class.features)
         return object_class
     
     class Features:
-        pass
+        def type_name():
+            return Feature.CoolDef('type_name',StringClass.type, [], CoolString(""))
+
     
 class StringClass:
     type = 'STRING'
@@ -66,7 +71,8 @@ class IOClass:
         return int_class
     
     class Features:
-        pass        
+        def out_string():
+            return Feature.CoolDef('out_string',StringClass.type, [CoolID('out',StringClass.type)], CoolString(""))
 
 def base_classes():
     return [ObjectClass.cclass(), IntClass.cclass(), StringClass.cclass(), IOClass.cclass()]

@@ -1,4 +1,4 @@
-from AST.ast import Feature, CoolClass, CoolString, CoolVar, CoolID, BinOp, IntNode, CoolBool, CoolCallable, Dispatch, Assign
+from AST.ast import Feature, CoolClass, CoolString, CoolVar, CoolID, BinOp, IntNode, CoolBool, CoolCallable, Dispatch, Assign, Node
 
 class VariableContext():
     def __init__(self, father) -> None:
@@ -70,8 +70,10 @@ class TypeContext(VariableContext):
             #se crea un contexto propio para la clase que posee como padre un contexto mas amplio, este contexto padre solo tendra clases definidas o variables de una clase desde la cual se hace herencia.
             print ("Agrego el tipo "+cclass.type)
             contex.type = cclass.type
+            contex.name = cclass.type
             contex.cclass = cclass
             self.types[cclass.type] = contex
+            cclass.context = contex
             return contex
         else:
             raise Exception(f'No se pueden definir clases con el mismo nombre, la clase {cclass.type} ya existe')
@@ -233,7 +235,8 @@ class PrintContext(FunctionContext):
     def str_for_node(self, dinstict_context = True):
         if not dinstict_context: return 'same parent context'
 
-        result = ''
+        result = self.name
+        result += '\n___________________\n'
         if len(self.types) > 0:
             result+='TYPES:\n'
             for type in self.types:

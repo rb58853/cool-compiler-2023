@@ -73,7 +73,7 @@ class PlotNode():
         # Crear un nodo en la posición draw_pos
         if print_context:
             ax.add_patch(plt.Circle(self.draw_pos, 1, fill=True, zorder=2))
-            ax.text(self.draw_pos[0]-1, self.draw_pos[1], self.context_str(), ha='left', va='center')
+            ax.text(self.draw_pos[0]-0.6, self.draw_pos[1], self.context_str(), ha='left', va='center')
         else:
             ax.add_patch(plt.Circle(self.draw_pos, 1, fill=True, zorder=2))
             ax.text(self.draw_pos[0], self.draw_pos[1], str(self), ha='center', va='center')
@@ -746,14 +746,16 @@ class CoolClass(Node):
         self.features_was_initialized = True
         
     def initialize(self):
-        context = self.father.context.initialize_class(cclass = self)
-        if context == False:
-            self.context = None
-            #Crear error semantico
-            return False
-        else:
-            self.context = context
-            return True
+        self.father.context.initialize_class(cclass = self)
+        a=1
+        # context = self.father.context.initialize_class(cclass = self)
+        # if context == False:
+        #     self.context = None
+        #     #Crear error semantico
+        #     return False
+        # else:
+        #     self.context = context
+        #     return True
     
     def set_parent_class(self, inherit):
         self.inherit_class = inherit

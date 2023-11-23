@@ -23,4 +23,5 @@ if len(parser.errors) > 0: raise Exception(str(parser.errors[0]))
 
 validate_program(program)
 
-program.show_tree(print_context=False)
+program.show_tree(print_context=True)
+# program.show_tree(print_context=True)
