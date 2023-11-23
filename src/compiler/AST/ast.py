@@ -94,7 +94,7 @@ class Node(PlotNode):
         self.father:Node = None
         self.name = 'empty'
         self.is_valid = False
-
+    
     def set_father(parent, childs:list):
         for child in childs:
             child.father = parent
@@ -103,6 +103,20 @@ class Node(PlotNode):
     def get_contex_from_father(self):
         self.context =  self.father.context
 
+    def have_parent_type(self,type):
+        # if self.type == type:return True
+        cclass = self.get_type_as_class(type)
+        if cclass is None:
+            return False         
+        return cclass.have_parent_type()
+
+    def get_type_as_class(self,type):
+        temp_cotext = self.context.get_context_from_type(type)
+        if temp_cotext == False:
+            return None
+        else:
+            return temp_cotext.cclass
+    
     def get_type(self):
         return self.type
 
@@ -425,13 +439,22 @@ class CoolNew(expr):
 class CoolCase(expr): #TODO raificar o no los hijos segun la necesidad para semantica y codegen
     def __init__(self, case, cases_list) -> None:
         self.case = case
-        self.cases_list = cases_list
+        self.cases_list = self.convert_to_cases(cases_list)
         self.width = Node.WIDTH
         self.father = None
         self.draw_pos = (0,0)
+        Node.set_father(self, self.childs())
+        Node.set_father(self, [case])
+    
 
+    def convert_to_cases(self,cases_list):
+        cases:list[(CoolID,expr)] = []
+        for case in cases_list:
+            cases.append((CoolID(case['ID'], case['Type']), case['expr']))
+        return cases
+    
     def childs(self):
-        return []
+        return self.cases_list
 
     def __repr__(self) -> str:
         return 'case of'
@@ -592,7 +615,6 @@ class Dispatch(expr): #Dispatch
         self.get_contex_from_father()
         return self.context.validate_dispatch(self)
 
-
 class CoolConstant(expr):
     def __init__(self, value, name) -> None:
         self.value =  value
@@ -730,7 +752,10 @@ class CoolClass(Node):
         self.features_was_initialized = False
         Node.set_father(self,self.childs())
 
-
+    def have_parent_type(self,type):
+        '''Devuelve true si alguna clase padre es de tipo type, deuelve false si ninguna de estas es tipo type'''
+        return self.have_father(cclass_type= type)
+            
     def childs(self):
         return self.features
 

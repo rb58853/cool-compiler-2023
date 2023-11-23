@@ -1,4 +1,4 @@
-from AST.ast import Feature, CoolClass, CoolString, CoolVar, CoolID, BinOp, IntNode, CoolBool, CoolCallable, Dispatch, Assign, Node, CoolLet
+from AST.ast import Feature, CoolClass, CoolString, CoolVar, CoolID, BinOp, IntNode, CoolBool, CoolCallable, Dispatch, Assign, Node, CoolLet, CoolCase
 
 class VariableContext():
     def __init__(self, father) -> None:
@@ -313,7 +313,6 @@ class Context(PrintContext):
             raise Exception(f'Se esta intentando hacer una asignacion al id {assing.left.id} un valor de tipo {assing.right.get_type()}')
         
         return assing.left.validate() and assing.right.validate() and valid_types
-    
 
     def validate_callable(self, obj: CoolCallable):
         #Cada parametro llama a la funcion validate que esta tiene su propio contexto, es decir en caso de dispach los parametros se evaluara si existen en su contexto
@@ -360,6 +359,9 @@ class Context(PrintContext):
             raise Exception(f'El tipo {type} no esta definido')
             return False
     
+    def validate_case(self, case: CoolCase):
+        pass
+        
     
 def info():
     '''
