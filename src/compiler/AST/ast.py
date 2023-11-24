@@ -3,7 +3,7 @@ import AST.environment as env
 # from semantic.context import Context
 
 '''TODO
-    1- Crear una estructura(class) para los let y los case, de ser posible usar la misma para classAtr
+    <empty tasks>
 '''
 class PlotNode():
     HEIGTH = 2.5
@@ -104,8 +104,8 @@ class Node(PlotNode):
         self.context =  self.father.context
 
     def inherit_from_type(self,type):
-        # if self.type == type:return True
         cclass = self.get_type_as_class()
+        if cclass.type == type:return True #En este caso es para cuando entra al contexto de SELF_TYPE. SELF_TYPE --->> Class Type
         if cclass is None:
             return False         
         return cclass.inherit_from_type(type)
@@ -248,7 +248,32 @@ class BinOp(expr):
     def validate(self):
         self.get_contex_from_father()
         return self.context.validate_op(self)    
+
+class ArithmeticOP(BinOp):
+    def __init__(self,op:str, left:expr, right:expr):
+        Node.__init__(self)
+        self.name = 'arithmetic'
+        self.op = op
+        self.left:expr = left
+        self.right:expr = right
+        self.valid_types_check = False
+        self.type = env.int_type_name
+        Node.set_father(self,self.childs())
     
+    def get_type(self):
+        return self.type
+    
+    def valid_types(self):
+        if self.valid_types_check: return True
+
+        l_type:str = self.left.get_type()
+        r_type:str = self.right.get_type()
+        if  l_type == env.int_type_name and r_type == env.int_type_name:
+            self.valid_types_check = True
+            return True
+        else:
+            return False
+        
 class Logicar(BinOp):    
     def __init__(self,op:str, left:expr, right:expr):
         Node.__init__(self)
@@ -265,14 +290,20 @@ class Logicar(BinOp):
     
     def valid_types(self):
         if self.valid_types_check: return True
-
+             
         l_type:str = self.left.get_type()
         r_type:str = self.right.get_type()
-        if  l_type == r_type or  self.left.inherit_from_type(r_type) or self.right.inherit_from_type(l_type):
+
+        if self.op =='<' or self.op =='<=':
+            if  l_type == env.int_type_name and r_type == env.int_type_name:
+                self.valid_types_check = True
+                return True
+            
+        elif  l_type == r_type or  self.left.inherit_from_type(r_type) or self.right.inherit_from_type(l_type):
             self.valid_types_check = True
             return True
-        else:
-            return False
+        
+        return False
     
 class Assign(BinOp):
     def __init__(self,op, left:expr, right:expr):
@@ -407,7 +438,7 @@ class CoolCallable(expr):
 class CoolNot(expr):
     def __init__(self, value) -> None:
         Node.__init__(self)
-        self.value =  value
+        self.value:expr =  value
         Node.set_father(self,self.childs())
 
     def __str__(self) -> str:
@@ -418,6 +449,9 @@ class CoolNot(expr):
 
     def delete_condition(self):
         return False
+    
+    def validate(self):
+        return self.value.get_type() == env.bool_type_name
 
 class CoolUminus(expr):
     def __init__(self, value) -> None:
@@ -433,6 +467,9 @@ class CoolUminus(expr):
 
     def delete_condition(self):
         return False
+    
+    def validate(self):
+        return self.value.get_type() == env.int_type_name
 
 class CoolIsVoid(expr):
     def __init__(self, value) -> None:
@@ -473,7 +510,7 @@ class CoolNew(expr):
         self.get_contex_from_father()
         return self.context.is_defined_type(self.type)
     
-class CoolCase(expr): #TODO raificar o no los hijos segun la necesidad para semantica y codegen
+class CoolCase(expr):
     def __init__(self, case, cases_list) -> None:
         self.case = case
         self.cases_list = self.convert_to_cases(cases_list)
@@ -508,7 +545,7 @@ class CoolCase(expr): #TODO raificar o no los hijos segun la necesidad para sema
     def new_case(ID, type, exp):
         return {'ID': ID, 'Type':type, 'expr':exp}
 
-class CoolLet(expr): #TODO raificar o no los hijos segun la necesidad para semantica y codegen
+class CoolLet(expr):
     def __init__(self, let, _in) -> None:
         Node.__init__(self)
         self.type = None #En este caso no va void, sino que es None por evaluar
@@ -868,7 +905,6 @@ class CoolProgram(Node):
         classes = [cclass for cclass in base_classes()]
         for cclass in input_classes: classes.append(cclass)
         return classes
-
         
     def childs(self):
         return self.classes

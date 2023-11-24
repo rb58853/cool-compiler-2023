@@ -1,7 +1,7 @@
 from sly import Parser
 from error.cool_error import SyntacticError
 from lexer.cool_lexer import CoolLexer
-from AST.ast import CoolBlockScope, CoolBool, CoolCallable,CoolCase, CoolClass, CoolID, CoolIf, CoolIsVoid, CoolNot,CoolLet, CoolNew, CoolProgram, CoolString, CoolUminus, CoolWhile, Dispatch, Feature, expr, IntNode, BinOp, BetwPar, Logicar, Assign
+from AST.ast import CoolBlockScope, CoolBool, CoolCallable,CoolCase, CoolClass, CoolID, CoolIf, CoolIsVoid, CoolNot,CoolLet, CoolNew, CoolProgram, CoolString, CoolUminus, CoolWhile, Dispatch, Feature, expr, IntNode, BinOp, BetwPar, Logicar, Assign, ArithmeticOP
 
 #TODO Implementar de ser mas atractivo la deteccion de errores en modo de panico, por ejemplo seguir hasta un ';' despues de encontrar un error
     
@@ -193,26 +193,22 @@ class CoolParser(Parser):
     @_('expr "+" expr')
     def expr(self, p):
         # expr ::= expr + expr
-        if self.all_steps: return expr(BinOp('+', p[0],p[2]))
-        return BinOp('+', p[0], p[2])
+        return ArithmeticOP('+', p[0], p[2])
         
     @_('expr "-" expr')
     def expr(self, p):
         # expr ::= expr - expr
-        if self.all_steps: return expr(BinOp('-', p[0],p[2]))
-        return BinOp('-', p[0],p[2])
+        return ArithmeticOP('-', p[0],p[2])
         
     @_('expr "*" expr')
     def expr(self, p):
         # expr ::= expr * expr
-        if self.all_steps: return expr(BinOp('*', p[0],p[2])) 
-        return BinOp('*', p[0],p[2])
+        return ArithmeticOP('*', p[0],p[2])
         
     @_('expr "/" expr')
     def expr(self, p):
         # expr ::= expr / expr
-        if self.all_steps: return expr(BinOp('/', p[0],p[2]))
-        return BinOp('/', p[0],p[2])
+        return ArithmeticOP('/', p[0],p[2])
         
     @_('"~" expr')
     def expr(self, p):
