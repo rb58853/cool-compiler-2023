@@ -4,7 +4,7 @@ import AST.environment as env
 #TODO Hay que cambiar todo este sistema y crear una clase para cada una de las clases base, una clase de COOL no solo de python, dentro de esta clase se le meten todos los features y lo que necesite en una instancia, cada clase hereda de object, y object no hereda de nadie.
 
 def object_class():
-    object_class = CoolClass(type= 'object', inherit=None, features= [], is_object=True)
+    object_class = CoolClass(type= 'object', inherit=None, features= [], is_object=True, token_pos=(0,0))
     return object_class
 
 class ObjectClass:
@@ -14,6 +14,8 @@ class ObjectClass:
     def features() -> list[Feature]:
         r_features = []
         r_features.append(ObjectClass.Features.type_name())
+        r_features.append(ObjectClass.Features.abort())
+        r_features.append(ObjectClass.Features.copy())
         return r_features
     
     def cclass() -> CoolClass:
@@ -25,13 +27,13 @@ class ObjectClass:
     class Features:
         def type_name():
             #type_name() : String
-            return Feature.CoolDef('type_name',StringClass.type, [], CoolString())
+            return Feature.CoolDef('type_name',StringClass.type, [], CoolString(), token_pos=(0,0))
         def abort():
             # abort() : Object
-            return Feature.CoolDef('abort',env.object_type_name, [], CoolNew(env.object_type_name))
+            return Feature.CoolDef('abort',env.object_type_name, [], CoolNew(env.object_type_name), token_pos=(0,0))
         def copy():
             #copy() : SELF_TYPE
-            return Feature.CoolDef('abort',env.object_type_name, [], CoolNew(env.object_type_name))
+            return Feature.CoolDef('copy',env.object_type_name, [], CoolNew(env.object_type_name), token_pos=(0,0))
     
 class StringClass:
     type = env.string_type_name
@@ -39,6 +41,7 @@ class StringClass:
         r_features = []
         r_features.append(StringClass.Features.concat())
         r_features.append(StringClass.Features.length())
+        r_features.append(StringClass.Features.substr())
         return r_features
     
     def cclass() ->CoolClass:
@@ -48,15 +51,15 @@ class StringClass:
     class Features:
         def concat():
             #concat(s : String) : String
-            return Feature.CoolDef('concat',StringClass.type, [CoolID('s',env.string_type_name)], CoolString())
+            return Feature.CoolDef('concat',StringClass.type, [CoolID('s',env.string_type_name)], CoolString(), token_pos=(0,0))
 
         def length():
             #length() : Int
-            return Feature.CoolDef('length',IntClass.type, [], IntNode())
+            return Feature.CoolDef('length',IntClass.type, [], IntNode(), token_pos=(0,0))
         
         def substr():
             #substr(i : Int, l : Int) : String
-            return Feature.CoolDef('substr',env.string_type_name, [CoolID('i',env.int_type_name),CoolID('l',env.int_type_name)], CoolString())
+            return Feature.CoolDef('substr',env.string_type_name, [CoolID('i',env.int_type_name),CoolID('l',env.int_type_name)], CoolString(), token_pos=(0,0))
 
 class IntClass:
     type = env.int_type_name
@@ -64,7 +67,7 @@ class IntClass:
         return []
     
     def cclass() ->CoolClass:
-        int_class = CoolClass(type= IntClass.type, inherit=ObjectClass.type, features= IntClass.features())
+        int_class = CoolClass(type= IntClass.type, inherit=ObjectClass.type, features= IntClass.features(), token_pos=(0,0))
         return int_class
     
     class Features:
@@ -76,7 +79,7 @@ class BoolClass:
         return []
     
     def cclass() ->CoolClass:
-        return CoolClass(type= env.bool_type_name, inherit=env.object_type_name, features= BoolClass.features())
+        return CoolClass(type= env.bool_type_name, inherit=env.object_type_name, features= BoolClass.features(), token_pos=(0,0))
     
     class Features:
         pass        
@@ -86,25 +89,28 @@ class IOClass:
     def features() -> list[Feature]:
         r_features = []
         r_features.append(IOClass.Features.out_string())
+        r_features.append(IOClass.Features.out_int())
+        r_features.append(IOClass.Features.in_string())
+        r_features.append(IOClass.Features.in_int())
         return r_features
     
     def cclass() ->CoolClass:
-        int_class = CoolClass(type= IOClass.type, inherit=ObjectClass.type, features= IOClass.features())
+        int_class = CoolClass(type= IOClass.type, inherit=ObjectClass.type, features= IOClass.features(), token_pos=(0,0))
         return int_class
     
     class Features:
         def out_string():
             # out_string(x : String) : SELF_TYPE
-            return Feature.CoolDef('out_string',env.self_type_name, [CoolID('x',StringClass.type)], CoolNew(env.self_type_name))
+            return Feature.CoolDef('out_string',env.self_type_name, [CoolID('x',StringClass.type)], CoolNew(env.self_type_name), token_pos=(0,0))
         def out_int():
             #out_int(x : Int) : SELF_TYPE
-            return Feature.CoolDef('out_int', env.self_type_name,[CoolID('x', env.int_type_name)], CoolNew(env.self_type_name))
+            return Feature.CoolDef('out_int', env.self_type_name,[CoolID('x', env.int_type_name)], CoolNew(env.self_type_name), token_pos=(0,0))
         def in_string():
             #in_string() : String
-            return Feature.CoolDef('in_string', env.string_type_name,[], CoolString())
+            return Feature.CoolDef('in_string', env.string_type_name,[], CoolString(), token_pos=(0,0))
         def in_int():
             #in_int() : Int
-            return Feature.CoolDef('in_int', env.string_type_name,[], IntNode())
+            return Feature.CoolDef('in_int', env.string_type_name,[], IntNode(), token_pos=(0,0))
         
 
 def base_classes():

@@ -89,7 +89,7 @@ class PlotNode():
 class Node(PlotNode):
     def __init__(self) -> None:
         super().__init__()
-        self.token_pos = (0,0)
+        # self.token_pos = (0,0)
         self.type:str
         self.context:Context = None
         self.father:Node = None
@@ -177,7 +177,8 @@ class expr(Node):
         return 'expr\n<-' + str(self.value)
 
 class CoolVar(expr):
-    def __init__(self, id:str,type, value) -> None:
+    def __init__(self, id:str,type, value, token_pos = (0,0)):
+        self.token_pos = token_pos
         Node.__init__(self)
         self.id = id
         self.type = type
@@ -197,7 +198,8 @@ class CoolVar(expr):
         return f'{self.ID} = {self.value}'
     
 class BinOp(expr):
-    def __init__(self, op, left:expr, right:expr):
+    def __init__(self, op, left:expr, right:expr, token_pos):
+        self.token_pos = token_pos
         Node.__init__(self)
         self.op = op
         self.name = op #debug
@@ -251,7 +253,8 @@ class BinOp(expr):
         return self.context.validate_op(self)    
 
 class ArithmeticOP(BinOp):
-    def __init__(self,op:str, left:expr, right:expr):
+    def __init__(self,op:str, left:expr, right:expr, token_pos):
+        self.token_pos = token_pos
         Node.__init__(self)
         self.name = 'arithmetic'
         self.op = op
@@ -276,7 +279,8 @@ class ArithmeticOP(BinOp):
             return False
         
 class Logicar(BinOp):    
-    def __init__(self,op:str, left:expr, right:expr):
+    def __init__(self,op:str, left:expr, right:expr, token_pos):
+        self.token_pos = token_pos
         Node.__init__(self)
         self.name = 'logicar' #debug
         self.op = op
@@ -307,7 +311,8 @@ class Logicar(BinOp):
         return False
     
 class Assign(BinOp):
-    def __init__(self,op, left:expr, right:expr):
+    def __init__(self,op, left:expr, right:expr, token_pos):
+        self.token_pos = token_pos
         Node.__init__(self)
         self.name = 'assign' #debug
         self.op = op
@@ -345,7 +350,8 @@ class Assign(BinOp):
             return False   
 
 class BetwPar(expr):
-    def __init__(self, expr) -> None:
+    def __init__(self, expr, token_pos):
+        self.token_pos = token_pos
         Node.__init__(self)
         self.value = expr
         Node.set_father(self,self.childs())
@@ -357,7 +363,8 @@ class BetwPar(expr):
         return 'parents: ' + '('+ str(self.value) +')'
 
 class CoolIf(expr):
-    def __init__(self, if_condition, then_generation, else_generation = None) -> None:
+    def __init__(self, if_condition, then_generation, else_generation = None, token_pos = None ):
+        self.token_pos = token_pos
         Node.__init__(self)
         self.condition = if_condition
         self.then_scope = then_generation
@@ -390,7 +397,8 @@ class CoolIf(expr):
         return f'if {self.condition}: {self.then_scope} \telse: {self.else_scope}'
 
 class CoolWhile(expr):
-    def __init__(self, while_condition, loop_scope) -> None:
+    def __init__(self, while_condition, loop_scope, token_pos):
+        self.token_pos = token_pos
         Node.__init__(self)
         self.condition = while_condition
         self.loop_scope = loop_scope
@@ -417,7 +425,8 @@ class CoolWhile(expr):
         return f'while {self.condition}: {self.loop_scope}'
 
 class CoolCallable(expr):
-    def __init__(self, id, exprs) -> None:
+    def __init__(self, id, exprs, token_pos = None):
+        self.token_pos = token_pos
         Node.__init__(self)
         self.id:CoolID = CoolID(id)
         self.params:list[expr] = exprs
@@ -450,7 +459,8 @@ class CoolCallable(expr):
         return context.validate_callable(self)
 
 class CoolNot(expr):
-    def __init__(self, value) -> None:
+    def __init__(self, value, token_pos):
+        self.token_pos = token_pos
         Node.__init__(self)
         self.value:expr =  value
         Node.set_father(self,self.childs())
@@ -468,7 +478,8 @@ class CoolNot(expr):
         return self.value.get_type() == env.bool_type_name
 
 class CoolUminus(expr):
-    def __init__(self, value) -> None:
+    def __init__(self, value, token_pos):
+        self.token_pos = token_pos
         Node.__init__(self)
         self.value =  value
         Node.set_father(self,self.childs())
@@ -486,7 +497,8 @@ class CoolUminus(expr):
         return self.value.get_type() == env.int_type_name
 
 class CoolIsVoid(expr):
-    def __init__(self, value) -> None:
+    def __init__(self, value, token_pos):
+        self.token_pos = token_pos
         Node.__init__(self)
         self.value =  value
         Node.set_father(self,self.childs())
@@ -501,7 +513,8 @@ class CoolIsVoid(expr):
         return False
 
 class CoolNew(expr):
-    def __init__(self, type) -> None:
+    def __init__(self, type, token_pos = None):
+        self.token_pos = token_pos
         Node.__init__(self)
         self.type =  type
         self.name = 'new'
@@ -525,7 +538,8 @@ class CoolNew(expr):
         return self.context.is_defined_type(self.type)
     
 class CoolCase(expr):
-    def __init__(self, case, cases_list) -> None:
+    def __init__(self, case, cases_list, token_pos):
+        self.token_pos = token_pos
         Node.__init__(self)
         self.name = 'case'
         self.type = 'case'
@@ -572,7 +586,8 @@ class CoolCase(expr):
         return self.context.define_and_validate_case(self)
 
 class CoolLet(expr):
-    def __init__(self, let, _in) -> None:
+    def __init__(self, let, _in, token_pos):
+        self.token_pos = token_pos
         Node.__init__(self)
         self.type = None #En este caso no va void, sino que es None por evaluar
         self.let = self.convert_to_vars(let)
@@ -620,7 +635,8 @@ class CoolLet(expr):
         return self.type
 
 class CoolBlockScope(expr):
-    def __init__(self, exprs:list[expr]) -> None:
+    def __init__(self, exprs:list[expr], token_pos):
+        self.token_pos = token_pos
         Node.__init__(self)
         self.exprs:list[expr] = exprs
         self.value = self.exprs[-1] #the value of a block is the value of the last expression
@@ -653,7 +669,8 @@ class CoolBlockScope(expr):
         return self.value.get_type()
 
 class CoolID(CoolVar):
-    def __init__(self, id, type = None) -> None:
+    def __init__(self, id, type = None, token_pos = None):
+        self.token_pos = token_pos
         Node.__init__(self)
         self.name = 'id'
         self.id = id
@@ -691,7 +708,8 @@ class CoolID(CoolVar):
         return self.context.validate_id(self)
 
 class Dispatch(expr): #Dispatch
-    def __init__(self, exp, type, function: CoolCallable) -> None:
+    def __init__(self, exp, type, function: CoolCallable, token_pos):
+        self.token_pos = token_pos
         Node.__init__(self)
         self.name = 'dispatch'
         self.expr:expr = exp 
@@ -775,7 +793,8 @@ class CoolParamsScope(Node):
         
 class Feature():
     class CoolAtr(CoolVar):
-        def __init__(self, id, type, value = None) -> None:
+        def __init__(self, id, type, value = None, token_pos = None):
+            self.token_pos = token_pos
             Node.__init__(self)
             self.ID = CoolID(id=id, type=type)
             self.id = id
@@ -804,7 +823,8 @@ class Feature():
             return True
 
     class CoolDef(Node):
-        def __init__(self, id, type = 'SELF_TYPE', params=[], scope= None) -> None:
+        def __init__(self, id, type = 'SELF_TYPE', params=[], scope= None, token_pos = None):
+            self.token_pos = token_pos
             Node.__init__(self)
             self.ID = CoolID(id=id, type='Function')
             self.type = type
@@ -842,7 +862,8 @@ class Feature():
 #endregion
 
 class CoolClass(Node):
-    def __init__(self,type, inherit:str = 'object', features:list = None, is_object = False) -> None:
+    def __init__(self,type, inherit:str = 'object', features:list = None, is_object = False, token_pos = None):
+        self.token_pos = token_pos
         Node.__init__(self)
         self.features = features
         self.type = type
