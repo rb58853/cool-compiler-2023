@@ -1,6 +1,7 @@
-object_type_name = 'Object'
+object_type_name = 'object'
 string_type_name = 'String'
 bool_type_name = 'Bool'
 int_type_name = 'Int'
 io_type_name = 'IO'
 void_type_name = 'Void'
+self_type_name = 'SELF_TYPE'

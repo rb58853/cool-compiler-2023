@@ -673,11 +673,11 @@ class CoolConstant(expr):
         return []
 
 class IntNode(CoolConstant):
-    def __init__(self, value) -> None:
+    def __init__(self, value = 0) -> None:
         super().__init__(value,IntClass.type)
 
 class CoolString(CoolConstant):
-    def __init__(self, value) -> None:
+    def __init__(self, value = "") -> None:
         super().__init__(value,StringClass.type)
 
 class CoolBool(CoolConstant):

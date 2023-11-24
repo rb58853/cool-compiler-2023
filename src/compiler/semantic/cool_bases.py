@@ -1,4 +1,4 @@
-from semantic.context import Context, CoolString, IntNode, CoolBool, CoolClass, Feature, CoolID, BinOp, CoolVar, Node
+from semantic.context import Context, CoolString, IntNode, CoolBool, CoolClass, Feature, CoolID, BinOp, CoolVar, Node, CoolNew
 import AST.environment as env
 
 #TODO Hay que cambiar todo este sistema y crear una clase para cada una de las clases base, una clase de COOL no solo de python, dentro de esta clase se le meten todos los features y lo que necesite en una instancia, cada clase hereda de object, y object no hereda de nadie.
@@ -24,7 +24,14 @@ class ObjectClass:
     
     class Features:
         def type_name():
-            return Feature.CoolDef('type_name',StringClass.type, [], CoolString(""))
+            #type_name() : String
+            return Feature.CoolDef('type_name',StringClass.type, [], CoolString())
+        def abort():
+            # abort() : Object
+            return Feature.CoolDef('abort',env.object_type_name, [], CoolNew(env.object_type_name))
+        def copy():
+            #copy() : SELF_TYPE
+            return Feature.CoolDef('abort',env.object_type_name, [], CoolNew(env.object_type_name))
     
 class StringClass:
     type = env.string_type_name
@@ -40,14 +47,16 @@ class StringClass:
     
     class Features:
         def concat():
-            other = CoolID('other',StringClass.type)
-            # self_id = CoolID('self')
-            self_id = CoolString("self+")#TODO esto hay que cambiarlo despues
-            other_id = CoolID('other')
-            return Feature.CoolDef('concat',StringClass.type, [other], BinOp('+',self_id, other_id))
+            #concat(s : String) : String
+            return Feature.CoolDef('concat',StringClass.type, [CoolID('s',env.string_type_name)], CoolString())
 
         def length():
-            return Feature.CoolDef('length',IntClass.type, [], IntNode(0))
+            #length() : Int
+            return Feature.CoolDef('length',IntClass.type, [], IntNode())
+        
+        def substr():
+            #substr(i : Int, l : Int) : String
+            return Feature.CoolDef('substr',env.string_type_name, [CoolID('i',env.int_type_name),CoolID('l',env.int_type_name)], CoolString())
 
 class IntClass:
     type = env.int_type_name
@@ -86,7 +95,18 @@ class IOClass:
     
     class Features:
         def out_string():
-            return Feature.CoolDef('out_string',StringClass.type, [CoolID('out',StringClass.type)], CoolString(""))
+            # out_string(x : String) : SELF_TYPE
+            return Feature.CoolDef('out_string',env.self_type_name, [CoolID('x',StringClass.type)], CoolNew(env.self_type_name))
+        def out_int():
+            #out_int(x : Int) : SELF_TYPE
+            return Feature.CoolDef('out_int', env.self_type_name,[CoolID('x', env.int_type_name)], CoolNew(env.self_type_name))
+        def in_string():
+            #in_string() : String
+            return Feature.CoolDef('in_string', env.string_type_name,[], CoolString())
+        def in_int():
+            #in_int() : Int
+            return Feature.CoolDef('in_int', env.string_type_name,[], IntNode())
+        
 
 def base_classes():
     return [ObjectClass.cclass(), IntClass.cclass(), StringClass.cclass(), IOClass.cclass()]
@@ -98,10 +118,3 @@ class BaseContext(Context):
         
 class Program:
     context = BaseContext()
-
-    # def set_context(obj):
-    #     obj.context = Program.context
-
-# class CoolObject(CoolClass):
-#     # instance = Program.context.types['object'].cclass
-#     type = 'object'        

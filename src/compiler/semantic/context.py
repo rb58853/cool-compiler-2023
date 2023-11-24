@@ -1,5 +1,5 @@
 import AST.environment as env
-from AST.ast import Feature, CoolClass, CoolString, CoolVar, CoolID, BinOp, IntNode, CoolBool, CoolCallable, Dispatch, Assign, Node, CoolLet, CoolCase, CoolIf, expr
+from AST.ast import Feature, CoolClass, CoolString, CoolVar, CoolID, BinOp, IntNode, CoolBool, CoolCallable, Dispatch, Assign, Node, CoolLet, CoolCase, CoolIf, expr, CoolWhile, CoolNew
 
 class VariableContext():
     def __init__(self, father) -> None:
@@ -78,6 +78,7 @@ class TypeContext(VariableContext):
             contex.name = cclass.type
             contex.cclass = cclass
             self.types[cclass.type] = contex
+            contex.types[env.self_type_name] = contex #Cada contexto se va a tener a si mismo como SELF_TYPE
             cclass.context = contex
             return contex
         else:
@@ -373,6 +374,17 @@ class Context(PrintContext):
         
         return True
     
+    def validate_while(self, _while: CoolWhile):
+        condition:expr = _while.condition
+        loop_scope:expr = _while.loop_scope
+
+        if not condition.validate(): return False
+        if condition.get_type() != env.bool_type_name and not condition.inherit_from_type(env.bool_type_name):
+            raise Exception(f"Es espera una condicion de tipo {env.bool_type_name} y la condicion dada es tipo {condition.get_type()}")
+        if not loop_scope.validate(): return False
+        
+        return True
+    
     def validate_case(self, case: CoolCase):
         pass
         
@@ -390,6 +402,4 @@ def info():
 
     \n PENDIENTES:
     - Implementar el metodo `is_function_override`
-    - Implementar el `dispatch` para todos los tipos base como `IO` y `string`
-    - Implementar el trato de `@` en el dispatch
     '''
