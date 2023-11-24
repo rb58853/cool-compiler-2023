@@ -89,6 +89,7 @@ class PlotNode():
 class Node(PlotNode):
     def __init__(self) -> None:
         super().__init__()
+        self.token_pos = (0,0)
         self.type:str
         self.context:Context = None
         self.father:Node = None
@@ -324,6 +325,19 @@ class Assign(BinOp):
 
         l_type:str = self.left.get_type()
         r_type:str = self.right.get_type()
+        
+        if self.right.name == 'case':
+            ccase:CoolCase = self.right
+            
+            for t in ccase.possible_types:
+                if l_type != t.get_type() and not t.inherit_from_type(l_type):
+                    raise Exception(f"En el case existe niguna posible salida que no corresponde al tipo {l_type}, {t.get_type()}")
+                    return False
+            
+            self.valid_types_check = True
+            return True
+
+
         if  l_type == r_type or self.right.inherit_from_type(l_type):
             self.valid_types_check = True
             return True
@@ -512,19 +526,27 @@ class CoolNew(expr):
     
 class CoolCase(expr):
     def __init__(self, case, cases_list) -> None:
+        Node.__init__(self)
+        self.name = 'case'
+        self.type = 'case'
+        self.possible_types = []
         self.case = case
-        self.cases_list = self.convert_to_cases(cases_list)
+        self.cases_list:dict[CoolID:expr] = self.convert_to_cases(cases_list)
         self.width = Node.WIDTH
         self.father = None
         self.draw_pos = (0,0)
-        Node.set_father(self, self.childs())
         Node.set_father(self, [case])
     
 
     def convert_to_cases(self,cases_list):
-        cases:list[(CoolID,expr)] = []
+        cases:dict[CoolID:expr] = {}
         for case in cases_list:
-            cases.append((CoolID(case['ID'], case['Type']), case['expr']))
+            key = CoolID(case['ID'], case['Type'])
+            value = case['expr']
+            cases[key] = value
+            Node.set_father(self,[value])    
+            Node.set_father(self,[key])
+
         return cases
     
     def childs(self):
@@ -544,6 +566,10 @@ class CoolCase(expr):
 
     def new_case(ID, type, exp):
         return {'ID': ID, 'Type':type, 'expr':exp}
+    
+    def validate(self):
+        self.get_contex_from_father()
+        return self.context.define_and_validate_case(self)
 
 class CoolLet(expr):
     def __init__(self, let, _in) -> None:
@@ -589,8 +615,7 @@ class CoolLet(expr):
         return self.context.define_let(self)
     
     def get_type(self):
-        if self.type is not None:
-            return self.type
+        #The type of let is the type of the body
         self.type = self.in_scope.get_type()
         return self.type
 
@@ -598,6 +623,7 @@ class CoolBlockScope(expr):
     def __init__(self, exprs:list[expr]) -> None:
         Node.__init__(self)
         self.exprs:list[expr] = exprs
+        self.value = self.exprs[-1] #the value of a block is the value of the last expression
         Node.set_father(self,self.childs())
 
     def childs(self):
@@ -622,6 +648,9 @@ class CoolBlockScope(expr):
             if not exp.validate():
                 result = False
         return result
+    
+    def get_type(self):
+        return self.value.get_type()
 
 class CoolID(CoolVar):
     def __init__(self, id, type = None) -> None:

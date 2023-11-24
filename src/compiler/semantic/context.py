@@ -20,7 +20,19 @@ class VariableContext():
                 self.variables[vvar.id] = vvar
                 return True
             else:
-                if (vvar.value.validate() and (vvar.value.get_type() == vvar.type or vvar.value.inherit_from_type( vvar.get_type()))):
+                if not vvar.value.validate():return False
+
+                if vvar.value.name == 'case':
+                    ccase:CoolCase = vvar.value
+                    l_type = vvar.get_type()
+
+                    for t in ccase.possible_types:
+                        if l_type != t.get_type() and not t.inherit_from_type(l_type):
+                            raise Exception(f"En el case existe niguna posible salida que no corresponde al tipo {l_type}, {t.get_type()}")
+                            return False
+                    return True
+                
+                if vvar.value.get_type() == vvar.type or vvar.value.inherit_from_type( vvar.get_type()):
                     self.variables[vvar.id] = vvar
                     return True
                 else:
@@ -79,6 +91,7 @@ class TypeContext(VariableContext):
             contex.cclass = cclass
             self.types[cclass.type] = contex
             contex.types[env.self_type_name] = contex #Cada contexto se va a tener a si mismo como SELF_TYPE
+            contex.variables[env.self_name] = Feature.CoolAtr(env.self_name,cclass.get_type(),None) #Cada clase tiene el atributo self, que es de su mismo tipo
             cclass.context = contex
             return contex
         else:
@@ -224,8 +237,42 @@ class LetContext(FunctionContext):
         let.context = context
         
         return scope.validate()    
-
-class PrintContext(LetContext):
+    
+class CaseContex(LetContext):
+    def define_and_validate_case(self, case: CoolCase):
+        left:expr = case.case
+        cases:dict[CoolID:expr] = case.cases_list
+        case.context = self.create_context_child()
+        
+        if not left.validate(): return False
+        for key in cases.keys():
+            case.context.define_case_var(key)
+                
+        for key in case.context.variables:
+            vvar:CoolID = cases[case.context.variables[key]]
+            if not vvar.validate(): return False
+            case.possible_types.append(self.get_context_from_type(vvar.get_type()).cclass)
+        return True    
+        
+    def define_case_var(self,vvar:CoolID):
+        #las variables en el case se sobreescriben, ocultan la anterior definicion, por ejemplo case x of a:Int=>expr, a:String=>expr, a sera entonces la ultima declarada 
+        if not self.is_defined_type(vvar.get_type()):
+           raise Exception(f"Se esta tratando de usar un tipo que no esta defnido {vvar.get_type()}")
+            
+        if not self.contex_have_same_type(vvar.type):
+            #En un case no pueden aprecer dos tipos iguales
+            self.variables[vvar.id] = vvar
+            return True
+        else:
+            raise Exception(f"Se esta tratando de duplicar el tipo {vvar.type} en un mismo case")
+    
+    def contex_have_same_type(self,type):
+        for v in self.variables:
+            if self.variables[v].type == type:
+                return True
+        return False
+        
+class PrintContext(CaseContex):
     def print(self):
         print (f'_____________________________________________________________________________________')
         print (f'{self} \n')
@@ -385,10 +432,7 @@ class Context(PrintContext):
         
         return True
     
-    def validate_case(self, case: CoolCase):
-        pass
-        
-    
+   
 def info():
     '''
     IMPLEMENTACIONES

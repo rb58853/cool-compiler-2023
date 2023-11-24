@@ -76,8 +76,7 @@ class BoolClass:
         return []
     
     def cclass() ->CoolClass:
-        int_class = CoolBool(type= BoolClass.type, inherit=ObjectClass.type, features= BoolClass.features())
-        return int_class
+        return CoolClass(type= env.bool_type_name, inherit=env.object_type_name, features= BoolClass.features())
     
     class Features:
         pass        
@@ -109,7 +108,7 @@ class IOClass:
         
 
 def base_classes():
-    return [ObjectClass.cclass(), IntClass.cclass(), StringClass.cclass(), IOClass.cclass()]
+    return [ObjectClass.cclass(), IntClass.cclass(), StringClass.cclass(), IOClass.cclass(), BoolClass.cclass()]
 
 class BaseContext(Context):
     def __init__(self) -> None:

@@ -42,5 +42,17 @@ class SyntacticError(CoolError):
         CoolError.ERRORS.append(self)
 
     def __str__(self):
-        return f"ERROR({self.type}({self.lineno},{self.pos}): {self.text} '{self.value}')"
+        return f'({self.lineno}, {self.pos}) - SyntacticError: ERROR at or near "{self.value}"'
+    
+class SemanticError(CoolError):
+    def __init__(self, by, token=None, pos=0, lineno=0, value=None, index=0, end=0) -> None:
+        super().__init__(by, token, pos, lineno, value, index, end)
+
+    def __call__(self, text = ""):
+        self.type = "SemanticError"
+        self.text = text
+        CoolError.ERRORS.append(self)
+
+    def __str__(self):
+        return f'({self.lineno}, {self.pos}) - SemanticError: {self.text}'
     

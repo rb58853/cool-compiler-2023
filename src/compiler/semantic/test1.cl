@@ -8,7 +8,8 @@ class MyClass1 inherits MyClass2{
     f1(y:Int):Int { 
         {
             b <- new MyClass1; 
-            -- b <- new Int; --Error No se puede asignar Int a MyClass2
+            self <- b1;
+            --b <- new Int; --Error No se puede asignar Int a MyClass2
             --bool_test <- b = b1;
             --let x: String, y:String <-"123", a:Bool, x:Int<-1 in y.length();
             --y <- 1;

@@ -27,16 +27,16 @@ class CoolParser(Parser):
         self.errors = []
         self.lexer = lexer
         self.print_errors = print_error
-
-    def error(self, token):
-        def token_pos(token):
+    
+    def token_pos(self,token):
             return token.index - self.lexer.init_index_line[token.lineno] + 1
-        
+    
+    def error(self, token):
         if token:
             synt_error = SyntacticError(
             by= self,
             token = token, 
-            pos = token_pos(token), 
+            pos = self.token_pos(token), 
             lineno = token.lineno,
             index= token.index,
             end = token.end
@@ -48,9 +48,9 @@ class CoolParser(Parser):
         else:
             synt_error = SyntacticError(
             by= self,
-            value= '', 
-            pos = -1, 
-            lineno = -1,
+            value= 'EOF', 
+            pos = 0, 
+            lineno = 0,
             index= -1,
             end = -1
             )
