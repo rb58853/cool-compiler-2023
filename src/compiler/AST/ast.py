@@ -103,15 +103,15 @@ class Node(PlotNode):
     def get_contex_from_father(self):
         self.context =  self.father.context
 
-    def have_parent_type(self,type):
+    def inherit_from_type(self,type):
         # if self.type == type:return True
-        cclass = self.get_type_as_class(type)
+        cclass = self.get_type_as_class()
         if cclass is None:
             return False         
-        return cclass.have_parent_type()
+        return cclass.inherit_from_type(type)
 
-    def get_type_as_class(self,type):
-        temp_cotext = self.context.get_context_from_type(type)
+    def get_type_as_class(self):
+        temp_cotext = self.context.get_context_from_type(self.type)
         if temp_cotext == False:
             return None
         else:
@@ -230,7 +230,8 @@ class BinOp(expr):
         if self.valid_types_check: return True
 
         l_type:str = self.left.get_type()
-        if ( l_type == self.right.get_type()):
+        r_type:str = self.right.get_type()
+        if  l_type == r_type or  self.left.inherit_from_type(r_type) or self.right.inherit_from_type(l_type):
             self.type = l_type
             self.valid_types_check = True
             return True
@@ -247,20 +248,56 @@ class BinOp(expr):
     def validate(self):
         self.get_contex_from_father()
         return self.context.validate_op(self)    
-
-class Assign(BinOp):
-    def __init__(self, left:expr, right:expr):
+    
+class Logicar(BinOp):    
+    def __init__(self,op:str, left:expr, right:expr):
         Node.__init__(self)
-        self.name = 'assign' #debug
+        self.name = 'logicar' #debug
+        self.op = op
         self.left:CoolID = left
         self.right:expr = right
         self.valid_types_check = False
+        self.type = env.bool_type_name
         Node.set_father(self,self.childs())
     
-    def validate(self):
-        self.get_contex_from_father()
+    def get_type(self):
+        return self.type
+    
+    def valid_types(self):
+        if self.valid_types_check: return True
 
-        return super().validate()    
+        l_type:str = self.left.get_type()
+        r_type:str = self.right.get_type()
+        if  l_type == r_type or  self.left.inherit_from_type(r_type) or self.right.inherit_from_type(l_type):
+            self.valid_types_check = True
+            return True
+        else:
+            return False
+    
+class Assign(BinOp):
+    def __init__(self,op, left:expr, right:expr):
+        Node.__init__(self)
+        self.name = 'assign' #debug
+        self.op = op
+        self.left:CoolID = left
+        self.right:expr = right
+        self.valid_types_check = False
+        self.type = env.void_type_name
+        Node.set_father(self,self.childs())
+    
+    def get_type(self):
+        return self.type
+    
+    def valid_types(self):
+        if self.valid_types_check: return True
+
+        l_type:str = self.left.get_type()
+        r_type:str = self.right.get_type()
+        if  l_type == r_type or self.right.inherit_from_type(l_type):
+            self.valid_types_check = True
+            return True
+        else:
+            return False   
 
 class BetwPar(expr):
     def __init__(self, expr) -> None:
@@ -278,26 +315,26 @@ class CoolIf(expr):
     def __init__(self, if_condition, then_generation, else_generation = None) -> None:
         Node.__init__(self)
         self.condition = if_condition
-        self.then_generation = then_generation
-        self.else_generation = else_generation
+        self.then_scope = then_generation
+        self.else_scope = else_generation
         Node.set_father(self,self.childs())
 
 
     def childs(self):
-        return [self.condition,self.then_generation,self.else_generation]
+        return [self.condition,self.then_scope,self.else_scope]
 
     def delete_child(self, child): #override in mutichlilds nodes
         if child == self.condition:
             self.condition = child.value
             self.condition.father = self
 
-        elif child == self.then_generation:
-            self.then_generation = child.value
-            self.then_generation.father = self
+        elif child == self.then_scope:
+            self.then_scope = child.value
+            self.then_scope.father = self
 
-        elif child == self.else_generation:
-            self.else_generation = child.value
-            self.else_generation.father = self
+        elif child == self.else_scope:
+            self.else_scope = child.value
+            self.else_scope.father = self
 
         else: Exception('Ocurrio un error al intentar eliminar un nodo')
 
@@ -305,7 +342,7 @@ class CoolIf(expr):
         return 'if - then - else'
 
     def __repr__(self) -> str:
-        return f'if {self.condition}: {self.then_generation} \telse: {self.else_generation}'
+        return f'if {self.condition}: {self.then_scope} \telse: {self.else_scope}'
 
 class CoolWhile(expr):
     def __init__(self, while_condition, loop_scope) -> None:
@@ -752,7 +789,7 @@ class CoolClass(Node):
         self.features_was_initialized = False
         Node.set_father(self,self.childs())
 
-    def have_parent_type(self,type):
+    def inherit_from_type(self,type):
         '''Devuelve true si alguna clase padre es de tipo type, deuelve false si ninguna de estas es tipo type'''
         return self.have_father(cclass_type= type)
             

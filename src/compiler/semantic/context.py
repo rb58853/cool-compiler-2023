@@ -1,4 +1,5 @@
-from AST.ast import Feature, CoolClass, CoolString, CoolVar, CoolID, BinOp, IntNode, CoolBool, CoolCallable, Dispatch, Assign, Node, CoolLet, CoolCase
+import AST.environment as env
+from AST.ast import Feature, CoolClass, CoolString, CoolVar, CoolID, BinOp, IntNode, CoolBool, CoolCallable, Dispatch, Assign, Node, CoolLet, CoolCase, CoolIf, expr
 
 class VariableContext():
     def __init__(self, father) -> None:
@@ -12,14 +13,14 @@ class VariableContext():
 
     def define_var(self, vvar:CoolVar, atr_case = False):
         #Las variables pueden repetirse en contextos hijos-padre en caso de no ser un atributo de una clase(en dicho caso no queda claro), en caso de no ser asi usar la linea comentada y comentar la condicion que se usa actualmente
-        # if (atr_case and not self.is_defined_var(vvar.id)) or (not atr_case and not self.variables.__contains__(vvar.id)):
-        if not self.variables.__contains__(vvar.id):
+        if (atr_case and not self.is_defined_var(vvar.id)) or (not atr_case and not self.variables.__contains__(vvar.id)):
+        # if not self.variables.__contains__(vvar.id):
             if vvar.value is None:
                 #por ahora las variables se inicializan en None, en futuros pasos se pueden inicializar con el valor default de cada type
                 self.variables[vvar.id] = vvar
                 return True
             else:
-                if (vvar.value.validate() and vvar.value.get_type() == vvar.type):
+                if (vvar.value.validate() and (vvar.value.get_type() == vvar.type or vvar.value.inherit_from_type( vvar.get_type()))):
                     self.variables[vvar.id] = vvar
                     return True
                 else:
@@ -358,6 +359,19 @@ class Context(PrintContext):
         else:
             raise Exception(f'El tipo {type} no esta definido')
             return False
+    
+    def validate_if(self, _if: CoolIf):
+        condition:expr = _if.condition
+        then_scope:expr = _if.then_scope
+        else_scope:expr = _if.else_scope
+
+        if not condition.validate(): return False
+        if condition.get_type() != env.bool_type_name and not condition.inherit_from_type(env.bool_type_name):
+            raise Exception(f"Es espera una condicion de tipo {env.bool_type_name} y la condicion dada es tipo {condition.get_type()}")
+        if not then_scope.validate(): return False
+        if not else_scope.validate(): return False    
+        
+        return True
     
     def validate_case(self, case: CoolCase):
         pass

@@ -1,7 +1,7 @@
 from sly import Parser
 from error.cool_error import SyntacticError
 from lexer.cool_lexer import CoolLexer
-from AST.ast import CoolBlockScope, CoolBool, CoolCallable,CoolCase, CoolClass, CoolID, CoolIf, CoolIsVoid, CoolNot,CoolLet, CoolNew, CoolProgram, CoolString, CoolUminus, CoolWhile, Dispatch, Feature, expr, IntNode, BinOp, BetwPar
+from AST.ast import CoolBlockScope, CoolBool, CoolCallable,CoolCase, CoolClass, CoolID, CoolIf, CoolIsVoid, CoolNot,CoolLet, CoolNew, CoolProgram, CoolString, CoolUminus, CoolWhile, Dispatch, Feature, expr, IntNode, BinOp, BetwPar, Logicar, Assign
 
 #TODO Implementar de ser mas atractivo la deteccion de errores en modo de panico, por ejemplo seguir hasta un ';' despues de encontrar un error
     
@@ -125,10 +125,7 @@ class CoolParser(Parser):
     @_('ID ASSIGN expr')
     def expr(self, p):
         #expr::= ID <- expr
-        if self.all_steps: return expr(BinOp('<-', CoolID(p[0]),p[2]))
-        return BinOp('<-', CoolID(p[0]), p[2])
-        if self.all_steps: return expr(BinOp('<-', p[0],p[2]))
-        return BinOp('<-', p[0], p[2])
+        return Assign('<-', CoolID(p[0]), p[2])
          
     @_('expr "@" TYPE "." ID "(" expr_list ")"')#, 'expr "@" TYPE "." ID "(" ")"' )
     def expr(self, p):
@@ -226,20 +223,17 @@ class CoolParser(Parser):
     @_('expr "<" expr')
     def expr(self, p):
         # expr ::= expr < expr
-        if self.all_steps: return expr(BinOp('<', p[0],p[2]))
-        return BinOp('<', p[0],p[2])
+        return Logicar('<', p[0],p[2])
         
     @_('expr LE expr')
     def expr(self, p):
         # expr ::= expr <= expr
-        if self.all_steps: return expr(BinOp('<=', p[0],p[2]))
-        return BinOp('<=', p[0],p[2])
+        return Logicar('<=', p[0],p[2])
         
     @_('expr "=" expr')
     def expr(self, p):
         # expr ::= expr = expr
-        if self.all_steps: return expr(BinOp('=', p[0],p[2]))
-        return BinOp('=', p[0],p[2])
+        return Logicar('=', p[0],p[2])
         
     @_('NOT expr')
     def expr(self, p):
