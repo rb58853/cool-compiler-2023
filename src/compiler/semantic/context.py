@@ -1,5 +1,6 @@
 import AST.environment as env
 from error.cool_error import SemanticError
+from semantic.special_cases import case_case, if_case, case_multiple_types
 from AST.ast import Feature, CoolClass, CoolString, CoolVar, CoolID, BinOp, IntNode, CoolBool, CoolCallable, Dispatch, Assign, Node, CoolLet, CoolCase, CoolIf, expr, CoolWhile, CoolNew
 
 
@@ -25,19 +26,30 @@ class VariableContext():
             else:
                 if not vvar.value.validate():return False
 
-                if vvar.value.name == 'case':
-                    ccase:CoolCase = vvar.value
+                if isinstance(self.right.get_type(), list):
                     l_type = vvar.get_type()
+                    return case_multiple_types(self.right, l_type)
 
-                    for t in ccase.possible_types:
-                        if l_type != t.get_type() and not t.inherit_from_type(l_type):
-                            SemanticError(
-                                pos=ccase.token_pos[1],
-                                lineno=ccase.token_pos[0]
-                                )(f"En el case existe una posible salida que no corresponde al tipo {l_type}, {t.get_type()}")
-                            # raise Exception(f"En el case existe niguna posible salida que no corresponde al tipo {l_type}, {t.get_type()}")
-                            return False
-                    return True
+                # if vvar.value.name == 'case':
+                #     ccase:CoolCase = vvar.value
+                #     l_type = vvar.get_type()
+
+                #     return case_case(case= ccase, type= l_type) 
+                
+                # if vvar.value.name == 'if':
+                #     _if:CoolIf = self.right
+                #     l_type = vvar.get_type()
+                #     return if_case(_if= _if, type= l_type) 
+            
+                    # for t in ccase.possible_types:
+                    #     if l_type != t.get_type() and not t.inherit_from_type(l_type):
+                    #         SemanticError(
+                    #             pos=ccase.token_pos[1],
+                    #             lineno=ccase.token_pos[0]
+                    #             )(f"En el case existe una posible salida que no corresponde al tipo {l_type}, {t.get_type()}")
+                    #         # raise Exception(f"En el case existe niguna posible salida que no corresponde al tipo {l_type}, {t.get_type()}")
+                    #         return False
+                    # return True
                 
                 if vvar.value.get_type() == vvar.type or vvar.value.inherit_from_type( vvar.get_type()):
                     self.variables[vvar.id] = vvar
@@ -440,10 +452,16 @@ class Context(PrintContext):
                         raise Exception (f'Los parametros {param_func} y {param_call} tienen tipo diferente ')
                         return False
             else: 
-                raise Exception (f'La cantidad de parametros con los cuales se llama {obj.id.id} es invalida ')
+                SemanticError(pos=obj.token_pos[1],
+                        lineno=obj.token_pos[0]
+                        )(f'La cantidad de parametros con los cuales se llama {obj.id.id} es invalida ')
+                # raise Exception (f'La cantidad de parametros con los cuales se llama {obj.id.id} es invalida ')
                 return False            
         else: 
-            raise Exception (f'El la funcion {obj.id.id} no esta definida en la clase {self.cclass}')
+            SemanticError(pos=obj.token_pos[1],
+                        lineno=obj.token_pos[0]
+                        )(f'La funcion {obj.id.id} no esta definida en la clase {self.cclass}')
+            # raise Exception (f'El la funcion {obj.id.id} no esta definida en la clase {self.cclass}')
             return False
         return True
     

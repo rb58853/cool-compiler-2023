@@ -17,7 +17,7 @@ class CoolParser(Parser):
         ('left', "ISVOID"),         #lv6
         ('left', '~'),              #lv7 
         ('left', '@'),              #lv8
-        ('right', 'IN'),            #lv9  Se agrega esta precedence extra dado que let se puede declarar sin usar IN, luego hay que dar prioridad cuando este aparece
+        # ('right', 'IN'),            #lv9  Se agrega esta precedence extra dado que let se puede declarar sin usar IN, luego hay que dar prioridad cuando este aparece
         ('left', '.'),              #lv10
     )
     
@@ -254,26 +254,22 @@ class CoolParser(Parser):
     @_("INT_CONST")
     def expr(self, p):
         # expr ::= integer
-        if self.all_steps:  return expr(IntNode(p.INT_CONST))
-        return IntNode(p.INT_CONST)
+        return IntNode(p.INT_CONST,token_pos=(p.lineno,self.token_pos(p)))
         
     @_("STRING")
     def expr(self, p):
         # expr ::= string
-        if self.all_steps: return expr(CoolString(p.STRING))
-        return CoolString(p.STRING)
+        return CoolString(p.STRING,token_pos=(p.lineno,self.token_pos(p)))
         
     @_("TRUE")
     def expr(self, p):
         # expr ::= true
-        if self.all_steps: return expr(CoolBool(p.TRUE))
-        return CoolBool(p.TRUE)
+        return CoolBool(p.TRUE,token_pos=(p.lineno,self.token_pos(p)))
         
     @_("FALSE")
     def expr(self, p):
         # expr ::= false
-        if self.all_steps: return expr(CoolBool(p.FALSE))
-        return CoolBool(p.FALSE)
+        return CoolBool(p.FALSE,token_pos=(p.lineno,self.token_pos(p)))
 
 #region UTILS------------------------------------------------------------------------------------------------------------------------
 

@@ -1,7 +1,14 @@
 import matplotlib.pyplot as plt
 import AST.environment as env
 from error.cool_error import SemanticError
+from semantic.special_cases import case_case, if_case, case_multiple_types
 
+'''
+TODO:
+1. crear una funcion para el caso especial `case`
+2. crear una funcion para el caso especial `if`, if es de tipo (A U B) siendo A el tipo de then_scope y B el tipo de else_scope
+3. llevar el control de que cada estructura ha sido validada
+'''
 class PlotNode():
     HEIGTH = 2.5
     WIDTH = 2
@@ -92,6 +99,8 @@ class Node(PlotNode):
         self.father:Node = None
         self.name = 'empty'
         self.is_valid = False
+        self.check_type = False
+        self.was_validate = False
     
     def set_father(parent, childs:list):
         for child in childs:
@@ -102,6 +111,10 @@ class Node(PlotNode):
         self.context =  self.father.context
 
     def inherit_from_type(self,type):
+        '''
+        Se llama desde la estructura `E` (de tipo `C`), y se le pasa el tipo `P`, esto evalua y devuelve si `C <= P`
+        - nota: `C<=P`, en Cool significa que el tipo `C` es `P` o hereda de `P`
+        '''
         cclass = self.get_type_as_class()
         if cclass.type == type:return True #En este caso es para cuando entra al contexto de SELF_TYPE. SELF_TYPE --->> Class Type
         if cclass is None:
@@ -109,17 +122,24 @@ class Node(PlotNode):
         return cclass.inherit_from_type(type)
 
     def get_type_as_class(self):
-        temp_cotext = self.context.get_context_from_type(self.type)
+        # temp_cotext = self.context.get_context_from_type(self.type)
+        temp_cotext = self.context.get_context_from_type(self.get_type())
         if temp_cotext == False:
             return None
         else:
             return temp_cotext.cclass
     
     def get_type(self):
+        if self.check_type: return self.type
+        if self.type == env.self_type_name:
+            self.type = self.context.get_context_from_type(env.self_type_name).type
+            self.check_type = True
         return self.type
 
     def validate(self): #override this
         self.is_valid = True
+        self.was_validate = True
+
         return True
 
     def childs(self):
@@ -309,10 +329,21 @@ class Logicar(BinOp):
             if  l_type == env.int_type_name and r_type == env.int_type_name:
                 self.valid_types_check = True
                 return True
+            else:
+                SemanticError(pos = self.token_pos[1],
+                              lineno = self.token_pos[0]
+                        )(f'TypeError: non-Int arguments: {l_type} {self.op} {r_type}')
+                return False      
+
             
         elif  l_type == r_type or  self.left.inherit_from_type(r_type) or self.right.inherit_from_type(l_type):
             self.valid_types_check = True
             return True
+        else:  
+            SemanticError(pos = self.token_pos[1],
+                              lineno = self.token_pos[0]
+                        )(f'TypeError: non-same type arguments: {l_type} {self.op} {r_type}')
+            return False          
         
         return False
     
@@ -329,7 +360,7 @@ class Assign(BinOp):
         Node.set_father(self,self.childs())
     
     def get_type(self):
-        return self.type
+        return self.right.get_type()
     
     def valid_types(self):
         if self.valid_types_check: return True
@@ -337,20 +368,28 @@ class Assign(BinOp):
         l_type:str = self.left.get_type()
         r_type:str = self.right.get_type()
         
-        if self.right.name == 'case':
-            ccase:CoolCase = self.right
+        if isinstance(self.right.get_type(), list):
+            return case_multiple_types(self.right, l_type)
+
+        # if self.right.name == 'case':
+        #     ccase:CoolCase = self.right
+        #     return case_case(case= ccase, type= l_type) 
+        
+        # if self.right.name == 'if':
+        #     _if:CoolIf = self.right
+        #     return if_case(_if= _if, type= l_type) 
             
-            for t in ccase.possible_types:
-                if l_type != t.get_type() and not t.inherit_from_type(l_type):
-                    SemanticError(
-                                pos=ccase.token_pos[1],
-                                lineno=ccase.token_pos[0]
-                                )(f"En el case existe niguna posible salida que no corresponde al tipo {l_type}, {t.get_type()}")
-                    # raise Exception(f"En el case existe niguna posible salida que no corresponde al tipo {l_type}, {t.get_type()}")
-                    return False
+            # for t in ccase.possible_types:
+            #     if l_type != t.get_type() and not t.inherit_from_type(l_type):
+            #         SemanticError(
+            #                     pos=ccase.token_pos[1],
+            #                     lineno=ccase.token_pos[0]
+            #                     )(f"En el case existe niguna posible salida que no corresponde al tipo {l_type}, {t.get_type()}")
+            #         # raise Exception(f"En el case existe niguna posible salida que no corresponde al tipo {l_type}, {t.get_type()}")
+            #         return False
             
-            self.valid_types_check = True
-            return True
+            # self.valid_types_check = True
+            # return True
 
 
         if  l_type == r_type or self.right.inherit_from_type(l_type):
@@ -376,11 +415,11 @@ class CoolIf(expr):
     def __init__(self, if_condition, then_generation, else_generation = None, token_pos = None ):
         self.token_pos = token_pos
         Node.__init__(self)
+        self.name = "if"
         self.condition = if_condition
         self.then_scope = then_generation
         self.else_scope = else_generation
         Node.set_father(self,self.childs())
-
 
     def childs(self):
         return [self.condition,self.then_scope,self.else_scope]
@@ -405,6 +444,30 @@ class CoolIf(expr):
 
     def __repr__(self) -> str:
         return f'if {self.condition}: {self.then_scope} \telse: {self.else_scope}'
+    
+    def validate(self):
+        if self.was_validate:
+            return self.is_valid
+        self.get_contex_from_father()
+        if self.context.validate_if():
+            self.is_valid = True
+        else:
+            self.is_valid = False    
+        self.was_validate = True
+
+    def get_type(self):
+        if self.check_type: return self.type
+        if not self.was_validate:
+            self.validate()        
+        self.check_type = True
+        if self.then_scope.get_type() == self.else_scope.get_type():
+            self.type = self.then_scope.get_type()
+            return self.type
+        else:    
+            self.type = []
+            self.type.append(self.then_scope.get_type())
+            self.type.append(self.else_scope.get_type())
+        return self.type    
 
 class CoolWhile(expr):
     def __init__(self, while_condition, loop_scope, token_pos):
@@ -433,6 +496,10 @@ class CoolWhile(expr):
 
     def __repr__(self) -> str:
         return f'while {self.condition}: {self.loop_scope}'
+    
+    def validate(self):
+        self.get_contex_from_father()
+        return self.context.validate_while()
 
 class CoolCallable(expr):
     def __init__(self, id, exprs, token_pos = None):
@@ -495,9 +562,9 @@ class CoolNot(expr):
         if self.value.get_type() == self.type:
             return True
         else:
-            SemanticError(pos = self.token_pos[1],
-                        lineno = self.token_pos[0]
-                        )(f'TypeError: Not non-Bool argument: {type}')
+            SemanticError(pos = self.value.token_pos[1],
+                        lineno = self.value.token_pos[0]
+                        )(f"TypeError: Argument of 'not' has type {type} instead of Bool.")
             return False
 
 class CoolUminus(expr):
@@ -593,8 +660,17 @@ class CoolCase(expr):
             cases[key] = value
             Node.set_father(self,[value])    
             Node.set_father(self,[key])
-
         return cases
+    
+    def get_type(self):
+        if self.check_type: return self.type
+        if not self.was_validate:
+            self.validate()        
+        self.type = []
+        self.check_type = True
+        for case in self.context.variables.values():
+            self.type.append(case.get_type())
+        return self.type
     
     def childs(self):
         return self.cases_list
@@ -615,8 +691,17 @@ class CoolCase(expr):
         return {'ID': ID, 'Type':type, 'expr':exp}
     
     def validate(self):
-        self.get_contex_from_father()
-        return self.context.define_and_validate_case(self)
+        if self.was_validate:
+            return self.is_valid
+        else:
+            self.get_contex_from_father()
+            if self.context.define_and_validate_case(self):
+                self.is_valid = True
+            else:
+                self.is_valid = False
+
+            self.was_validate = True
+            return self.is_valid
 
 class CoolLet(expr):
     def __init__(self, let, _in, token_pos):
@@ -775,7 +860,9 @@ class Dispatch(expr): #Dispatch
         return self.context.validate_dispatch(self)
 
 class CoolConstant(expr):
-    def __init__(self, value, name) -> None:
+    def __init__(self, value, name, token_pos) -> None:
+        Node.__init__(self)
+        self.token_pos = token_pos
         self.value =  value
         self.width = Node.WIDTH
         self.type = name
@@ -793,18 +880,22 @@ class CoolConstant(expr):
 
     def childs(self):
         return []
-
+    
+    def get_type_as_class(self):
+        self.get_contex_from_father() 
+        return super().get_type_as_class()
+    
 class IntNode(CoolConstant):
-    def __init__(self, value = 0) -> None:
-        super().__init__(value,IntClass.type)
+    def __init__(self, value = 0,token_pos= None) -> None:
+        super().__init__(value,IntClass.type,token_pos)
 
 class CoolString(CoolConstant):
-    def __init__(self, value = "") -> None:
-        super().__init__(value,StringClass.type)
+    def __init__(self, value = "", token_pos = None) -> None:
+        super().__init__(value,StringClass.type,token_pos)
 
 class CoolBool(CoolConstant):
-    def __init__(self, value) -> None:
-        super().__init__(value,BoolClass.type)
+    def __init__(self, value,token_pos= None) -> None:
+        super().__init__(value,BoolClass.type,token_pos)
 #endregion
 
 #region Features
@@ -896,7 +987,22 @@ class Feature():
                 return True
             
         def validate(self):
-            return self.scope.validate()
+            if not self.scope.validate():
+                return False
+            else:
+                scope_type = self.scope.get_type()
+                type= self.get_type()
+                
+                if isinstance(scope_type, list):
+                    return case_multiple_types(self.scope, type)
+                
+                if scope_type == type or self.scope.inherit_from_type(type) :
+                    return True
+                else:
+                    SemanticError(pos = self.scope.token_pos[1],
+                                lineno = self.scope.token_pos[0]
+                        )(f'TypeError: Inferred return type {self.scope.get_type()} of method {self.ID.id} does not conform to declared return type {self.type}.')
+                    return False
 #endregion
 
 class CoolClass(Node):
@@ -955,15 +1061,6 @@ class CoolClass(Node):
         
     def initialize(self):
         self.father.context.initialize_class(cclass = self)
-        a=1
-        # context = self.father.context.initialize_class(cclass = self)
-        # if context == False:
-        #     self.context = None
-        #     #Crear error semantico
-        #     return False
-        # else:
-        #     self.context = context
-        #     return True
     
     def set_parent_class(self, inherit):
         self.inherit_class = inherit

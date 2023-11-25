@@ -110,7 +110,7 @@ class IOClass:
             return Feature.CoolDef('in_string', env.string_type_name,[], CoolString(), token_pos=(0,0))
         def in_int():
             #in_int() : Int
-            return Feature.CoolDef('in_int', env.string_type_name,[], IntNode(), token_pos=(0,0))
+            return Feature.CoolDef('in_int', env.int_type_name,[], IntNode(), token_pos=(0,0))
         
 
 def base_classes():
