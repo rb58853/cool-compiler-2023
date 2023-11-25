@@ -1,43 +1,102 @@
-from ...AST.ast import BinOp, CoolIf, CoolWhile, IntNode
-#tester
-try:
-    # Test de instancias
-    test_node = BinOp("+", IntNode(1), IntNode(2))
-    print("Instancia de BinOp creada:", test_node)
-    print("Las importaciones parecen estar funcionando correctamente.")
-except Exception as e:
-    print("Hubo un error al importar o utilizar las clases de AST:", e)
+# Importa las clases necesarias de tu AST
+from AST.ast import CoolClass, Assign, Feature, BinOp, CoolVar, CoolWhile, CoolProgram
 
-# func de generacion de codigo para cada tipo de nodo
-def generate_code_for_binop(node):
-    left_code = generate_code(node.left)
-    right_code = generate_code(node.right)
-    return f"({left_code} {node.op} {right_code})"
 
-def generate_code_for_coolif(node):
-    condition_code = generate_code(node.condition)
-    then_code = generate_code(node.then_generation)
-    else_code = generate_code(node.else_generation) if node.else_generation else "nop"
-    return f"if {condition_code} then {then_code} else {else_code}"
+def generate_type_hierarchy(program):
+    types_section = ".TYPES\n"
+    for cclass in program.classes:
+        types_section += f"type {cclass.type} {{\n"
+        for feature in cclass.features:
+            if isinstance(feature, Feature.CoolAtr):
+                types_section += f"    attribute {feature.id};\n"
+            elif isinstance(feature, Feature.CoolDef):
+                types_section += f"    method {feature.ID.id} : {feature.ID.id}_method;\n"
+        types_section += "}\n\n"
+    return types_section
 
-def generate_code_for_coolwhile(node):
-    condition_code = generate_code(node.condition)
-    loop_code = generate_code(node.loop_scope)
-    return f"while {condition_code} do {loop_code}"
+# Variables globales para llevar la cuenta de los identificadores y etiquetas nicos
+unique_id_counter = 0
+unique_label_counter = 0
 
-def generate_code_for_int(node):
-    return str(node.value)
+def some_unique_id_generator():
+    global unique_id_counter
+    unique_id_counter += 1
+    return unique_id_counter
 
-# Funcion general para la generacion de codigo
+def some_unique_label_generator():
+    global unique_label_counter
+    unique_label_counter += 1
+    return unique_label_counter
+
+# para crear variables temporales y etiquetas
+def create_new_temp_var():
+    # Incrementa un contador o genera un nombre unico para una nueva variable temporal
+    return "temp_" + str(some_unique_id_generator())
+
+def create_new_label():
+    return "label_" + str(some_unique_label_generator())
+
+
+# operaciones binarias
+def generate_code_binop(binop_node: BinOp):
+    left_code = generate_code(binop_node.left) # Genera el codigo para el lado izquierdo
+    right_code = generate_code(binop_node.right) # Genera el codigo para el lado derecho
+    result_var = create_new_temp_var() # varlbe temporal para almacenar el resultado
+
+    operation_code = f"{result_var} = {left_code} {binop_node.op} {right_code};\n"
+    return operation_code
+
+def generate_code_assign(assign_node: Assign):
+    right_code = generate_code(assign_node.right)
+    return f"{assign_node.left.id} = {right_code};\n"
+
+def generate_code_coolvar(var_node: CoolVar):
+    if hasattr(var_node, 'is_definition') and var_node.is_definition:
+        return f"LOCAL {var_node.id};\n"
+    else:
+        return var_node.id
+
+
+# CoolWhile
+def generate_code_coolwhile(while_node):
+    condition_code = generate_code(while_node.condition)
+    body_code = generate_code(while_node.body)
+    start_label = create_new_label()
+    end_label = create_new_label()
+
+    code = f"LABEL {start_label};\n"
+    code += f"{condition_code}\n"
+    code += f"IF {condition_code} GOTO {end_label};\n"
+    code += f"{body_code}\n"
+    code += f"GOTO {start_label};\n"
+    code += f"LABEL {end_label};\n"
+    return code
+
+
+
+def generate_cil_code(program: CoolProgram):
+    cil_code = generate_type_hierarchy(program)  # Genera jerarquia de tipos
+    cil_code += ".CODE\n"  
+
+    for cclass in program.classes:
+        for feature in cclass.features:
+            if isinstance(feature, Feature.CoolDef):  # Solo mtodos
+                cil_code += generate_method_code(feature, cclass)
+
+    return cil_code
+
+def generate_method_code(method, cclass):
+    method_code = f"function {cclass.type}_{method.ID.id} {{\n"
+    method_code += generate_code(method.scope)  # cuerpo del método
+    method_code += "}\n\n"
+    return method_code
+
 def generate_code(node):
     if isinstance(node, BinOp):
-        return generate_code_for_binop(node)
-    elif isinstance(node, CoolIf):
-        return generate_code_for_coolif(node)
-    elif isinstance(node, CoolWhile):
-        return generate_code_for_coolwhile(node)
-    elif isinstance(node, IntNode):
-        return generate_code_for_int(node)
-   
+        return generate_code_binop(node)
+    elif isinstance(node, CoolVar):
+        return generate_code_coolvar(node)
+    elif isinstance(node, Assign):
+        return generate_code_assign(node)
     else:
-        raise NotImplementedError(f"Generacion de codigo no implementada para el nodo: {type(node)}")
+        return ""
