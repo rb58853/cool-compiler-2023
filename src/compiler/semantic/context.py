@@ -266,7 +266,29 @@ class FunctionContext(TypeContext):
     
     def is_function_writable(self, func:Feature.CoolDef):
         #Hay que hacer lo de override
-        return not self.is_defined_func(func.ID.id)
+        if not self.is_defined_func(func.ID.id):
+            return True
+        inherit_func:Feature.CoolDef = self.get_func(func.ID.id)
+
+        if len(inherit_func.params.childs()) != len(func.params.childs()):
+            SemanticError(pos = func.token_pos[1],
+                   lineno = func.token_pos[0]
+                   )(f"Se esta intentando redefinir la funcion {func.ID.id} con cantidad de parametros invalida")
+            return False
+        
+        if inherit_func.type != func.type:
+            SemanticError(pos = func.token_pos[1],
+                   lineno = func.token_pos[0]
+                   )(f"Se esta intentando redefinir la funcion {func.ID.id} con un tipo invalido")
+            return False
+
+        for inherit_param, new_param in zip (inherit_func.params.childs(), func.params.childs()):
+            if inherit_param.type != new_param.type:
+                SemanticError(pos = new_param.token_pos[1],
+                   lineno = new_param.token_pos[0]
+                   )(f"Se esta intentando redefinir la funcion {func.ID.id} con parametros invalidos| {inherit_param.type} != {inherit_param.type}")
+                return False
+        return True    
 
     def get_func(self, id):
         if self.functions.__contains__(id): 
@@ -339,7 +361,7 @@ class CaseContex(LetContext):
         if not self.is_defined_type(vvar.get_type()):
             SemanticError(pos=vvar.token_pos[1],
                         lineno=vvar.token_pos[0]
-                        )(f"Se esta tratando de usar un tipo que no esta defnido {vvar.get_type()}")
+                        )(f"TypeError: Class {vvar.get_type()} is undefined.")
         #   raise Exception(f"Se esta tratando de usar un tipo que no esta defnido {vvar.get_type()}")
             return False
             
@@ -350,7 +372,7 @@ class CaseContex(LetContext):
         else:
             SemanticError(pos=vvar.token_pos[1],
                         lineno=vvar.token_pos[0]
-                        )(f"Se esta tratando de duplicar el tipo {vvar.type} en un mismo case")
+                        )(f"SemanticError: Duplicate branch {vvar.type} in case statement.")
             # raise Exception(f"Se esta tratando de duplicar el tipo {vvar.type} en un mismo case")
             return False
     
@@ -467,6 +489,9 @@ class Context(PrintContext):
         #Cada parametro llama a la funcion validate que esta tiene su propio contexto, es decir en caso de dispach los parametros se evaluara si existen en su contexto
         func:Feature.CoolDef = self.get_func(obj.id.id)
         
+        token_pos_0 = obj.token_pos[0]
+        token_pos_1 = obj.token_pos[1]
+
         if func != False:
             obj.id.set_type(func.type)
             # obj.type = func.get_type()
@@ -477,14 +502,14 @@ class Context(PrintContext):
                         raise Exception (f'Los parametros {param_func} y {param_call} tienen tipo diferente ')
                         return False
             else: 
-                SemanticError(pos=obj.token_pos[1],
-                        lineno=obj.token_pos[0]
+                SemanticError(pos=token_pos_1,
+                        lineno=token_pos_0
                         )(f'La cantidad de parametros con los cuales se llama {obj.id.id} es invalida ')
                 # raise Exception (f'La cantidad de parametros con los cuales se llama {obj.id.id} es invalida ')
                 return False            
         else: 
-            SemanticError(pos=obj.token_pos[1],
-                        lineno=obj.token_pos[0]
+            SemanticError(pos=token_pos_1,
+                        lineno=token_pos_0
                         )(f'La funcion {obj.id.id} no esta definida en la clase {self.cclass}')
             # raise Exception (f'El la funcion {obj.id.id} no esta definida en la clase {self.cclass}')
             return False
@@ -532,8 +557,10 @@ class Context(PrintContext):
                         )(f"Es espera una condicion de tipo {env.bool_type_name} y la condicion dada es tipo {condition.get_type()}")
             # raise Exception(f"Es espera una condicion de tipo {env.bool_type_name} y la condicion dada es tipo {condition.get_type()}")
             return False
-        if not then_scope.validate(): return False
-        if not else_scope.validate(): return False    
+        if not then_scope.validate(): 
+            return False
+        if not else_scope.validate(): 
+            return False    
         
         return True
     

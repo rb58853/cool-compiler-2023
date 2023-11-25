@@ -120,7 +120,7 @@ class CoolParser(Parser):
     
     @_('ID ":" TYPE')
     def param_list(self, p):
-        return [CoolID(id=p.ID, type=p.TYPE,token_pos=(p.lineno,self.token_pos(p)) )] 
+        return [CoolID(id=p.ID, type=p.TYPE,token_pos=(p.lineno,self.token_pos(p)))] 
 #endregion   
 
 #region expr ------------------------------------------------------------------------------------------------------------------------
@@ -128,24 +128,45 @@ class CoolParser(Parser):
     def expr(self, p):
         #expr::= ID <- expr
         return Assign('<-', CoolID(p[0]), p[2],token_pos=(p.lineno,self.token_pos(p)))
-         
-    @_('expr "@" TYPE "." ID "(" expr_list ")"')#, 'expr "@" TYPE "." ID "(" ")"' )
-    def expr(self, p):
-        ID = CoolCallable(p.ID,p.expr_list)
-        return Dispatch(p.expr,p.TYPE,ID, token_pos=(p.lineno,self.token_pos(p)))
-    @_('expr "@" TYPE "." ID "(" ")"')
-    def expr(self,p):
-        ID = CoolCallable(p.ID,[])
-        return Dispatch(p.expr,p.TYPE,ID,token_pos=(p.lineno,self.token_pos(p)))
+
+    # @_('expr "@" TYPE "." ID "(" expr_list ")"')#, 'expr "@" TYPE "." ID "(" ")"' )
+    # def expr(self, p):
+    #     ID = CoolCallable(p.ID,p.expr_list)
+    #     return Dispatch(p.expr,p.TYPE,ID, token_pos=(p.lineno,self.token_pos(p)))
+    # @_('expr "@" TYPE "." ID "(" ")"')
+    # def expr(self,p):
+    #     ID = CoolCallable(p.ID,[])
+    #     return Dispatch(p.expr,p.TYPE,ID,token_pos=(p.lineno,self.token_pos(p)))
     
-    @_('expr "." ID "(" expr_list ")"')
+    # @_('expr "." ID "(" expr_list ")"')
+    # def expr(self, p):
+    #     ID = CoolCallable(p.ID,p.expr_list)
+    #     return Dispatch(p.expr,None,ID,token_pos=(p.lineno,self.token_pos(p)))
+    # @_('expr "." ID "(" ")"')
+    # def expr(self, p):
+    #     ID = CoolCallable(p.ID,[])
+    #     return Dispatch(p.expr,None,ID,token_pos=(p.lineno,self.token_pos(p)))
+    
+#region test
+    
+    @_('expr "@" TYPE "." callable')#, 'expr "@" TYPE "." ID "(" ")"' )
     def expr(self, p):
-        ID = CoolCallable(p.ID,p.expr_list)
-        return Dispatch(p.expr,None,ID,token_pos=(p.lineno,self.token_pos(p)))
-    @_('expr "." ID "(" ")"')
+        return Dispatch(p.expr,p.TYPE,p.callable, token_pos=(p.lineno,self.token_pos(p)))
+    
+    @_('expr "." callable')
     def expr(self, p):
-        ID = CoolCallable(p.ID,[])
-        return Dispatch(p.expr,None,ID,token_pos=(p.lineno,self.token_pos(p)))
+        return Dispatch(p.expr,None,p.callable,token_pos=(p.lineno,self.token_pos(p)))
+    
+    @_('ID "(" ")"')
+    def callable(self, p):
+        #expr:: ID()
+        return CoolCallable(p.ID,[],token_pos=(p.lineno,self.token_pos(p)))
+    @_('ID "(" expr_list ")"')
+    def callable(self, p):
+        #expr:: ID(expr, expr, ...expr)
+        return CoolCallable(p.ID, p.expr_list,token_pos=(p.lineno,self.token_pos(p)))
+  
+#endregion
 
     @_('ID "(" ")"')
     def expr(self, p):
@@ -303,13 +324,13 @@ class CoolParser(Parser):
     @_('ID ":" TYPE')
     def let_assign(self, p):
         return CoolLet.new_let(ID= p.ID, type=p.TYPE, exp=None)
-
+    
     #CREATE CASE_LIST---------------------------------------------  
     @_('ID ":" TYPE DARROW expr ";" case_list')
     def case_list(self, p):
-        return [CoolCase.new_case(ID= p.ID, type=p.TYPE, exp=p.expr)] + p.case_list
+        return [CoolCase.new_case(ID= p.ID, type=p.TYPE, exp=p.expr, pos= (p.lineno,self.token_pos(p)))] + p.case_list
     @_('ID ":" TYPE DARROW expr ";"')
     def case_list(self, p):
-        return [CoolCase.new_case(ID= p.ID, type=p.TYPE, exp= p.expr)]
+        return [CoolCase.new_case(ID= p.ID, type=p.TYPE, exp= p.expr, pos= (p.lineno,self.token_pos(p)))]
 #endregion
 #endregion

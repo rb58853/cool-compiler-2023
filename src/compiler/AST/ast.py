@@ -1,7 +1,7 @@
 import matplotlib.pyplot as plt
 import AST.environment as env
 from error.cool_error import SemanticError
-from semantic.special_cases import case_case, if_case, case_multiple_types
+from semantic.special_cases import case_case, if_case, case_multiple_types, have_multi_types
 
 '''
 TODO:
@@ -109,6 +109,8 @@ class Node(PlotNode):
     
     def get_contex_from_father(self):
         self.context =  self.father.context
+
+   
 
     def inherit_from_type(self,type):
         '''
@@ -373,27 +375,6 @@ class Assign(BinOp):
         if isinstance(self.right.get_type(), list):
             return case_multiple_types(self.right, l_type)
 
-        # if self.right.name == 'case':
-        #     ccase:CoolCase = self.right
-        #     return case_case(case= ccase, type= l_type) 
-        
-        # if self.right.name == 'if':
-        #     _if:CoolIf = self.right
-        #     return if_case(_if= _if, type= l_type) 
-            
-            # for t in ccase.possible_types:
-            #     if l_type != t.get_type() and not t.inherit_from_type(l_type):
-            #         SemanticError(
-            #                     pos=ccase.token_pos[1],
-            #                     lineno=ccase.token_pos[0]
-            #                     )(f"En el case existe niguna posible salida que no corresponde al tipo {l_type}, {t.get_type()}")
-            #         # raise Exception(f"En el case existe niguna posible salida que no corresponde al tipo {l_type}, {t.get_type()}")
-            #         return False
-            
-            # self.valid_types_check = True
-            # return True
-
-
         if  l_type == r_type or self.right.inherit_from_type(l_type):
             self.valid_types_check = True
             return True
@@ -456,6 +437,7 @@ class CoolIf(expr):
         else:
             self.is_valid = False    
         self.was_validate = True
+        return self.is_valid
 
     def get_type(self):
         if self.check_type: return self.type
@@ -467,8 +449,19 @@ class CoolIf(expr):
             return self.type
         else:    
             self.type = []
-            self.type.append(self.then_scope.get_type())
-            self.type.append(self.else_scope.get_type())
+            then_type =self.then_scope.get_type()
+            else_type = self.else_scope.get_type()
+            
+            if have_multi_types(then_type):
+                self.type+=then_type
+            else:    
+                self.type.append(then_type)
+            
+            if have_multi_types(else_type):
+                self.type+=then_type
+            else:    
+                self.type.append(else_type)
+        
         return self.type    
 
 class CoolWhile(expr):
@@ -656,8 +649,10 @@ class CoolCase(expr):
 
     def convert_to_cases(self,cases_list):
         cases:dict[CoolID:expr] = {}
-        for case in cases_list:
-            key = CoolID(case['ID'], case['Type'])
+        for _case in cases_list:
+            pos = _case[1]
+            case = _case[0]
+            key = CoolID(case['ID'], case['Type'], token_pos= pos)
             value = case['expr']
             cases[key] = value
             Node.set_father(self,[value])    
@@ -670,8 +665,14 @@ class CoolCase(expr):
             self.validate()        
         self.type = []
         self.check_type = True
-        for case in self.context.variables.values():
-            self.type.append(case.get_type())
+        for cool_id in self.context.variables.values():
+            case = self.cases_list[cool_id]
+            type = case.get_type()
+            if have_multi_types(type):
+                self.type+=type
+            else:    
+                self.type.append(type)
+
         return self.type
     
     def childs(self):
@@ -681,16 +682,13 @@ class CoolCase(expr):
         return 'case of'
 
     def __str__(self) -> str:
-        result = f'case {self.case} of [\n'
-        for case in self.cases_list:
-            result+= f'{case["ID"]}: {case["Type"]} => {case["expr"]}\n'
-        return result + ']'
+        return 'case of'
 
     def delete_condition(self):
         return False
 
-    def new_case(ID, type, exp):
-        return {'ID': ID, 'Type':type, 'expr':exp}
+    def new_case(ID, type, exp, pos):
+        return ({'ID': ID, 'Type':type, 'expr':exp}, pos)
     
     def validate(self):
         if self.was_validate:
@@ -1099,6 +1097,11 @@ class CoolClass(Node):
         if self.inherit_class == None or self.inherit == env.object_type_name  : return False
         return self.inherit_class.have_father(cclass,cclass_type)
     
+    def last_inherit_not_object(self):
+        if self.inherit_class.type == env.object_type_name:
+            return self.type #En este caso es para cuando entra al contexto de SELF_TYPE. SELF_TYPE --->> Class Type
+        return self.inherit_class.last_inherit_not_object()
+
 class CoolProgram(Node):
     def __init__(self, cclass_list:list[CoolClass]) -> None:
         self.type:str= 'program'
