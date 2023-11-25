@@ -408,11 +408,12 @@ class Context(PrintContext):
     
     def validate_assign(self, assing:Assign):
         valid_types = assing.valid_types()
-        if not valid_types:
-            SemanticError(pos=assing.token_pos[1],
-                        lineno=assing.token_pos[0]
-                        )(f'Se esta intentando hacer una asignacion al id {assing.left.id} un valor de tipo {assing.right.get_type()}')
-            # raise Exception(f'Se esta intentando hacer una asignacion al id {assing.left.id} un valor de tipo {assing.right.get_type()}')
+        if  not valid_types:
+            if assing.right.name != 'case':
+                SemanticError(pos=assing.token_pos[1],
+                            lineno=assing.token_pos[0]
+                            )(f'Se esta intentando hacer una asignacion al id {assing.left.id} un valor de tipo {assing.right.get_type()}')
+                # raise Exception(f'Se esta intentando hacer una asignacion al id {assing.left.id} un valor de tipo {assing.right.get_type()}')
             return False
         
         return assing.left.validate() and assing.right.validate() and valid_types
