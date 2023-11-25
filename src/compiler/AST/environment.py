@@ -1,4 +1,4 @@
-object_type_name = 'object'
+object_type_name = 'Object'
 string_type_name = 'String'
 bool_type_name = 'Bool'
 int_type_name = 'Int'
@@ -6,3 +6,4 @@ io_type_name = 'IO'
 void_type_name = 'Void'
 self_type_name = 'SELF_TYPE'
 self_name = 'self'
+not_inherit_types = [int_type_name, string_type_name, bool_type_name]

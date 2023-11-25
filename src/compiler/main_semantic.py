@@ -1,5 +1,5 @@
 import semantic.main as semantic
 
-semantic.simple_case('attributes3.cl')
+# semantic.simple_case('basics1.cl')
 # semantic.get_token('arithmetic6.cl', '<=')
-# semantic.all()
+semantic.all(10)

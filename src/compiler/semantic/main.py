@@ -12,11 +12,11 @@ colorama.init()
 base_dir = os.getcwd()
 base_url = os.path.join(base_dir, "tests/semantic/")
 
-def all():
+def all(index = 0):
     cases = [case for case in os.listdir(base_url) if case.endswith('.cl')] 
     cases.sort()
 
-    for i in range(0,len(cases)):
+    for i in range(index,len(cases)):
         case = cases[i]
         simple_case(case)
         

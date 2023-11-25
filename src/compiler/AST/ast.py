@@ -123,6 +123,8 @@ class Node(PlotNode):
 
     def get_type_as_class(self):
         # temp_cotext = self.context.get_context_from_type(self.type)
+        # if self.context == None:
+        #     self.get_contex_from_father()
         temp_cotext = self.context.get_context_from_type(self.get_type())
         if temp_cotext == False:
             return None
@@ -449,7 +451,7 @@ class CoolIf(expr):
         if self.was_validate:
             return self.is_valid
         self.get_contex_from_father()
-        if self.context.validate_if():
+        if self.context.validate_if(self):
             self.is_valid = True
         else:
             self.is_valid = False    
@@ -842,7 +844,11 @@ class Dispatch(expr): #Dispatch
         return [self.expr,self.function]
     
     def __str__(self) -> str:
-        return f'{self.expr}:{self.type}.{self.function}'
+        if self.type is not None:
+            return f'{self.expr}@{self.type}.{self.function}'
+        else:
+            return f'{self.expr}.{self.function}'
+
     def __repr__(self) -> str:
         return str(self)
     def delete_condition(self):
@@ -948,8 +954,13 @@ class Feature():
             return self.context.initialize_class_atr(self)
         
         def validate(self):
-            #La valizacion de la variable se realiza en el proceso de inicializcion
-            return True
+            if self.was_validate: return self.is_valid
+            if self.context.validate_atr(self):
+                self.is_valid = True
+            else:
+                self.is_valid = False
+            self.was_validate = True
+            return self.is_valid        
 
     class CoolDef(Node):
         def __init__(self, id, type = 'SELF_TYPE', params=[], scope= None, token_pos = None):
@@ -1006,7 +1017,7 @@ class Feature():
 #endregion
 
 class CoolClass(Node):
-    def __init__(self,type, inherit:str = 'object', features:list = None, is_object = False, token_pos = None):
+    def __init__(self,type, inherit:str = env.object_type_name , features:list = None, is_object = False, token_pos = None):
         self.token_pos = token_pos
         Node.__init__(self)
         self.features = features
@@ -1018,6 +1029,7 @@ class CoolClass(Node):
             self.inherit_class:CoolClass = None
 
         self.features_was_initialized = False
+        self.valid_initialized = True
         Node.set_father(self,self.childs())
 
     def inherit_from_type(self,type):
@@ -1039,6 +1051,7 @@ class CoolClass(Node):
         return False
     
     def validate(self):
+        if not self.valid_initialized: return False
         result = True
         for feature in self.childs():
             if not feature.validate():
@@ -1046,6 +1059,7 @@ class CoolClass(Node):
         return result    
 
     def initialize_features(self):
+        if not self.valid_initialized: return False
         if self.features_was_initialized: return True #si trata de inicializar nuevamente los features.
         if self.inherit_class is not None and self.inherit_class != ObjectClass.instance:
            #Si hereda de una clase primero debe ser inicializada la clase padre, para usar los features de la misma, por ejemplo, para el caso de override funciones
@@ -1060,19 +1074,29 @@ class CoolClass(Node):
         self.features_was_initialized = True
         
     def initialize(self):
-        self.father.context.initialize_class(cclass = self)
+        if not self.father.context.initialize_class(cclass = self):
+            self.valid_initialized = False
     
     def set_parent_class(self, inherit):
         self.inherit_class = inherit
 
     def set_inherits(self):
+        if not self.valid_initialized: return False
+        if self.inherit in env.not_inherit_types:
+            SemanticError(pos = self.token_pos[1],
+                                lineno = self.token_pos[0]
+                        )(f'SemanticError: Class {self.type} cannot inherit class {self.inherit}.')
+                   
+            self.valid_initialized = False
+            return False
+        
         return self.context.set_inherits_class(self.inherit)
     
     def have_father(self,cclass = None, cclass_type = None):
         if cclass is not None and self.inherit_class == cclass: return True
         if cclass_type is not None and self.inherit == cclass_type: return True
         
-        if self.inherit_class == None or self.inherit == 'object' : return False
+        if self.inherit_class == None or self.inherit == env.object_type_name  : return False
         return self.inherit_class.have_father(cclass,cclass_type)
     
 class CoolProgram(Node):

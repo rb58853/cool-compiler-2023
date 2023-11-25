@@ -3,15 +3,13 @@ from error.cool_error import SemanticError
 from semantic.special_cases import case_case, if_case, case_multiple_types
 from AST.ast import Feature, CoolClass, CoolString, CoolVar, CoolID, BinOp, IntNode, CoolBool, CoolCallable, Dispatch, Assign, Node, CoolLet, CoolCase, CoolIf, expr, CoolWhile, CoolNew
 
-
-
 class VariableContext():
     def __init__(self, father) -> None:
         self.types:dict[str:Context] = {}
         self.functions:dict[str:Feature.CoolDef] = {}
         self.variables:dict[str:CoolVar] = {}
         self.father:Context = father
-        self.type = 'object'
+        self.type = env.object_type_name 
         self.name = None
         self.cclass:CoolClass = None
 
@@ -24,45 +22,50 @@ class VariableContext():
                 self.variables[vvar.id] = vvar
                 return True
             else:
-                if not vvar.value.validate():return False
+                if not atr_case:
+                    #Esto no se pude hacer durante la inicializacion de los atributos de clase
+                    if not vvar.value.validate():return False
 
-                if isinstance(self.right.get_type(), list):
-                    l_type = vvar.get_type()
-                    return case_multiple_types(self.right, l_type)
+                    if isinstance(vvar.value.get_type(), list):
+                        l_type = vvar.get_type()
+                        return case_multiple_types(vvar.value, l_type)
 
-                # if vvar.value.name == 'case':
-                #     ccase:CoolCase = vvar.value
-                #     l_type = vvar.get_type()
+                    # if vvar.value.name == 'case':
+                    #     ccase:CoolCase = vvar.value
+                    #     l_type = vvar.get_type()
 
-                #     return case_case(case= ccase, type= l_type) 
-                
-                # if vvar.value.name == 'if':
-                #     _if:CoolIf = self.right
-                #     l_type = vvar.get_type()
-                #     return if_case(_if= _if, type= l_type) 
-            
-                    # for t in ccase.possible_types:
-                    #     if l_type != t.get_type() and not t.inherit_from_type(l_type):
-                    #         SemanticError(
-                    #             pos=ccase.token_pos[1],
-                    #             lineno=ccase.token_pos[0]
-                    #             )(f"En el case existe una posible salida que no corresponde al tipo {l_type}, {t.get_type()}")
-                    #         # raise Exception(f"En el case existe niguna posible salida que no corresponde al tipo {l_type}, {t.get_type()}")
-                    #         return False
-                    # return True
-                
-                if vvar.value.get_type() == vvar.type or vvar.value.inherit_from_type( vvar.get_type()):
-                    self.variables[vvar.id] = vvar
-                    return True
+                    #     return case_case(case= ccase, type= l_type) 
+
+                    # if vvar.value.name == 'if':
+                    #     _if:CoolIf = self.right
+                    #     l_type = vvar.get_type()
+                    #     return if_case(_if= _if, type= l_type) 
+
+                        # for t in ccase.possible_types:
+                        #     if l_type != t.get_type() and not t.inherit_from_type(l_type):
+                        #         SemanticError(
+                        #             pos=ccase.token_pos[1],
+                        #             lineno=ccase.token_pos[0]
+                        #             )(f"En el case existe una posible salida que no corresponde al tipo {l_type}, {t.get_type()}")
+                        #         # raise Exception(f"En el case existe niguna posible salida que no corresponde al tipo {l_type}, {t.get_type()}")
+                        #         return False
+                        # return True
+
+                    if vvar.value.get_type() == vvar.type or vvar.value.inherit_from_type( vvar.get_type()):
+                        self.variables[vvar.id] = vvar
+                        return True
+                    else:
+                        SemanticError(
+                                    pos=vvar.value.token_pos[1],
+                                    lineno=vvar.value.token_pos[0]
+                                    )(f"TypeError: Inferred type {vvar.value.get_type()} of initialization of attribute {vvar.id} does not conform to declared type {vvar.type}.")
+
+                        # raise Exception(f"La variable se intenta definir con un tipo diferentes: {vvar.type} distinto de {vvar.value.get_type()}")
+                        return False
                 else:
-                    SemanticError(
-                                pos=vvar.value.token_pos[1],
-                                lineno=vvar.value.token_pos[0]
-                                )(f"TypeError: Inferred type {vvar.value.get_type()} of initialization of attribute {vvar.id} does not conform to declared type {vvar.type}.")
-                           
-                    # raise Exception(f"La variable se intenta definir con un tipo diferentes: {vvar.type} distinto de {vvar.value.get_type()}")
-                    return False
-                    
+                    #si es un atributo
+                    self.variables[vvar.id] = vvar
+                    return True    
         else:
             SemanticError(pos=vvar.token_pos[1],
                         lineno=vvar.token_pos[0]
@@ -88,6 +91,27 @@ class VariableContext():
     def initialize_let_var(self):
         pass
 
+    def validate_atr(self, vvar:Feature.CoolAtr):
+        if vvar.value is None:
+            #Por ahora se inicializa en None, mas adelante estas lineas no seran necesarias
+            return True
+        if not vvar.value.validate():
+            return False
+        
+        if isinstance(vvar.value.get_type(), list):
+            l_type = vvar.get_type()
+            return case_multiple_types(vvar.value, l_type)
+        
+        if vvar.value.get_type() == vvar.type or vvar.value.inherit_from_type( vvar.get_type()):
+            self.variables[vvar.id] = vvar
+            return True
+        else:
+            SemanticError(
+                        pos=vvar.value.token_pos[1],
+                        lineno=vvar.value.token_pos[0]
+                        )(f"TypeError: Inferred type {vvar.value.get_type()} of initialization of attribute {vvar.id} does not conform to declared type {vvar.type}.")
+            return False
+
 class TypeContext(VariableContext):
 # class TypeContext(VariableContext):
     def define_type(self, cclass:CoolClass, use_inherit = False):
@@ -108,8 +132,8 @@ class TypeContext(VariableContext):
                     #Si esta heredando de una clase padre esta clase padre debe tener un padre que es exactamente el contexto self, Dado que una clase solo se declara en program entonces la clase o bien posee el contexto del program como padre o bien posee una clase que posee al contexto de program en algun padre sperior recursivamente. De esta forma se garantiza la herencia de contextos y del contexto padre final. Esto es posible xq en Cool dentro de una clase no se puden definir otras clases.
                     contex = self.get_context_from_type(cclass.inherit).create_context_child()
             else:
-                if cclass.type != 'object':
-                    contex = self.get_context_from_type('object').create_context_child()
+                if cclass.type != env.object_type_name :
+                    contex = self.get_context_from_type(env.object_type_name ).create_context_child()
                 else:
                     contex = self.create_context_child()
 
@@ -121,7 +145,7 @@ class TypeContext(VariableContext):
             contex.types[env.self_type_name] = contex #Cada contexto se va a tener a si mismo como SELF_TYPE
             contex.variables[env.self_name] = Feature.CoolAtr(env.self_name,cclass.get_type(),None) #Cada clase tiene el atributo self, que es de su mismo tipo
             cclass.context = contex
-            return contex
+            return True
         else:
             SemanticError(pos=cclass.token_pos[1],
                         lineno=cclass.token_pos[0]
@@ -130,7 +154,7 @@ class TypeContext(VariableContext):
             return False #ERROR Ya esta definida esta clase no se puede usar el mismo nombre
     
     def set_inherit(self,type:str):
-        if type != 'object' and type != None:
+        if type != env.object_type_name  and type != None:
             context_in = self.get_context_from_type(type)
             if context_in != False:
                 cclass:CoolClass = context_in.cclass
@@ -169,7 +193,8 @@ class TypeContext(VariableContext):
         if self.types.__contains__(type):
             return self.types[type]
         elif self.father is None:
-            Exception('No existe el type buscado en ningun contexto accesible')
+            raise Exception('No existe el type buscado en ningun contexto accesible')
+            return False
         else:
             return self.father.get_context_from_type(type)
         

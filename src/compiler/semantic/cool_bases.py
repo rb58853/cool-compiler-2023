@@ -4,11 +4,11 @@ import AST.environment as env
 #TODO Hay que cambiar todo este sistema y crear una clase para cada una de las clases base, una clase de COOL no solo de python, dentro de esta clase se le meten todos los features y lo que necesite en una instancia, cada clase hereda de object, y object no hereda de nadie.
 
 def object_class():
-    object_class = CoolClass(type= 'object', inherit=None, features= [], is_object=True, token_pos=(0,0))
+    object_class = CoolClass(type= env.object_type_name , inherit=None, features= [], is_object=True, token_pos=(0,0))
     return object_class
 
 class ObjectClass:
-    type = 'object'
+    type = env.object_type_name 
     instance: CoolClass = object_class()
     
     def features() -> list[Feature]:
@@ -45,7 +45,7 @@ class StringClass:
         return r_features
     
     def cclass() ->CoolClass:
-        string_class = CoolClass(type= StringClass.type, inherit=ObjectClass.type, features= StringClass.features(),token_pos=(0,0))
+        string_class = CoolClass(type= StringClass.type, inherit=env.object_type_name , features= StringClass.features(),token_pos=(0,0))
         return string_class
     
     class Features:
@@ -67,7 +67,7 @@ class IntClass:
         return []
     
     def cclass() ->CoolClass:
-        int_class = CoolClass(type= IntClass.type, inherit=ObjectClass.type, features= IntClass.features(), token_pos=(0,0))
+        int_class = CoolClass(type= IntClass.type, inherit=env.object_type_name , features= IntClass.features(), token_pos=(0,0))
         return int_class
     
     class Features:
@@ -95,7 +95,7 @@ class IOClass:
         return r_features
     
     def cclass() ->CoolClass:
-        int_class = CoolClass(type= IOClass.type, inherit=ObjectClass.type, features= IOClass.features(), token_pos=(0,0))
+        int_class = CoolClass(type= IOClass.type, inherit=env.object_type_name , features= IOClass.features(), token_pos=(0,0))
         return int_class
     
     class Features:
