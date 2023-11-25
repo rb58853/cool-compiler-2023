@@ -44,9 +44,9 @@ class VariableContext():
                     return True
                 else:
                     SemanticError(
-                                pos=ccase.token_pos[1],
-                                lineno=ccase.token_pos[0]
-                                )(f"En el case existe una posible salida que no corresponde al tipo {l_type}, {t.get_type()}")
+                                pos=vvar.value.token_pos[1],
+                                lineno=vvar.value.token_pos[0]
+                                )(f"TypeError: Inferred type {vvar.value.get_type()} of initialization of attribute {vvar.id} does not conform to declared type {vvar.type}.")
                            
                     # raise Exception(f"La variable se intenta definir con un tipo diferentes: {vvar.type} distinto de {vvar.value.get_type()}")
                     return False
@@ -144,9 +144,14 @@ class TypeContext(VariableContext):
         if self.father is None: return False
         else: return self.father.is_defined_type(type)
 
-    def create_context_child(self):
+    def create_context_child(self, name = None):
         #Estoy ubicado sobre el contexto en el cual se va a definir la clase, lo que sera el program o una clase padre
-        return Context(father = self)
+        context = Context(father = self) 
+        if name is None:
+            context.name = f"child of {self.name}"
+        else:
+            context.name = f"{name} <- {self.name}"
+        return context
 
     def get_context_from_type(self, type):
         if self.types.__contains__(type):
@@ -270,10 +275,9 @@ class LetContext(FunctionContext):
     def define_let(self, let: CoolLet):
         left = let.let
         scope = let.in_scope
-        context:Context = let.context.create_context_child()
-        let.context = context
+        let.context = self.create_context_child(repr(let))
         for vvar in left:
-            context.define_let_var(vvar)
+            let.context.define_let_var(vvar)
         
         return scope.validate()    
     

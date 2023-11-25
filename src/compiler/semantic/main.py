@@ -16,7 +16,7 @@ def all():
     cases = [case for case in os.listdir(base_url) if case.endswith('.cl')] 
     cases.sort()
 
-    for i in range(1,len(cases)):
+    for i in range(0,len(cases)):
         case = cases[i]
         simple_case(case,i)
         
@@ -39,15 +39,15 @@ def simple_case(case, i):
         e = str(semantic.errors[0])
         if e[:9] != error[:9]:
             print(Fore.RED)
-            print(f'\n\n\n######################### {case} #############################')
-            print('----------------------SEMANTIC ERRORS---------------------------')
-            for e in semantic.errors:
-                print(e)
-            print ("\n---------------------EXPECTED ERRORS:-------------------------")
-            print(error) 
         else:
             print(Fore.GREEN)
-            print(f'CASE {i+1} PASSED')
+            # print(f'CASE {i+1} PASSED')
+        print(f'\n\n\n######################### {case} #############################')
+        print('----------------------SEMANTIC ERRORS---------------------------')
+        for e in semantic.errors:
+            print(e)
+        print ("\n---------------------EXPECTED ERRORS:-------------------------")
+        print(error) 
     else:
         print(Fore.RED)
         print(f'\n\n\n######################### {case} #############################')

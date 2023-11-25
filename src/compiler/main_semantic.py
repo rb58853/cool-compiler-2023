@@ -1,4 +1,4 @@
 import semantic.main as semantic
 
-semantic.one_case('arithmetic10.cl')
+semantic.one_case('arithmetic5.cl')
 # semantic.all()

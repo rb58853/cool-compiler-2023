@@ -189,10 +189,10 @@ class CoolVar(expr):
     def delete_condition(self):
         return False
     def __str__(self) -> str:
-        return f'{self.ID} = {self.value}'
+        return f'{self.id} = {self.value}'
     
     def __repr__(self) -> str:
-        return f'{self.ID} = {self.value}'
+        return f'{self.id} = {self.value}'
     
     def validate(self):
         self.get_contex_from_father()
@@ -473,6 +473,7 @@ class CoolNot(expr):
         self.token_pos = token_pos
         Node.__init__(self)
         self.value:expr =  value
+        self.type = env.bool_type_name
         Node.set_father(self,self.childs())
 
     def __str__(self) -> str:
@@ -488,13 +489,23 @@ class CoolNot(expr):
         return self.value.get_type()
         
     def validate(self):
-        return self.value.get_type() == env.bool_type_name
+        self.get_contex_from_father()
+        if not self.value.validate(): return False
+        type = self.value.get_type() 
+        if self.value.get_type() == self.type:
+            return True
+        else:
+            SemanticError(pos = self.token_pos[1],
+                        lineno = self.token_pos[0]
+                        )(f'TypeError: Not non-Bool argument: {type}')
+            return False
 
 class CoolUminus(expr):
     def __init__(self, value, token_pos):
         self.token_pos = token_pos
         Node.__init__(self)
         self.value =  value
+        self.type = env.int_type_name
         Node.set_father(self,self.childs())
 
     def __str__(self) -> str:
@@ -507,6 +518,8 @@ class CoolUminus(expr):
         return False
     
     def validate(self):#TODO crear error aqui para el Uminus
+        self.get_contex_from_father()
+        if not self.value.validate(): return False
         type = self.value.get_type() 
         if self.value.get_type() == env.int_type_name:
             return True
@@ -706,6 +719,7 @@ class CoolID(CoolVar):
     #     return self.name
     def get_type(self):
         if self.type == None:
+            self.get_contex_from_father()
             try:
                 self.type = self.context.get_var(self.id)
             except:pass
@@ -736,6 +750,7 @@ class Dispatch(expr): #Dispatch
         self.type = type
         self.return_type = None
         self.function:CoolCallable = function
+        self.check_type = False
         Node.set_father(self,self.childs())
 
     def childs(self):
@@ -749,7 +764,10 @@ class Dispatch(expr): #Dispatch
         return False
     
     def get_type(self):
+        if self.check_type:
+            return  self.return_type
         self.return_type = self.function.get_type()
+        self.check_type = True
         return self.return_type
 
     def validate(self):
