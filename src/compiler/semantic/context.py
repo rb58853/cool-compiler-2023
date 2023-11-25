@@ -249,6 +249,10 @@ class FunctionContext(TypeContext):
 class LetContext(FunctionContext):
     def define_let_var(self,vvar:CoolVar):
         #las variables en el let se sobreescriben, por ejemplo let x:Int<-1, x:Int<-2 in x.... x sera 2 y no dara error por usarla dos veces
+        if not vvar.validate():
+            SemanticError(pos=vvar.father.token_pos[1],
+                        lineno=vvar.father.token_pos[0]
+                        )(f"Se esta intentando definir la variable {vvar.id} con el tipo {vvar.get_type()} que no existe")
         if vvar.value is None:
             self.variables[vvar.id] = vvar
             return True
@@ -267,9 +271,9 @@ class LetContext(FunctionContext):
         left = let.let
         scope = let.in_scope
         context:Context = let.context.create_context_child()
+        let.context = context
         for vvar in left:
             context.define_let_var(vvar)
-        let.context = context
         
         return scope.validate()    
     
@@ -399,12 +403,12 @@ class Context(PrintContext):
         if op.left.validate() and op.right.validate() and op.valid_types():
             return True
         else:
-            if not op.valid_types():
-                SemanticError(pos=op.token_pos[1],
-                        lineno=op.token_pos[0]
-                        )(f'No se puede usar el operador {op.op} para valores de tipo {op.left.get_type()} y {op.right.get_type()}')
-                # raise Exception(f'No se puede usar el operador {op.op} para valores de tipo {op.left.get_type()} y {op.right.get_type()}')
-                return False
+            # if not op.valid_types():
+            #     SemanticError(pos=op.token_pos[1],
+            #             lineno=op.token_pos[0]
+            #             )(f'No se puede usar el operador {op.op} para valores de tipo {op.left.get_type()} y {op.right.get_type()}')
+            #     # raise Exception(f'No se puede usar el operador {op.op} para valores de tipo {op.left.get_type()} y {op.right.get_type()}')
+            return False
     
     def validate_assign(self, assing:Assign):
         valid_types = assing.valid_types()

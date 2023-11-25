@@ -27,7 +27,10 @@ class CommentAnalizer():
                 self.index+=1
                 self.lexer.index+=1
                 self.lexer.end=self.lexer.index+1
-                self.lexer.new_line()
+                self.new_line()
+                
+    def new_line (self):            
+        self.lexer.new_line()
     
     def try_close(self):
         i = self.index
@@ -46,7 +49,7 @@ class CommentAnalizer():
         self.text = text
         self.comment = '(*'
         self.close = False
-        
+        self.index-=1
         while self.index < len(text)-1: 
             self.index+=1
             self.lexer.index+=1
@@ -56,6 +59,9 @@ class CommentAnalizer():
             if text[i] == '\\':
                 self.try_new_line()
             
+            if text[i] == '\n':
+                self.new_line()
+            
             if text[i] == '\*' or text[i] == '*':
                 self.try_close()
                 if self.close:
@@ -63,8 +69,8 @@ class CommentAnalizer():
             
             self.comment += text[i]
             
-        self.lexer.index+=1
-        self.lexer.end=self.lexer.index+1
+        # self.lexer.index+=1
+        # self.lexer.end=self.lexer.index+1
             
         if not self.close:
             error = LexicalError(

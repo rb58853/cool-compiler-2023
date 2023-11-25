@@ -56,5 +56,5 @@ class SemanticError(CoolError):
         CoolError.ERRORS.append(self)
 
     def __str__(self):
-        return f'({self.lineno}, {self.pos}) - SemanticError: {self.text}'
+        return f'({self.lineno}, {self.pos}) - {self.text}'
     

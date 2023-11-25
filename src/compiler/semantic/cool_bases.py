@@ -19,10 +19,10 @@ class ObjectClass:
         return r_features
     
     def cclass() -> CoolClass:
-        object_class = ObjectClass.instance
-        object_class.features = ObjectClass.features()
-        Node.set_father(object_class, object_class.features)
-        return object_class
+        ObjectClass.instance = object_class()
+        ObjectClass.instance.features = ObjectClass.features()
+        Node.set_father(ObjectClass.instance, ObjectClass.instance.features)
+        return ObjectClass.instance
     
     class Features:
         def type_name():
@@ -45,7 +45,7 @@ class StringClass:
         return r_features
     
     def cclass() ->CoolClass:
-        string_class = CoolClass(type= StringClass.type, inherit=ObjectClass.type, features= StringClass.features())
+        string_class = CoolClass(type= StringClass.type, inherit=ObjectClass.type, features= StringClass.features(),token_pos=(0,0))
         return string_class
     
     class Features:

@@ -1,11 +1,7 @@
 import matplotlib.pyplot as plt
 import AST.environment as env
 from error.cool_error import SemanticError
-# from semantic.context import Context
 
-'''TODO
-    <empty tasks>
-'''
 class PlotNode():
     HEIGTH = 2.5
     WIDTH = 2
@@ -198,6 +194,10 @@ class CoolVar(expr):
     def __repr__(self) -> str:
         return f'{self.ID} = {self.value}'
     
+    def validate(self):
+        self.get_contex_from_father()
+        return self.context.is_defined_type(self.type)
+    
 class BinOp(expr):
     def __init__(self, op, left:expr, right:expr, token_pos):
         self.token_pos = token_pos
@@ -277,6 +277,11 @@ class ArithmeticOP(BinOp):
             self.valid_types_check = True
             return True
         else:
+            SemanticError(pos = self.token_pos[1],
+                        lineno = self.token_pos[0]
+                        )(f'TypeError: non-Int arguments: {l_type} {self.op} {r_type}')
+                # raise Exception(f'No se puede usar el operador {op.op} para valores de tipo {op.left.get_type()} y {op.right.get_type()}')
+              
             return False
         
 class Logicar(BinOp):    
@@ -479,6 +484,9 @@ class CoolNot(expr):
     def delete_condition(self):
         return False
     
+    def get_type(self):
+        return self.value.get_type()
+        
     def validate(self):
         return self.value.get_type() == env.bool_type_name
 
@@ -498,8 +506,15 @@ class CoolUminus(expr):
     def delete_condition(self):
         return False
     
-    def validate(self):
-        return self.value.get_type() == env.int_type_name
+    def validate(self):#TODO crear error aqui para el Uminus
+        type = self.value.get_type() 
+        if self.value.get_type() == env.int_type_name:
+            return True
+        else:
+            SemanticError(pos = self.token_pos[1],
+                        lineno = self.token_pos[0]
+                        )(f'TypeError: Uminus non-Int argument: {type}')
+            return False
 
 class CoolIsVoid(expr):
     def __init__(self, value, token_pos):
@@ -948,7 +963,7 @@ class CoolClass(Node):
 class CoolProgram(Node):
     def __init__(self, cclass_list:list[CoolClass]) -> None:
         self.type:str= 'program'
-        self.context:Context = Program.context
+        self.context:Context = BaseContext()
         self.father:Node = None
         self.name = 'program'
         self.draw_pos = (0,0)
@@ -980,4 +995,4 @@ class CoolProgram(Node):
                 result = False
         return result    
 
-from semantic.cool_bases import Context,ObjectClass,IntClass, StringClass,BoolClass, Program, base_classes
+from semantic.cool_bases import Context,ObjectClass,IntClass, StringClass,BoolClass, Program, base_classes, BaseContext
