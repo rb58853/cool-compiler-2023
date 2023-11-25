@@ -47,19 +47,18 @@ def simple_case(case):
         e = str(semantic.errors[0])
         if e[:9] != error[:9]:
             print(Fore.RED)
+            print(f'\n######################### {case} #############################')
+            print('----------------------SEMANTIC ERRORS---------------------------')
+            for e in semantic.errors:
+                print(e)
+            print ("\n---------------------EXPECTED ERRORS:-------------------------")
+            print(error) 
         else:
             print(Fore.GREEN)
-            # print(f'CASE {i+1} PASSED')
-        print(f'\n\n\n######################### {case} #############################')
-        print('----------------------SEMANTIC ERRORS---------------------------')
-        for e in semantic.errors:
-            print(e)
-        print ("\n---------------------EXPECTED ERRORS:-------------------------")
-        print(error) 
+            print(f' {case:} PASSED')
     else:
         print(Fore.RED)
         print(f'\n\n\n######################### {case} #############################')
-        print(code)
         print('----------------------SEMANTIC ERRORS---------------------------')
         print("<empty>")
         print ("\n---------------------EXPECTED ERRORS:-------------------------")

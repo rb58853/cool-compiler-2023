@@ -7,3 +7,5 @@ void_type_name = 'Void'
 self_type_name = 'SELF_TYPE'
 self_name = 'self'
 not_inherit_types = [int_type_name, string_type_name, bool_type_name]
+basic_types = [int_type_name, string_type_name, bool_type_name]
+base_classes = [int_type_name, string_type_name, bool_type_name, io_type_name, object_type_name]

@@ -68,10 +68,8 @@ class CoolParser(Parser):
 #region class
     @_('CLASS TYPE "{" class_feature "}"')
     def cclass(self, p):
-        return CoolClass(type=p.TYPE,features=p.class_feature,token_pos=(p.lineno,self.token_pos(p)))
-    @_('CLASS TYPE INHERITS TYPE "{" class_feature "}"')
-    def cclass(self, p):
-        return CoolClass(type=p[1],inherit=p[3],features=p.class_feature,token_pos=(p.lineno,self.token_pos(p)))
+        type_pos =(p._slice[1].lineno,self.token_pos(p._slice[1]))
+        return CoolClass(type=p.TYPE,features=p.class_feature,token_pos=(p.lineno,self.token_pos(p)),type_pos = type_pos)
     
     @_('cclass ";"')
     def class_list(self, p):
@@ -80,6 +78,16 @@ class CoolParser(Parser):
     @_('cclass ";" class_list')
     def class_list(self, p):
         return [p.cclass] + p.class_list
+    
+    # # @_('CLASS TYPE INHERITS TYPE "{" class_feature "}"')
+    # # def cclass(self, p):
+    # #     return CoolClass(type=p[1],inherit=p[3],features=p.class_feature,token_pos=(p.lineno,self.token_pos(p)))
+    
+    
+    @_('CLASS TYPE INHERITS type "{" class_feature "}"')
+    def cclass(self, p):
+        type_pos =(p._slice[1].lineno,self.token_pos(p._slice[1]))
+        return CoolClass(type=p[1],inherit=p[3][0],features=p.class_feature,token_pos=(p.lineno,self.token_pos(p)), inherit_pos = p[3][1], type_pos = type_pos)
 #endregion
 
 #region features
@@ -95,32 +103,32 @@ class CoolParser(Parser):
     def class_feature(self, p):
         return []
 
-    @_('ID ":" TYPE')
+    @_('ID ":" type')
     def def_atr(self, p):
-        return Feature.CoolAtr(id= p.ID, type= p.TYPE,value= None,token_pos=(p.lineno,self.token_pos(p)))
-    @_('ID ":" TYPE ASSIGN expr')
+        return Feature.CoolAtr(id= p.ID, type= p.type[0],value= None,token_pos=(p.lineno,self.token_pos(p)),type_pos = p.type[1])
+    @_('ID ":" type ASSIGN expr')
     def def_atr(self, p):
-        return Feature.CoolAtr(id= p.ID, type= p.TYPE,value= p.expr,token_pos=(p.lineno,self.token_pos(p)))
+        return Feature.CoolAtr(id= p.ID, type= p.type[0],value= p.expr,token_pos=(p.lineno,self.token_pos(p)),type_pos = p.type[1])
 
-    @_('ID "(" param_list ")" ":" TYPE "{" expr "}"')
+    @_('ID "(" param_list ")" ":" type "{" expr "}"')
     def def_func(self, p):
         t = p.ID.index
-        return Feature.CoolDef(p.ID,type=p.TYPE, params= p.param_list,scope=p.expr,token_pos=(p.lineno,self.token_pos(p)))
+        return Feature.CoolDef(p.ID,type=p.type[0], params= p.param_list,scope=p.expr,token_pos=(p.lineno,self.token_pos(p)), type_pos = p.type[1])
    
-    @_('ID "(" ")" ":" TYPE "{" expr "}"')
+    @_('ID "(" ")" ":" type "{" expr "}"')
     def def_func(self, p):
-        return Feature.CoolDef(id = p.ID,type=p.TYPE, params= [],scope=p.expr,token_pos=(p.lineno,self.token_pos(p)))
+        return Feature.CoolDef(id = p.ID,type=p.type[0], params= [],scope=p.expr,token_pos=(p.lineno,self.token_pos(p)), type_pos = p.type[1])
 #endregion
 
 #region formal ---------------------------------------------------------------------------------------------------------------------
     #named formal in the manual, here is `param`
-    @_('ID ":" TYPE "," param_list')
+    @_('ID ":" type "," param_list')
     def param_list(self, p):
-        return [CoolID( id=p.ID,type= p.TYPE,token_pos=(p.lineno,self.token_pos(p)) )] + p.param_list
+        return [CoolID( id=p.ID,type= p.type[0],token_pos=(p.lineno,self.token_pos(p)), type_pos = p.type[1])] + p.param_list
     
-    @_('ID ":" TYPE')
+    @_('ID ":" type')
     def param_list(self, p):
-        return [CoolID(id=p.ID, type=p.TYPE,token_pos=(p.lineno,self.token_pos(p)))] 
+        return [CoolID(id=p.ID, type=p.type[0],token_pos=(p.lineno,self.token_pos(p)), type_pos = p.type[1])] 
 #endregion   
 
 #region expr ------------------------------------------------------------------------------------------------------------------------
@@ -128,7 +136,8 @@ class CoolParser(Parser):
     def expr(self, p):
         #expr::= ID <- expr
         return Assign('<-', CoolID(p[0]), p[2],token_pos=(p.lineno,self.token_pos(p)))
-
+    
+#region old dispatch
     # @_('expr "@" TYPE "." ID "(" expr_list ")"')#, 'expr "@" TYPE "." ID "(" ")"' )
     # def expr(self, p):
     #     ID = CoolCallable(p.ID,p.expr_list)
@@ -146,8 +155,7 @@ class CoolParser(Parser):
     # def expr(self, p):
     #     ID = CoolCallable(p.ID,[])
     #     return Dispatch(p.expr,None,ID,token_pos=(p.lineno,self.token_pos(p)))
-    
-#region test
+    #endregion
     
     @_('expr "@" TYPE "." callable')#, 'expr "@" TYPE "." ID "(" ")"' )
     def expr(self, p):
@@ -166,7 +174,6 @@ class CoolParser(Parser):
         #expr:: ID(expr, expr, ...expr)
         return CoolCallable(p.ID, p.expr_list,token_pos=(p.lineno,self.token_pos(p)))
   
-#endregion
 
     @_('ID "(" ")"')
     def expr(self, p):
@@ -203,57 +210,61 @@ class CoolParser(Parser):
     def expr(self, p):
         return CoolCase(p.expr,p.case_list,token_pos=(p.lineno,self.token_pos(p)))
         
-    @_('NEW TYPE')
+    @_('NEW type')
     def expr(self, p):
         # expr ::= new TYPE
-        return CoolNew(p.TYPE,token_pos=(p.lineno,self.token_pos(p)))
+        return CoolNew(p.type[0],token_pos=(p.lineno,self.token_pos(p)), type_pos = p.type[1])
         
     @_('ISVOID expr')
     def expr(self, p):
         # expr ::= isvoid expr
         return CoolIsVoid(p.expr,token_pos=(p.lineno,self.token_pos(p)))
-        
+
+#region operators
     @_('expr "+" expr')
     def expr(self, p):
         # expr ::= expr + expr
-        return ArithmeticOP('+', p[0], p[2],token_pos=(p.lineno,self.token_pos(p)))
+        return ArithmeticOP('+', p[0], p[2],token_pos=(p.lineno,self.token_pos(p)), op_pos=(p._slice[1].lineno,self.token_pos(p._slice[1])))
         
     @_('expr "-" expr')
     def expr(self, p):
         # expr ::= expr - expr
-        return ArithmeticOP('-', p[0],p[2],token_pos=(p.lineno,self.token_pos(p)))
+        return ArithmeticOP('-', p[0],p[2],token_pos=(p.lineno,self.token_pos(p)), op_pos=(p._slice[1].lineno,self.token_pos(p._slice[1])))
         
     @_('expr "*" expr')
     def expr(self, p):
         # expr ::= expr * expr
-        return ArithmeticOP('*', p[0],p[2],token_pos=(p.lineno,self.token_pos(p)))
+        return ArithmeticOP('*', p[0],p[2],token_pos=(p.lineno,self.token_pos(p)), op_pos=(p._slice[1].lineno,self.token_pos(p._slice[1])))
         
     @_('expr "/" expr')
     def expr(self, p):
         # expr ::= expr / expr
-        return ArithmeticOP('/', p[0],p[2],token_pos=(p.lineno,self.token_pos(p)))
-        
-    @_('"~" expr')
-    def expr(self, p):
-        # expr ::= ~exp
-        if self.all_steps: return expr(CoolUminus(p.expr))
-        return CoolUminus(p.expr,token_pos=(p.lineno,self.token_pos(p)))
+        return ArithmeticOP('/', p[0],p[2],token_pos=(p.lineno,self.token_pos(p)), op_pos=(p._slice[1].lineno,self.token_pos(p._slice[1])))
         
     @_('expr "<" expr')
     def expr(self, p):
         # expr ::= expr < expr
-        return Logicar('<', p[0],p[2],token_pos=(p.lineno,self.token_pos(p)))
-        
+        return Logicar('<', p[0],p[2],token_pos=(p.lineno,self.token_pos(p)), op_pos=(p._slice[1].lineno,self.token_pos(p._slice[1])))
+    
+   
     @_('expr LE expr')
     def expr(self, p):
         # expr ::= expr <= expr
-        return Logicar('<=', p[0],p[2],token_pos=(p.lineno,self.token_pos(p)))
+        return Logicar('<=', p[0],p[2],token_pos=(p.lineno,self.token_pos(p)), op_pos=(p._slice[1].lineno,self.token_pos(p._slice[1])))
         
     @_('expr "=" expr')
     def expr(self, p):
         # expr ::= expr = expr
-        return Logicar('=', p[0],p[2],token_pos=(p.lineno,self.token_pos(p)))
+        return Logicar('=', p[0],p[2],token_pos=(p.lineno,self.token_pos(p)), op_pos=(p._slice[1].lineno,self.token_pos(p._slice[1])))
+
+    @_('"~" expr')
+    def expr(self, p):
+        # expr ::= ~exp
+        value_pos=(p._slice[1].lineno,self.token_pos(p._slice[1]))
+        return CoolUminus(p.expr,token_pos=(p.lineno,self.token_pos(p)),value_pos = value_pos)
+#endregion    
         
+
     @_('NOT expr')
     def expr(self, p):
         # expr ::= not exp
@@ -291,9 +302,30 @@ class CoolParser(Parser):
     def expr(self, p):
         # expr ::= false
         return CoolBool(p.FALSE,token_pos=(p.lineno,self.token_pos(p)))
+#endregion
 
 #region UTILS------------------------------------------------------------------------------------------------------------------------
-
+    #Type with position
+    @_('TYPE')
+    def type(self,p):
+        return (p.TYPE,(p.lineno,self.token_pos(p)))
+    
+    #Operator with position
+    @_('"+"') 
+    def operator(self,p): return (p[0],(p.lineno,self.token_pos(p)))
+    @_('"-"') 
+    def operator(self,p): return (p[0],(p.lineno,self.token_pos(p)))
+    @_('"*"') 
+    def operator(self,p): return (p[0],(p.lineno,self.token_pos(p)))
+    @_('"/"') 
+    def operator(self,p): return (p[0],(p.lineno,self.token_pos(p)))
+    @_('"="') 
+    def operator(self,p): return (p[0],(p.lineno,self.token_pos(p)))
+    @_('LE') 
+    def operator(self,p): return (p[0],(p.lineno,self.token_pos(p)))
+    @_('"<"') 
+    def operator(self,p): return (p[0],(p.lineno,self.token_pos(p)))
+    
     #CREATE SIMPLE_LIST---------------------------------------       
     @_('expr "," expr_list')
     def expr_list(self, p):
@@ -317,20 +349,32 @@ class CoolParser(Parser):
     @_('let_assign') # @_('let_assign epsilon')
     def let_list(self, p):
         return [p.let_assign]
+
+    @_('ID ":" type ASSIGN let_expr')
+    def let_assign(self, p):
+        return CoolLet.new_let(ID= p.ID, type=p.type[0], exp=p.let_expr[0],id_pos = (p.lineno,self.token_pos(p)),  value_pos =p.let_expr[1], type_pos = p.type[1])
+    @_('ID ":" type')
+    def let_assign(self, p):
+        return CoolLet.new_let(ID= p.ID, type=p.type[0], exp=None, id_pos = (p.lineno,self.token_pos(p)), type_pos = p.type[1])
+
+    @_('expr')
+    def let_expr(self, p):
+        return (p.expr,(p.lineno,self.token_pos(p)))
         
-    @_('ID ":" TYPE ASSIGN expr')
-    def let_assign(self, p):
-        return CoolLet.new_let(ID= p.ID, type=p.TYPE, exp=p.expr)
-    @_('ID ":" TYPE')
-    def let_assign(self, p):
-        return CoolLet.new_let(ID= p.ID, type=p.TYPE, exp=None)
-    
     #CREATE CASE_LIST---------------------------------------------  
-    @_('ID ":" TYPE DARROW expr ";" case_list')
+    @_('ID ":" type DARROW expr ";" case_list')
     def case_list(self, p):
-        return [CoolCase.new_case(ID= p.ID, type=p.TYPE, exp=p.expr, pos= (p.lineno,self.token_pos(p)))] + p.case_list
-    @_('ID ":" TYPE DARROW expr ";"')
+        return [CoolCase.new_case(ID= p.ID, 
+                                  type=p.type[0], 
+                                  exp=p.expr, 
+                                  pos= (p.lineno,self.token_pos(p)), 
+                                  type_pos = p.type[1])] + p.case_list
+    
+    @_('ID ":" type DARROW expr ";"')
     def case_list(self, p):
-        return [CoolCase.new_case(ID= p.ID, type=p.TYPE, exp= p.expr, pos= (p.lineno,self.token_pos(p)))]
-#endregion
+        return [CoolCase.new_case(ID= p.ID, 
+                                  type=p.type[0], 
+                                  exp= p.expr, 
+                                  pos= (p.lineno,self.token_pos(p))
+                                  , type_pos = p.type[1])]
 #endregion

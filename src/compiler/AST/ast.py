@@ -93,6 +93,7 @@ class PlotNode():
 class Node(PlotNode):
     def __init__(self) -> None:
         super().__init__()
+        self.type_pos = (0,0) #Esta es la posicion donde se encuentra la declaracion de tipo, por ejemplo x: Int, es la posicion de 'Int'
         # self.token_pos = (0,0)
         self.type:str
         self.context:Context = None
@@ -125,8 +126,8 @@ class Node(PlotNode):
 
     def get_type_as_class(self):
         # temp_cotext = self.context.get_context_from_type(self.type)
-        # if self.context == None:
-        #     self.get_contex_from_father()
+        if self.context == None:
+            self.get_contex_from_father()
         temp_cotext = self.context.get_context_from_type(self.get_type())
         if temp_cotext == False:
             return None
@@ -231,6 +232,7 @@ class BinOp(expr):
         self.left:expr = left
         self.right:expr = right
         self.valid_types_check = False
+
         Node.set_father(self,self.childs())
 
     def childs(self):
@@ -278,10 +280,11 @@ class BinOp(expr):
         return self.context.validate_op(self)    
 
 class ArithmeticOP(BinOp):
-    def __init__(self,op:str, left:expr, right:expr, token_pos):
+    def __init__(self,op:str, left:expr, right:expr, token_pos, op_pos = (0,0)):
         self.token_pos = token_pos
         Node.__init__(self)
         self.name = 'arithmetic'
+        self.op_pos = op_pos
         self.op = op
         self.left:expr = left
         self.right:expr = right
@@ -301,18 +304,19 @@ class ArithmeticOP(BinOp):
             self.valid_types_check = True
             return True
         else:
-            SemanticError(pos = self.token_pos[1],
-                        lineno = self.token_pos[0]
+            SemanticError(pos = self.op_pos[1],
+                        lineno = self.op_pos[0]
                         )(f'TypeError: non-Int arguments: {l_type} {self.op} {r_type}')
                 # raise Exception(f'No se puede usar el operador {op.op} para valores de tipo {op.left.get_type()} y {op.right.get_type()}')
               
             return False
         
 class Logicar(BinOp):    
-    def __init__(self,op:str, left:expr, right:expr, token_pos):
+    def __init__(self,op:str, left:expr, right:expr, token_pos, op_pos = (0,0)):
         self.token_pos = token_pos
         Node.__init__(self)
         self.name = 'logicar' #debug
+        self.op_pos = op_pos
         self.op = op
         self.left:CoolID = left
         self.right:expr = right
@@ -334,29 +338,29 @@ class Logicar(BinOp):
                 self.valid_types_check = True
                 return True
             else:
-                SemanticError(pos = self.token_pos[1],
-                              lineno = self.token_pos[0]
+                SemanticError(pos = self.op_pos[1],
+                              lineno = self.op_pos[0]
                         )(f'TypeError: non-Int arguments: {l_type} {self.op} {r_type}')
                 return False      
-
-            
-        elif  l_type == r_type or  self.left.inherit_from_type(r_type) or self.right.inherit_from_type(l_type):
+        
+        elif  l_type == r_type:
             self.valid_types_check = True
             return True
-        else:  
-            SemanticError(pos = self.token_pos[1],
-                              lineno = self.token_pos[0]
+        elif l_type in env.basic_types or r_type in env.basic_types:
+            SemanticError(pos = self.op_pos[1],
+                              lineno = self.op_pos[0]
                         )(f'TypeError: non-same type arguments: {l_type} {self.op} {r_type}')
-            return False          
-        
-        return False
+            return False
+        else: 
+            return True          
     
 class Assign(BinOp):
-    def __init__(self,op, left:expr, right:expr, token_pos):
+    def __init__(self,op, left:expr, right:expr, token_pos, op_pos = (0,0)):
         self.token_pos = token_pos
         Node.__init__(self)
         self.name = 'assign' #debug
         self.op = op
+        self.op_pos = op_pos
         self.left:CoolID = left
         self.right:expr = right
         self.valid_types_check = False
@@ -441,8 +445,8 @@ class CoolIf(expr):
 
     def get_type(self):
         if self.check_type: return self.type
-        if not self.was_validate:
-            self.validate()        
+        # if not self.was_validate:
+        #     self.validate()        
         self.check_type = True
         if self.then_scope.get_type() == self.else_scope.get_type():
             self.type = self.then_scope.get_type()
@@ -468,10 +472,14 @@ class CoolWhile(expr):
     def __init__(self, while_condition, loop_scope, token_pos):
         self.token_pos = token_pos
         Node.__init__(self)
+        self.type = env.object_type_name
         self.condition = while_condition
         self.loop_scope = loop_scope
         Node.set_father(self,self.childs())
 
+    def get_type(self):
+        return super().get_type()
+    
     def childs(self):
         return [self.condition,self.loop_scope]
 
@@ -494,7 +502,7 @@ class CoolWhile(expr):
     
     def validate(self):
         self.get_contex_from_father()
-        return self.context.validate_while()
+        return self.context.validate_while(self)
 
 class CoolCallable(expr):
     def __init__(self, id, exprs, token_pos = None):
@@ -563,10 +571,11 @@ class CoolNot(expr):
             return False
 
 class CoolUminus(expr):
-    def __init__(self, value, token_pos):
+    def __init__(self, value, token_pos,value_pos = (0,0)):
         self.token_pos = token_pos
         Node.__init__(self)
         self.value =  value
+        self.value_pos = value_pos
         self.type = env.int_type_name
         Node.set_father(self,self.childs())
 
@@ -586,8 +595,8 @@ class CoolUminus(expr):
         if self.value.get_type() == env.int_type_name:
             return True
         else:
-            SemanticError(pos = self.token_pos[1],
-                        lineno = self.token_pos[0]
+            SemanticError(pos = self.value_pos[1],
+                        lineno = self.value_pos[0]
                         )(f'TypeError: Uminus non-Int argument: {type}')
             return False
 
@@ -595,9 +604,13 @@ class CoolIsVoid(expr):
     def __init__(self, value, token_pos):
         self.token_pos = token_pos
         Node.__init__(self)
-        self.value =  value
+        self.value:expr =  value
+        self.type = env.bool_type_name
         Node.set_father(self,self.childs())
 
+    def childs(self):
+        return [self.value]
+    
     def __str__(self) -> str:
         return 'isVoid'
 
@@ -606,11 +619,19 @@ class CoolIsVoid(expr):
 
     def delete_condition(self):
         return False
+    
+    def validate(self):
+        self.get_contex_from_father()
+
+        if not self.value.validate():
+            return False
+        return self.value.get_type()
 
 class CoolNew(expr):
-    def __init__(self, type, token_pos = None):
-        self.token_pos = token_pos
+    def __init__(self, type, token_pos = None, type_pos = (0,0)):
         Node.__init__(self)
+        self.token_pos = token_pos
+        self.type_pos = type_pos
         self.type =  type
         self.name = 'new'
         # self.value = CoolVar(id = None, type = type, value= None)
@@ -630,7 +651,7 @@ class CoolNew(expr):
     
     def validate(self):
         self.get_contex_from_father()
-        return self.context.is_defined_type(self.type)
+        return self.context.validate_new(self)
     
 class CoolCase(expr):
     def __init__(self, case, cases_list, token_pos):
@@ -652,7 +673,7 @@ class CoolCase(expr):
         for _case in cases_list:
             pos = _case[1]
             case = _case[0]
-            key = CoolID(case['ID'], case['Type'], token_pos= pos)
+            key = CoolID(case['ID'], case['Type'], token_pos= pos, type_pos= case['type_pos'])
             value = case['expr']
             cases[key] = value
             Node.set_father(self,[value])    
@@ -687,8 +708,8 @@ class CoolCase(expr):
     def delete_condition(self):
         return False
 
-    def new_case(ID, type, exp, pos):
-        return ({'ID': ID, 'Type':type, 'expr':exp}, pos)
+    def new_case(ID, type, exp, pos, type_pos):
+        return ({'ID': ID, 'Type':type, 'expr':exp, 'type_pos': type_pos}, pos)
     
     def validate(self):
         if self.was_validate:
@@ -715,7 +736,14 @@ class CoolLet(expr):
     def convert_to_vars(self, let_list):
         vvars = []
         for let in let_list:
-            vvars.append(CoolVar(let['ID'],let['Type'],let['expr']))
+            vvar = CoolVar(let['ID'],let['Type'],let['expr'])
+            vvar.token_pos = let['id_pos'] 
+            vvar.type_pos = let['type_pos'] 
+
+            if vvar.value != None:
+                vvar.value.token_pos = let['value_pos'] 
+            vvars.append(vvar)
+
         Node.set_father(self,vvars)    
         return vvars
         
@@ -737,8 +765,8 @@ class CoolLet(expr):
     def delete_condition(self):
         return False
 
-    def new_let(ID, type, exp):
-        return {'ID': ID, 'Type':type, 'expr':exp}
+    def new_let(ID, type, exp, id_pos = None, value_pos= None, type_pos = None):
+        return {'ID': ID, 'Type':type, 'expr':exp, 'id_pos': id_pos,'value_pos':value_pos, 'type_pos': type_pos  }
     
     def validate(self):
         return self.initialize()
@@ -787,9 +815,10 @@ class CoolBlockScope(expr):
         return self.value.get_type()
 
 class CoolID(CoolVar):
-    def __init__(self, id, type = None, token_pos = None):
-        self.token_pos = token_pos
+    def __init__(self, id, type = None, token_pos = None, type_pos = (0,0)):
         Node.__init__(self)
+        self.token_pos = token_pos
+        self.type_pos = type_pos
         self.name = 'id'
         self.id = id
         self.type = type
@@ -926,9 +955,10 @@ class CoolParamsScope(Node):
         
 class Feature():
     class CoolAtr(CoolVar):
-        def __init__(self, id, type, value = None, token_pos = None):
-            self.token_pos = token_pos
+        def __init__(self, id, type, value = None, token_pos = None, type_pos = (0,0)):
             Node.__init__(self)
+            self.token_pos = token_pos
+            self.type_pos = type_pos
             self.ID = CoolID(id=id, type=type)
             self.id = id
             self.type = type
@@ -961,15 +991,16 @@ class Feature():
             return self.is_valid        
 
     class CoolDef(Node):
-        def __init__(self, id, type = 'SELF_TYPE', params=[], scope= None, token_pos = None):
+        def __init__(self, id, type = 'SELF_TYPE', params=[], scope= None, token_pos = None,  type_pos = (0,0)):
             self.token_pos = token_pos
             Node.__init__(self)
+            self.type_pos = type_pos
             self.ID = CoolID(id=id, type='Function')
             self.type = type
             self.scope:expr = scope
             self.params = CoolParamsScope(params)
             Node.set_father(self,self.childs())
-
+            self.valid_initialized = True 
             self.name = 'class_func'
 
         # def set_class(self, _class:CoolClass):
@@ -989,6 +1020,7 @@ class Feature():
             context = self.father.context.initialize_func(func= self)
             if context == False:
                 self.context = None
+                self.valid_initialized = False
                 #Crear error semantico
                 return False
             else:
@@ -996,6 +1028,8 @@ class Feature():
                 return True
             
         def validate(self):
+            if not self.valid_initialized:
+                return False
             if not self.scope.validate():
                 return False
             else:
@@ -1015,9 +1049,10 @@ class Feature():
 #endregion
 
 class CoolClass(Node):
-    def __init__(self,type, inherit:str = env.object_type_name , features:list = None, is_object = False, token_pos = None):
+    def __init__(self,type, inherit:str = env.object_type_name , features:list = None, is_object = False, token_pos = None, inherit_pos = None, type_pos = (0,0)):
         self.token_pos = token_pos
         Node.__init__(self)
+        self.type_pos = type_pos
         self.features = features
         self.type = type
         self.inherit = inherit #type in str format
@@ -1025,7 +1060,7 @@ class CoolClass(Node):
             self.inherit_class:CoolClass = ObjectClass.instance
         else:
             self.inherit_class:CoolClass = None
-
+        self.inherit_pos = inherit_pos
         self.features_was_initialized = False
         self.valid_initialized = True
         Node.set_father(self,self.childs())
@@ -1081,14 +1116,17 @@ class CoolClass(Node):
     def set_inherits(self):
         if not self.valid_initialized: return False
         if self.inherit in env.not_inherit_types:
-            SemanticError(pos = self.token_pos[1],
-                                lineno = self.token_pos[0]
+            SemanticError(pos = self.inherit_pos[1],
+                                lineno = self.inherit_pos[0]
                         )(f'SemanticError: Class {self.type} cannot inherit class {self.inherit}.')
                    
             self.valid_initialized = False
             return False
-        
-        return self.context.set_inherits_class(self.inherit)
+        if self.context.set_inherits_class(self.inherit):
+            return True
+        else:
+            # self.valid_initialized = False
+            return False
     
     def have_father(self,cclass = None, cclass_type = None):
         if cclass is not None and self.inherit_class == cclass: return True
