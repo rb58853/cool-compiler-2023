@@ -1,5 +1,6 @@
 import matplotlib.pyplot as plt
 import AST.environment as env
+from error.cool_error import SemanticError
 # from semantic.context import Context
 
 '''TODO
@@ -336,7 +337,11 @@ class Assign(BinOp):
             
             for t in ccase.possible_types:
                 if l_type != t.get_type() and not t.inherit_from_type(l_type):
-                    raise Exception(f"En el case existe niguna posible salida que no corresponde al tipo {l_type}, {t.get_type()}")
+                    SemanticError(
+                                pos=ccase.token_pos[1],
+                                lineno=ccase.token_pos[0]
+                                )(f"En el case existe niguna posible salida que no corresponde al tipo {l_type}, {t.get_type()}")
+                    # raise Exception(f"En el case existe niguna posible salida que no corresponde al tipo {l_type}, {t.get_type()}")
                     return False
             
             self.valid_types_check = True

@@ -104,6 +104,7 @@ class CoolParser(Parser):
 
     @_('ID "(" param_list ")" ":" TYPE "{" expr "}"')
     def def_func(self, p):
+        t = p.ID.index
         return Feature.CoolDef(p.ID,type=p.TYPE, params= p.param_list,scope=p.expr,token_pos=(p.lineno,self.token_pos(p)))
    
     @_('ID "(" ")" ":" TYPE "{" expr "}"')

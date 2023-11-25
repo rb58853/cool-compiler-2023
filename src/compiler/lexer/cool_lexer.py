@@ -2,6 +2,7 @@ from sly import Lexer
 from error.cool_error import LexicalError
 from lexer.string_cool_lexer import StringAnalizer
 from lexer.comment_cool_lexer import CommentAnalizer
+from lexer.tabs_lexer import change_tabs
 
 
 class CoolLexer(Lexer):
@@ -74,7 +75,6 @@ class CoolLexer(Lexer):
         self.end = token.end
         return token
         
-    
     def ignore_comment(self,token):
         self.index = token.end
         return CommentAnalizer(self)()
@@ -128,5 +128,9 @@ class CoolLexer(Lexer):
             return self.end - self.last_index
         else:
             return index - self.last_index
+        
+    def tokenize(self, text, lineno=1, index=0):
+        text = change_tabs(text)
+        return super().tokenize(text, lineno, index)    
         
         
