@@ -15,7 +15,15 @@ def main():
         y: Int;
         f1(): Int { x + y };
     };
-
+    class C {
+        m: Int;
+        n: Int;
+        f1(): Int { 
+            while m < n loop
+                m <- m + 1
+            pool
+        };
+    };
     class B inherits A {
         z: String;
         f2(): String { z };
