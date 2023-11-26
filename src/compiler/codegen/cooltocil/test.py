@@ -1,5 +1,5 @@
 import unittest
-from codegener import CILProgram, CILType, CILMethod, CILAttribute, CILConstant  
+from codegener import CILProgram, CILType, CILMethod, CILAttribute, CILConstant, CILArithmeticOp, CILAssign, CILIf, CILExpression, CILLogicalOp
 
 class TestCILAST(unittest.TestCase):
 
@@ -26,6 +26,34 @@ class TestCILAST(unittest.TestCase):
         self.assertEqual(cil_class.methods[0], method)
         self.assertEqual(cil_class.attributes[0], attribute)
         self.assertEqual(method.body[0], constant)
+
+    def test_cil_expression(self):
+        expr = CILExpression()
+        self.assertIsNotNone(expr)
+
+    def test_cil_assign(self):
+        assign = CILAssign("x", CILExpression())
+        self.assertEqual(assign.dest, "x")
+
+    def test_cil_arithmetic_op(self):
+        left_expr = CILExpression()
+        right_expr = CILExpression()
+        arith_op = CILArithmeticOp(left_expr, right_expr, "+")
+        self.assertEqual(arith_op.operation, "+")
+
+    def test_cil_logical_op(self):
+        left_expr = CILExpression()
+        right_expr = CILExpression()
+        logical_op = CILLogicalOp("and", left_expr, right_expr)
+        self.assertEqual(logical_op.operation, "and")
+
+    def test_cil_if(self):
+        condition = CILExpression()
+        then_body = [CILExpression()]
+        else_body = [CILExpression()]
+        cil_if = CILIf(condition, then_body, else_body)
+        self.assertIsNotNone(cil_if.condition)
+
 
 if __name__ == '__main__':
     unittest.main()
