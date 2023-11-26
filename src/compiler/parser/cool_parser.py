@@ -135,7 +135,7 @@ class CoolParser(Parser):
     @_('ID ASSIGN expr')
     def expr(self, p):
         #expr::= ID <- expr
-        return Assign('<-', CoolID(p[0]), p[2],token_pos=(p.lineno,self.token_pos(p)))
+        return Assign('<-', CoolID(p[0]), p[2],token_pos=(p.lineno,self.token_pos(p)), op_pos=(p._slice[1].lineno,self.token_pos(p._slice[1])))
     
 #region old dispatch
     # @_('expr "@" TYPE "." ID "(" expr_list ")"')#, 'expr "@" TYPE "." ID "(" ")"' )
@@ -210,10 +210,10 @@ class CoolParser(Parser):
     def expr(self, p):
         return CoolCase(p.expr,p.case_list,token_pos=(p.lineno,self.token_pos(p)))
         
-    @_('NEW type')
+    @_('NEW TYPE')
     def expr(self, p):
         # expr ::= new TYPE
-        return CoolNew(p.type[0],token_pos=(p.lineno,self.token_pos(p)), type_pos = p.type[1])
+        return CoolNew(p.TYPE,token_pos=(p.lineno,self.token_pos(p)), type_pos = (p._slice[1].lineno,self.token_pos(p._slice[1])))
         
     @_('ISVOID expr')
     def expr(self, p):
@@ -309,22 +309,6 @@ class CoolParser(Parser):
     @_('TYPE')
     def type(self,p):
         return (p.TYPE,(p.lineno,self.token_pos(p)))
-    
-    #Operator with position
-    @_('"+"') 
-    def operator(self,p): return (p[0],(p.lineno,self.token_pos(p)))
-    @_('"-"') 
-    def operator(self,p): return (p[0],(p.lineno,self.token_pos(p)))
-    @_('"*"') 
-    def operator(self,p): return (p[0],(p.lineno,self.token_pos(p)))
-    @_('"/"') 
-    def operator(self,p): return (p[0],(p.lineno,self.token_pos(p)))
-    @_('"="') 
-    def operator(self,p): return (p[0],(p.lineno,self.token_pos(p)))
-    @_('LE') 
-    def operator(self,p): return (p[0],(p.lineno,self.token_pos(p)))
-    @_('"<"') 
-    def operator(self,p): return (p[0],(p.lineno,self.token_pos(p)))
     
     #CREATE SIMPLE_LIST---------------------------------------       
     @_('expr "," expr_list')

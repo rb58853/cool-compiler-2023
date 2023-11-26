@@ -383,7 +383,11 @@ class Assign(BinOp):
             self.valid_types_check = True
             return True
         else:
-            return False   
+            return False
+           
+    def validate(self):
+        self.get_contex_from_father()
+        return self.context.validate_assign(self)    
 
 class BetwPar(expr):
     def __init__(self, expr, token_pos):

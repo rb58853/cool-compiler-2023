@@ -45,7 +45,7 @@ def simple_case(case):
 
     if len(semantic.errors) > 0:
         e = str(semantic.errors[0])
-        if e[:9] != error[:9]:
+        if e != error:
             print(Fore.RED)
             print(f'\n######################### {case} #############################')
             print('----------------------SEMANTIC ERRORS---------------------------')

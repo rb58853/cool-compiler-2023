@@ -93,6 +93,11 @@ class VariableContext():
 
     def initialize_class_atr(self, vvar: CoolVar):
         '''Una vez se utiliza este metodo la variable se define en el contexto'''
+        if  vvar.id == 'self' :
+            SemanticError(pos=vvar.token_pos[1],
+                            lineno=vvar.token_pos[0]
+                            )(f"SemanticError: 'self' cannot be the name of an attribute.")
+            return False
         return self.define_var(vvar,atr_case= True)
     
     def initialize_let_var(self):
@@ -230,9 +235,19 @@ class TypeContext(VariableContext):
             ```
         - nota: si se `use_inherit = True` entonces la clase sera valida si existe de quien heredar declarado, en caso contrario no se tendra en cuenta de quien esta heredando. Esto sirve para hace un primer recorrido sin tener en cuenta la herencia para asi definir los tipos, y luego hacer el recorrido teniendo en cueta la herencia.    
         '''
+        if cclass.type == env.self_type_name:
+            SemanticError(pos=cclass.type_pos[1],
+                            lineno=cclass.type_pos[0]
+                            )(f'SemanticError: Cannot defined Class TYPE_NAME')
+            return False
         return self.define_type(cclass, use_inherit)
     
     def set_inherits_class(self, cclass_type: str):
+        if cclass_type == env.self_type_name:
+            SemanticError(pos=self.cclass.type_pos[1],
+                            lineno=self.cclass.type_pos[0]
+                            )(f'SemanticError: Cannot inherits from TYPE_NAME')
+            return False
         return self.set_inherit(cclass_type)
 
 class FunctionContext(TypeContext):
@@ -256,6 +271,13 @@ class FunctionContext(TypeContext):
             #Los parametros a la hora de crear una funcion siempre seran validos dado que sintacticamente estan reinstringidos a ser de a fora ID:TYPE
             for param in func.params.exprs:
                 p:CoolID = param
+                
+                if  p.id == 'self' :
+                    SemanticError(pos=p.token_pos[1],
+                            lineno=p.token_pos[0]
+                            )(f"SemanticError: 'self' cannot be the name of a formal parameter.")
+                    return False
+                
                 if self.valid_param(p):
                     context.define_var(p)
                 else:
@@ -333,6 +355,12 @@ class FunctionContext(TypeContext):
 
 class LetContext(FunctionContext):
     def define_let_var(self,vvar:CoolVar):
+        if  vvar.id == 'self' :
+            SemanticError(pos=vvar.token_pos[1],
+                            lineno=vvar.token_pos[0]
+                            )(f"SemanticError: 'self' cannot be bound in a 'let' expression.")
+            return False
+        
         #las variables en el let se sobreescriben, por ejemplo let x:Int<-1, x:Int<-2 in x.... x sera 2 y no dara error por usarla dos veces
         if not vvar.validate():
             SemanticError(pos=vvar.type_pos[1],
@@ -379,6 +407,12 @@ class CaseContex(LetContext):
         
     def define_case_var(self,vvar:CoolID):
         #las variables en el case se sobreescriben, ocultan la anterior definicion, por ejemplo case x of a:Int=>expr, a:String=>expr, a sera entonces la ultima declarada 
+        if  vvar.id == 'self' :
+            SemanticError(pos=vvar.token_pos[1],
+                    lineno=vvar.token_pos[0]
+                    )(f"SemanticError: 'self' cannot be bound in a 'case' expression.")
+            return False
+        
         if not self.is_defined_type(vvar.get_type()):
             SemanticError(pos=vvar.type_pos[1],
                         lineno=vvar.type_pos[0]
@@ -473,14 +507,13 @@ class Context(PrintContext):
         vvar = self.get_var(cool_id.id)
         if vvar != False:
             cool_id.type = vvar.type #esto le da type al id. 
-            cool_id.value = vvar.value #esto le da valor al id. Valorar quitar esto
+            # cool_id.value = vvar.value #esto le da valor al id. Valorar quitar esto
             #cool_id = vvar #Esto es lo que me gustaria hacer 
             return True
         else:
             SemanticError(pos=cool_id.token_pos[1],
                         lineno=cool_id.token_pos[0]
                         )(f"El id {cool_id.id} no esta definido")
-            # raise Exception(f"El id {cool_id.id} no esta definido")
             return False
     
     def validate_op(self, op: BinOp, e:str = None):
@@ -490,16 +523,23 @@ class Context(PrintContext):
             return False
     
     def validate_assign(self, assing:Assign):
+        if assing.left.id == 'self' :
+            SemanticError(pos=assing.op_pos[1],
+                            lineno=assing.op_pos[0]
+                            )(f"SemanticError: Cannot assign to 'self'")
+            return False
+         
+        if not assing.left.validate():return False
+        if not assing.right.validate():return False
+        
         valid_types = assing.valid_types()
-        if  not valid_types:
-            if assing.right.name != 'case':
-                SemanticError(pos=assing.token_pos[1],
-                            lineno=assing.token_pos[0]
+        if not valid_types:
+            SemanticError(pos=assing.op_pos[1],
+                            lineno=assing.op_pos[0]
                             )(f'Se esta intentando hacer una asignacion al id {assing.left.id} un valor de tipo {assing.right.get_type()}')
-                # raise Exception(f'Se esta intentando hacer una asignacion al id {assing.left.id} un valor de tipo {assing.right.get_type()}')
             return False
         
-        return assing.left.validate() and assing.right.validate() and valid_types
+        return True
 
     def validate_callable(self, obj: CoolCallable):
         #Cada parametro llama a la funcion validate que esta tiene su propio contexto, es decir en caso de dispach los parametros se evaluara si existen en su contexto
