@@ -1,7 +1,3 @@
-
-from AST.ast import CoolClass, Assign, Feature, BinOp, CoolVar, CoolWhile, CoolProgram
-
-
 class CILNode:
     """
     Clase base para todos los nodos

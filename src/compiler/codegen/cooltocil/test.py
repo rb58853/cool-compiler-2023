@@ -1,5 +1,6 @@
 import unittest
-from compiler.codegen.cooltocil.codegener import CILNode, CILProgram, CILType, CILMethod, CILAttribute, CILConstant
+from codegener import CILProgram, CILType, CILMethod, CILAttribute, CILConstant  
+
 class TestCILAST(unittest.TestCase):
 
     def test_cil_ast_creation(self):
@@ -10,13 +11,13 @@ class TestCILAST(unittest.TestCase):
         cil_class = CILType("MyClass")
         program.add_type(cil_class)
 
-        # Cree un mtodo y un atributo y añadirlos a la clase
+        # Cree un método y un atributo y añadirlos a la clase
         method = CILMethod("my_method")
         attribute = CILAttribute("my_attribute")
         cil_class.add_method(method)
         cil_class.add_attribute(attribute)
 
-        # Cree una constante
+        # Cree una constante y añadirla al método
         constant = CILConstant(42)
         method.body.append(constant)
 
