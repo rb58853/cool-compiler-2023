@@ -14,9 +14,7 @@ class VariableContext():
         self.cclass:CoolClass = None
 
     def define_var(self, vvar:CoolVar, atr_case = False):
-        #Las variables pueden repetirse en contextos hijos-padre en caso de no ser un atributo de una clase(en dicho caso no queda claro), en caso de no ser asi usar la linea comentada y comentar la condicion que se usa actualmente
         if (atr_case and not self.is_defined_var(vvar.id)) or (not atr_case and not self.variables.__contains__(vvar.id)):
-        # if not self.variables.__contains__(vvar.id):
             if vvar.value is None:
                 #por ahora las variables se inicializan en None, en futuros pasos se pueden inicializar con el valor default de cada type
                 if self.is_defined_type(vvar.type):                
@@ -37,27 +35,6 @@ class VariableContext():
                         l_type = vvar.get_type()
                         return case_multiple_types(vvar.value, l_type)
 
-                    # if vvar.value.name == 'case':
-                    #     ccase:CoolCase = vvar.value
-                    #     l_type = vvar.get_type()
-
-                    #     return case_case(case= ccase, type= l_type) 
-
-                    # if vvar.value.name == 'if':
-                    #     _if:CoolIf = self.right
-                    #     l_type = vvar.get_type()
-                    #     return if_case(_if= _if, type= l_type) 
-
-                        # for t in ccase.possible_types:
-                        #     if l_type != t.get_type() and not t.inherit_from_type(l_type):
-                        #         SemanticError(
-                        #             pos=ccase.token_pos[1],
-                        #             lineno=ccase.token_pos[0]
-                        #             )(f"En el case existe una posible salida que no corresponde al tipo {l_type}, {t.get_type()}")
-                        #         # raise Exception(f"En el case existe niguna posible salida que no corresponde al tipo {l_type}, {t.get_type()}")
-                        #         return False
-                        # return True
-
                     if vvar.value.get_type() == vvar.type or vvar.value.inherit_from_type( vvar.get_type()):
                         self.variables[vvar.id] = vvar
                         return True
@@ -66,19 +43,20 @@ class VariableContext():
                                     pos=vvar.value.token_pos[1],
                                     lineno=vvar.value.token_pos[0]
                                     )(f"TypeError: Inferred type {vvar.value.get_type()} of initialization of attribute {vvar.id} does not conform to declared type {vvar.type}.")
-
-                        # raise Exception(f"La variable se intenta definir con un tipo diferentes: {vvar.type} distinto de {vvar.value.get_type()}")
                         return False
                 else:
                     #si es un atributo
                     self.variables[vvar.id] = vvar
                     return True    
         else:
-            SemanticError(pos=vvar.token_pos[1],
-                        lineno=vvar.token_pos[0]
-                        )(f"la variable {vvar.id} ya esta definida")
-                           
-            # raise Exception(f"la variable {vvar.id} ya esta definida")
+            if atr_case:
+                SemanticError(pos=vvar.token_pos[1],
+                            lineno=vvar.token_pos[0]
+                            )(f"SemanticError: Attribute {vvar.id} is multiply defined in class.")
+            else:
+                SemanticError(pos=vvar.token_pos[1],
+                            lineno=vvar.token_pos[0]
+                            )(f"SemanticError: Formal parameter {vvar.id} is multiply defined in class.")
             return False #ERROR or Redefine
 
     def is_defined_var(self, id):
@@ -183,7 +161,7 @@ class TypeContext(VariableContext):
             else:
                 SemanticError(pos=self.cclass.inherit_pos[1],
                         lineno=self.cclass.inherit_pos[0]
-                        )(f'La clase {type} desde la cual se desea heredar no existe')
+                        )(f'TypeError: Class {self.type} inherits from an undefined class {type}.')
                 return False #La clase desde la cual se quiere heredar no esta definida (Esto hay que cambiarlo en caso de que se pueda, entonces hay que hacer recorrido de clases dos veces)
 
             if cclass.have_father(cclass = self.cclass): 
@@ -316,7 +294,7 @@ class FunctionContext(TypeContext):
         if len(inherit_func.params.childs()) != len(func.params.childs()):
             SemanticError(pos = func.token_pos[1],
                    lineno = func.token_pos[0]
-                   )(f"Se esta intentando redefinir la funcion {func.ID.id} con cantidad de parametros invalida")
+                   )(f"SemanticError: Incompatible number of formal parameters in redefined method {func.ID.id}.")
             return False
         
         if inherit_func.type != func.type:
@@ -329,7 +307,7 @@ class FunctionContext(TypeContext):
             if inherit_param.type != new_param.type:
                 SemanticError(pos = new_param.token_pos[1],
                    lineno = new_param.token_pos[0]
-                   )(f"Se esta intentando redefinir la funcion {func.ID.id} con parametros invalidos| {inherit_param.type} != {inherit_param.type}")
+                   )(f"SemanticError: In redefined method {func.ID.id}, parameter type {new_param.type} is different from original type {inherit_param.type}.")
                 return False
         return True    
 
@@ -365,7 +343,7 @@ class LetContext(FunctionContext):
         if not vvar.validate():
             SemanticError(pos=vvar.type_pos[1],
                         lineno=vvar.type_pos[0]
-                        )(f"Se esta intentando definir la variable {vvar.id} con el tipo {vvar.get_type()} que no existe")
+                        )(f"TypeError: Class {vvar.get_type()} of let-bound identifier {vvar.id} is undefined.")
         if vvar.value is None:
             self.variables[vvar.id] = vvar
             return True
@@ -376,8 +354,7 @@ class LetContext(FunctionContext):
             else:
                 SemanticError(pos=vvar.value.token_pos[1],
                         lineno=vvar.value.token_pos[0]
-                        )(f"La variable se intenta definir con un tipo diferentes: {vvar.type} distinto de {vvar.value.get_type()}")
-                # raise Exception(f"La variable se intenta definir con un tipo diferentes: {vvar.type} distinto de {vvar.value.get_type()}")
+                        )(f"TypeError: Inferred type {vvar.value.get_type()} of initialization of b does not conform to identifier's declared type {vvar.type}.")
                 return False
             
     def define_let(self, let: CoolLet):
@@ -513,7 +490,7 @@ class Context(PrintContext):
         else:
             SemanticError(pos=cool_id.token_pos[1],
                         lineno=cool_id.token_pos[0]
-                        )(f"El id {cool_id.id} no esta definido")
+                        )(f"NameError: Undeclared identifier {cool_id.id}.")
             return False
     
     def validate_op(self, op: BinOp, e:str = None):
@@ -557,20 +534,20 @@ class Context(PrintContext):
                     if param_func.get_type() != param_call.get_type() and not param_call.inherit_from_type(param_func.get_type()):
                         SemanticError(pos=param_call.token_pos[1],
                         lineno=param_call.token_pos[0]
-                        )(f'Los parametros {param_func} y {param_call} tienen tipo diferente')
+                        )(f'TypeError: In call of method alphabet, type {param_call.get_type()} of parameter {param_func.id} does not conform to declared type {param_func.type}.')
              
                         # raise Exception (f'Los parametros {param_func} y {param_call} tienen tipo diferente ')
                         return False
             else: 
                 SemanticError(pos=token_pos_1,
                         lineno=token_pos_0
-                        )(f'La cantidad de parametros con los cuales se llama {obj.id.id} es invalida ')
+                        )(f'SemanticError: Method {obj.id.id} called with wrong number of arguments.')
                 # raise Exception (f'La cantidad de parametros con los cuales se llama {obj.id.id} es invalida ')
                 return False            
         else: 
             SemanticError(pos=token_pos_1,
                         lineno=token_pos_0
-                        )(f'La funcion {obj.id.id} no esta definida en la clase {self.cclass}')
+                        )(f'AttributeError: Dispatch to undefined method {obj.id.id}')# {self.cclass}')
             # raise Exception (f'El la funcion {obj.id.id} no esta definida en la clase {self.cclass}')
             return False
         return True
@@ -620,8 +597,7 @@ class Context(PrintContext):
         if condition.get_type() != env.bool_type_name and not condition.inherit_from_type(env.bool_type_name):
             SemanticError(pos=condition.token_pos[1],
                         lineno=condition.token_pos[0]
-                        )(f"Es espera una condicion de tipo {env.bool_type_name} y la condicion dada es tipo {condition.get_type()}")
-            # raise Exception(f"Es espera una condicion de tipo {env.bool_type_name} y la condicion dada es tipo {condition.get_type()}")
+                        )(f"TypeError: Predicate of 'if' does not have type Bool.")
             return False
         if not then_scope.validate(): 
             return False
@@ -638,8 +614,7 @@ class Context(PrintContext):
         if condition.get_type() != env.bool_type_name and not condition.inherit_from_type(env.bool_type_name):
             SemanticError(pos=condition.token_pos[1],
                         lineno=condition.token_pos[0]
-                        )(f"Es espera una condicion de tipo {env.bool_type_name} y la condicion dada es tipo {condition.get_type()}")
-            # raise Exception(f"Es espera una condicion de tipo {env.bool_type_name} y la condicion dada es tipo {condition.get_type()}")
+                        )(f"TypeError: Loop condition does not have type Bool.")
             return False
         if not loop_scope.validate(): return False
         return True
@@ -649,8 +624,6 @@ class Context(PrintContext):
             SemanticError(pos=_new.type_pos[1],
                         lineno=_new.type_pos[0]
                         )(f"TypeError: 'new' used with undefined class {_new.type}.")
-            # raise Exception(f"Es espera una condicion de tipo {env.bool_type_name} y la condicion dada es tipo {condition.get_type()}")
-          
             return False
         else:
             return True

@@ -107,7 +107,8 @@ class StringAnalizer():
         self.lexer.index+=1
         self.lexer.end=self.lexer.index+1
 
-        print( self.create_error(self.end_str, "EOF in string constant"))
+        self.create_error(self.end_str, "EOF in string constant")
+        # print( self.create_error(self.end_str, "EOF in string constant"))
         # return self.create_error(self.end_str, "EOF in string constant")
                 
     def generate_token(self, text):

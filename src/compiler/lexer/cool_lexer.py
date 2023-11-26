@@ -108,7 +108,7 @@ class CoolLexer(Lexer):
 
         self.index = self.end 
         
-        print(lex_error)
+        # print(lex_error)
         # return lex_error
 
     def STRING(self, token):

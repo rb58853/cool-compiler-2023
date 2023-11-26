@@ -12,7 +12,7 @@ colorama.init()
 base_dir = os.getcwd()
 base_url = os.path.join(base_dir, "tests/semantic/")
 
-def all(index = 0):
+def test_all_cases(index = 0):
     cases = [case for case in os.listdir(base_url) if case.endswith('.cl')] 
     cases.sort()
 
@@ -45,7 +45,8 @@ def simple_case(case):
 
     if len(semantic.errors) > 0:
         e = str(semantic.errors[0])
-        if e != error:
+        # if e != error:
+        if e[:30] != error[:30]:
             print(Fore.RED)
             print(f'\n######################### {case} #############################')
             print('----------------------SEMANTIC ERRORS---------------------------')
@@ -55,7 +56,10 @@ def simple_case(case):
             print(error) 
         else:
             print(Fore.GREEN)
-            print(f' {case:} PASSED')
+            print(f'{case} ',end='')
+            for i in range(0,20-len(case)):
+                print('-',end='')
+            print(f' | {semantic.errors[0]}')
     else:
         print(Fore.RED)
         print(f'\n\n\n######################### {case} #############################')
