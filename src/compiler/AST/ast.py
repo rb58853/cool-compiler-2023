@@ -1060,10 +1060,11 @@ class CoolClass(Node):
         self.features = features
         self.type = type
         self.inherit = inherit #type in str format
-        if not is_object:
-            self.inherit_class:CoolClass = ObjectClass.instance
-        else:
-            self.inherit_class:CoolClass = None
+        self.inherit_class:CoolClass = None
+        # if not is_object:
+        #     self.inherit_class:CoolClass = ObjectClass.instance
+        # else:
+        #     self.inherit_class:CoolClass = None
         self.inherit_pos = inherit_pos
         self.features_was_initialized = False
         self.valid_initialized = True
@@ -1179,4 +1180,4 @@ class CoolProgram(Node):
                 result = False
         return result    
 
-from semantic.cool_bases import Context,ObjectClass,IntClass, StringClass,BoolClass, Program, base_classes, BaseContext
+from semantic.cool_bases import Context,ObjectClass,IntClass, StringClass,BoolClass, base_classes, BaseContext

@@ -154,7 +154,8 @@ class TypeContext(VariableContext):
                         )(f'SemanticError: Class {self.type}, or an ancestor of {self.type}, is involved in an inheritance cycle.')
             return False
         
-        if type != env.object_type_name  and type != None:
+        # if type != env.object_type_name  and type != None:
+        if type != None:
             context_in = self.get_context_from_type(type)
             if context_in != False:
                 cclass:CoolClass = context_in.cclass

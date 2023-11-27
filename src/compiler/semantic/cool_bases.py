@@ -120,6 +120,3 @@ class BaseContext(Context):
     def __init__(self) -> None:
         super().__init__(father= None)
         self.name = 'PROGRAM'
-        
-class Program:
-    context = BaseContext()
