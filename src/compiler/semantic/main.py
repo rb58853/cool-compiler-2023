@@ -1,4 +1,3 @@
-from parser.count_characters import count_chars
 from parser.cool_parser import CoolLexer, CoolParser
 from AST.ast import CoolProgram
 from semantic.semantic_ import semantic, Semantic

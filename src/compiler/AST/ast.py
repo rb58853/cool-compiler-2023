@@ -111,8 +111,6 @@ class Node(PlotNode):
     def get_contex_from_father(self):
         self.context =  self.father.context
 
-   
-
     def inherit_from_type(self,type):
         '''
         Se llama desde la estructura `E` (de tipo `C`), y se le pasa el tipo `P`, esto evalua y devuelve si `C <= P`
@@ -186,6 +184,9 @@ class Node(PlotNode):
     def delete_condition(self):
         return len(self.childs()) == 1
     #endregion
+
+    def accept(self, visitor):
+        visitor.visit(self)
 
 #region expr
 class expr(Node):
