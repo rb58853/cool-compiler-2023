@@ -1,4 +1,4 @@
-from lexer.cool_lexer import CoolLexer
+from parser.cool_parser import CoolLexer, CoolParser
 import os
 import colorama
 from colorama import Fore
@@ -7,7 +7,7 @@ colorama.init()
 def test_all_cases():
     print("\n___________________LEXER TESTS____________________")
     base_dir = os.getcwd()
-    base_url = os.path.join(base_dir, "tests/lexer/")
+    base_url = os.path.join(base_dir, "tests/parser/")
     cases = [case for case in os.listdir(base_url) if case.endswith('.cl')] 
     cases.sort()
 
@@ -24,12 +24,12 @@ def test_all_cases():
                 errors.append(line)
         
         lexer = CoolLexer()
-        
-        for token in lexer.tokenize(code): pass
+        parser = CoolParser(lexer=lexer)
+        parser.parse(lexer.tokenize(code)) 
         
         equals = True
-        if len(errors) == len(lexer.errors):
-            for e0,e1 in zip(errors,lexer.errors):
+        if len(errors) == len(parser.errors):
+            for e0,e1 in zip(errors,parser.errors):
                 if e0.replace('\n', '').replace(' ','') != str(e1).replace(' ',''):
                     equals = False
                     break    
@@ -42,7 +42,7 @@ def test_all_cases():
                 print(f'\n######################### {case} #############################')
 
                 print('----------------------LEXER ERRORS---------------------------')
-                for e in lexer.errors:
+                for e in parser.errors:
                     print(e)
                 print ("\n---------------------EXPECTED ERRORS:-------------------------")
                 for e in errors:

@@ -56,7 +56,7 @@ class VariableContext():
             else:
                 SemanticError(pos=vvar.token_pos[1],
                             lineno=vvar.token_pos[0]
-                            )(f"SemanticError: Formal parameter {vvar.id} is multiply defined in class.")
+                            )(f"SemanticError: Formal parameter {vvar.id} is multiply defined.")
             return False #ERROR or Redefine
 
     def is_defined_var(self, id):
@@ -140,7 +140,7 @@ class TypeContext(VariableContext):
             if cclass.type in env.base_classes:
                 SemanticError(pos=cclass.type_pos[1],
                             lineno=cclass.type_pos[0]
-                            )(f'SemanticError: Redefinition of basic class {cclass.type}')
+                            )(f'SemanticError: Redefinition of basic class {cclass.type}.')
             else:
                 SemanticError(pos=cclass.token_pos[1]+4,
                             lineno=cclass.token_pos[0]
@@ -261,7 +261,7 @@ class FunctionContext(TypeContext):
                 else:
                     SemanticError(pos=p.type_pos[1],
                         lineno=p.type_pos[0]
-                        )(f'TypeError: Class {p.type} of formal parameter {p} is undefined.')
+                        )(f'TypeError: Class {p.type} of formal parameter {p.id} is undefined.')
                     # raise Exception(f'el parametro {p} trata de usar un tipo ({p.type}) no defnido en el contexto ')
                     return False #Error, el parametro p trata de usar un tipo no defnido    
             
@@ -503,7 +503,7 @@ class Context(PrintContext):
         if assing.left.id == 'self' :
             SemanticError(pos=assing.op_pos[1],
                             lineno=assing.op_pos[0]
-                            )(f"SemanticError: Cannot assign to 'self'")
+                            )(f"SemanticError: Cannot assign to 'self'.")
             return False
          
         if not assing.left.validate():return False
@@ -547,7 +547,7 @@ class Context(PrintContext):
         else: 
             SemanticError(pos=token_pos_1,
                         lineno=token_pos_0
-                        )(f'AttributeError: Dispatch to undefined method {obj.id.id}')# {self.cclass}')
+                        )(f'AttributeError: Dispatch to undefined method {obj.id.id}.')# {self.cclass}')
             # raise Exception (f'El la funcion {obj.id.id} no esta definida en la clase {self.cclass}')
             return False
         return True

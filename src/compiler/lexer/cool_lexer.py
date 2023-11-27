@@ -104,7 +104,8 @@ class CoolLexer(Lexer):
             index= self.index,
             end = self.end
         )
-        lex_error("Invalid Character")
+        lex_error(f'ERROR "{token.value[0]}"')
+        # lex_error("Invalid Character")
 
         self.index = self.end 
         

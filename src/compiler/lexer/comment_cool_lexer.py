@@ -81,5 +81,5 @@ class CommentAnalizer():
             index= self.init_index,
             end = self.lexer.end
             ) 
-            error('comment error')
+            error('EOF in comment')
             return error

@@ -13,6 +13,8 @@ base_dir = os.getcwd()
 base_url = os.path.join(base_dir, "tests/semantic/")
 
 def test_all_cases(index = 0):
+    print("\n___________________SEMANTIC TESTS____________________")
+
     cases = [case for case in os.listdir(base_url) if case.endswith('.cl')] 
     cases.sort()
 
@@ -46,7 +48,7 @@ def simple_case(case):
     if len(semantic.errors) > 0:
         e = str(semantic.errors[0])
         # if e != error:
-        if e[:30] != error[:30]:
+        if e.replace(' ','') != error.replace('\n', '').replace(' ',''):
             print(Fore.RED)
             print(f'\n######################### {case} #############################')
             print('----------------------SEMANTIC ERRORS---------------------------')

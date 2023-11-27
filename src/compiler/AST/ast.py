@@ -349,7 +349,7 @@ class Logicar(BinOp):
         elif l_type in env.basic_types or r_type in env.basic_types:
             SemanticError(pos = self.op_pos[1],
                               lineno = self.op_pos[0]
-                        )(f'TypeError: Illegal comparison with a basic type | {l_type} {self.op} {r_type}.')
+                        )(f'TypeError: Illegal comparison with a basic type.')#| {l_type} {self.op} {r_type}.')
             return False
         else: 
             return True          
@@ -601,7 +601,7 @@ class CoolUminus(expr):
         else:
             SemanticError(pos = self.value_pos[1],
                         lineno = self.value_pos[0]
-                        )(f'TypeError: Argument of "~" has type {type} instead of Int.')
+                        )(f"TypeError: Argument of '~' has type {type} instead of Int.")
             return False
 
 class CoolIsVoid(expr):
