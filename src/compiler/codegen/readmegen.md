@@ -1,0 +1,2 @@
+### Estructura base:
+ Se esta anadiendo la estructura completa de lo que sera el ast cil, como se genera completamente, las instancias de cada  nueva clase se esta implementando, hay q ver cuando se le pasen operaciones de cool si explota xd
