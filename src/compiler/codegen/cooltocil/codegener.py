@@ -110,3 +110,58 @@ class CILIf(CILExpression):
         then_str = " ".join(str(node) for node in self.then_body)
         else_str = " ".join(str(node) for node in self.else_body) if self.else_body else ""
         return f"if {self.condition.get_id()} then {then_str} else {else_str} fi"
+
+class CILWhile(CILExpression):
+    
+    def __init__(self, condition, body):
+        super().__init__()
+        self.condition = condition  # Expresn que determina el bucle
+        self.body = body           
+
+    def __str__(self):
+        body_str = " ".join(str(node) for node in self.body)
+        return f"while {self.condition.get_id()} loop {body_str} pool"
+
+class CILCall(CILExpression):
+    
+    def __init__(self, instance, method, arguments):
+        super().__init__()
+        self.instance = instance  
+        self.method = method     
+        self.arguments = arguments 
+
+    def __str__(self):
+        args_str = ", ".join(arg.get_id() for arg in self.arguments)
+        return f"{self.get_id()} = call {self.instance.get_id()}.{self.method}({args_str})"
+
+class CILBlock(CILExpression):
+
+    def __init__(self, instructions):
+        super().__init__()
+        self.instructions = instructions  # instruccion de bloq
+
+    def __str__(self):
+        instr_str = " ".join(str(instr) for instr in self.instructions)
+        return f"{{ {instr_str} }}"
+
+
+
+
+class CILAllocate(CILExpression):
+    
+    def __init__(self, type_name):
+        super().__init__()
+        self.type_name = type_name  # El nombre del tipo que se asigna memoria
+
+    def __str__(self):
+        return f"{self.get_id()} = ALLOCATE {self.type_name}"
+
+
+class CILFree(CILExpression):
+    
+    def __init__(self, instance):
+        super().__init__()
+        self.instance = instance  # La instancia de memoria qse libera
+
+    def __str__(self):
+        return f"FREE {self.instance.get_id()}"

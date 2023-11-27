@@ -1,5 +1,5 @@
 import unittest
-from codegener import CILProgram, CILType, CILMethod, CILAttribute, CILConstant, CILArithmeticOp, CILAssign, CILIf, CILExpression, CILLogicalOp
+from codegener import CILProgram, CILType, CILMethod, CILAttribute, CILConstant, CILArithmeticOp, CILAssign, CILIf, CILExpression, CILLogicalOp, CILAllocate, CILBlock, CILFree, CILWhile, CILCall
 
 class TestCILAST(unittest.TestCase):
 
@@ -54,6 +54,42 @@ class TestCILAST(unittest.TestCase):
         cil_if = CILIf(condition, then_body, else_body)
         self.assertIsNotNone(cil_if.condition)
 
+    def test_cil_while(self):
+        """ Prueba para la clase CILWhile. """
+        condition = CILExpression()  
+        body = [CILExpression()]     
+        cil_while = CILWhile(condition, body)
+        self.assertEqual(cil_while.condition, condition)
+        self.assertEqual(len(cil_while.body), 1)
+
+    def test_cil_call(self):
+        """ Prueba para la clase CILCall. """
+        instance = CILExpression()  # Usamos una expr gener
+        method = "my_method"
+        arguments = [CILExpression()]  
+        cil_call = CILCall(instance, method, arguments)
+        self.assertEqual(cil_call.instance, instance)
+        self.assertEqual(cil_call.method, method)
+        self.assertEqual(len(cil_call.arguments), 1)
+
+    def test_cil_allocate(self):
+        """ Prueba para la clase CILAllocate. """
+        allocate = CILAllocate("MyClass")
+        self.assertEqual(allocate.type_name, "MyClass")
+
+    def test_cil_free(self):
+        """ Prueba para la clase CILFree. """
+        instance = CILConstant(42)  
+        free = CILFree(instance)
+        self.assertEqual(free.instance, instance)
+
+    def test_cil_block(self):
+        """ Prueba para la clase CILBlock. """
+        instructions = [CILConstant(42), CILConstant(43)]
+        block = CILBlock(instructions)
+        self.assertEqual(len(block.instructions), 2)
+        self.assertIsInstance(block.instructions[0], CILConstant)
+        self.assertIsInstance(block.instructions[1], CILConstant)
 
 if __name__ == '__main__':
     unittest.main()
