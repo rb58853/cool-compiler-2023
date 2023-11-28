@@ -154,6 +154,12 @@ class Node(PlotNode):
         else:
             return self.name
 
+    def get_class_context(self):
+        if self.context.cclass != None:
+            return self.context
+        else:
+            return self.father.get_class_context()  
+        
     def __str__(self) -> str:
         return str(self.value)
 
@@ -184,10 +190,7 @@ class Node(PlotNode):
     def delete_condition(self):
         return len(self.childs()) == 1
     #endregion
-
-    def accept(self, visitor):
-        visitor.visit(self)
-
+      
 #region expr
 class expr(Node):
     def __init__(self, value) -> None:
@@ -198,7 +201,8 @@ class expr(Node):
 
     def __str__(self) -> str:
         return 'expr\n<-' + str(self.value)
-
+    
+    
 class CoolVar(expr):
     def __init__(self, id:str,type, value, token_pos = (0,0)):
         self.token_pos = token_pos
@@ -223,6 +227,9 @@ class CoolVar(expr):
     def validate(self):
         self.get_contex_from_father()
         return self.context.is_defined_type(self.type)
+    
+    def is_atr(self):
+        return self.get_class_context().is_defined_var(self.id)
     
 class BinOp(expr):
     def __init__(self, op, left:expr, right:expr, token_pos):
@@ -832,8 +839,9 @@ class CoolID(CoolVar):
         self.father = None
 
     def __str__(self) -> str:
-        return f'{self.id}: {self.type}'
-
+        return f'{self.id}'#: {self.type}'
+    def __repr__(self) -> str:
+        return self.__str__()
     # def context_str(self):
     #     return self.name
     def get_type(self):
@@ -911,10 +919,10 @@ class CoolConstant(expr):
         return self.name    
 
     def __str__(self) -> str:
-        return f'{self.name}'+ '{' +f'{self.value}' +'}'
+        return f'{self.value}'
 
     def __repr__(self) -> str:
-        return str(self)
+        return f'{self.name}'+ '{' +f'{self.value}' +'}'
 
     def childs(self):
         return []
