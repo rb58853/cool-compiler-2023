@@ -17,7 +17,11 @@ class Main{
     b_class: B;
     a_class: A;
     _bool: Bool;
+	i: Int <- 1;
     
+    test_while(y:Int): Object{
+        while i<= let x_0:Int<-13 in x_0*i loop i <- i + 1 pool
+    };
     -- test_logical(y:Bool): Bool { 
     --     y <- 18 <= let a:Int <- 2 + 3 - let z:Int<-1 in z+3, b:String <- "s" in {
     --         a <- 3 + a + x;
@@ -32,7 +36,7 @@ class Main{
     --     x<-2 + let z:Int<-1 in z+3
     --     fi
     -- };
-    
+
     -- test_case():Int{
     --     b: Int <- case "true" of
 	-- 		i: Int => 1;

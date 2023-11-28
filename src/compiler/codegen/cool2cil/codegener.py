@@ -35,6 +35,12 @@ class CILExpr():
     def add_tab_lv(self):
         self.tab_lv+=1    
 
+class CILVoid(CILExpr):
+    def __init__(self) -> None:
+        super().__init__()
+        self.return_void = True
+        self.use_in_code_line = False
+
 class CILLabel(CILExpr):
     def __init__(self, name_label) -> None:
         super().__init__()
@@ -341,7 +347,7 @@ class Body:
 
     def return_value(self):
         if self.current().return_void:
-            return 0
+            return ""
         else:
             return self.current_value()
 
@@ -361,6 +367,7 @@ class IsType:
     def dispatch(e): return isinstance(e, Dispatch)
     def new(e): return isinstance(e, CoolNew)
     def _if(e): return isinstance(e, CoolIf)
+    def _while(e): return isinstance(e, CoolWhile)
 
 class DivExpression:
     def __init__ (self, e:expr, body:Body):
@@ -384,6 +391,8 @@ class DivExpression:
             DivExpression.new(e,body)    
         if IsType._if(e):
             DivExpression._if(e,body)
+        if IsType._while(e):
+            DivExpression._while(e,body)
 
     def arithmetic(aritmetic: ArithmeticOP, body:Body):
         lefth_is_id_and_not_atr = IsType.id(aritmetic.left) and not aritmetic.left.is_atr()
@@ -470,11 +479,31 @@ class DivExpression:
     def case(case:CoolCase):
         pass
 
-    def _while(_while:CoolWhile):
+    def _while(_while:CoolWhile, body:Body):
+        loop = NameLabel('loop').get()
         condition = _while.condition
+        scope = _while.loop_scope
+        end_while = NameLabel('end_while').get()
         
-        pass
-    
+        body.add_expr(CILLabel(loop)) #Todos los cambios de la condiciona tienen que volverse a pocesar
+
+        if IsType.bool(condition):
+            if condition:
+                body.add_expr(CILIf(IntNode(1),else_label=end_while))
+            else:
+                body.add_expr(CILIf(IntNode(0),else_label=end_while))
+        else:
+            DivExpression(condition,body)
+            # temp = body.expressions.pop()
+            # body.add_expr(temp)
+
+            body.add_expr(CILIf(body.current_value(),else_label=end_while))
+
+        DivExpression(scope,body)
+        body.add_expr(CILLabel(loop))
+        body.add_expr(CILLabel(end_while))
+        body.add_expr(CILVoid()) #esto sirve para que se sepa que si el valor de retorno de la funcion es el while, entonces es tipo void
+
     def _if (_if:CoolIf, body:Body):
         condition = _if.condition
         then_s = _if.then_scope
@@ -501,7 +530,3 @@ class DivExpression:
         body.add_expr(CILAssign(result_expr,body.current_value()))
         body.add_expr(CILLabel(label_end))
         body.add_expr(CILId(result_expr))
-
-            
-
-        
