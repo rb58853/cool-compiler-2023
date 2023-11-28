@@ -349,7 +349,9 @@ class LetContext(FunctionContext):
             self.variables[vvar.id] = vvar
             return True
         else:
-            if vvar.value.validate() and (vvar.value.get_type() == vvar.type or vvar.value.inherit_from_type(vvar.type)):
+            if not vvar.value.validate():
+                return False
+            if (vvar.value.get_type() == vvar.type or vvar.value.inherit_from_type(vvar.type)):
                 self.variables[vvar.id] = vvar
                 return True
             else:
@@ -362,11 +364,16 @@ class LetContext(FunctionContext):
         left = let.let
         scope = let.in_scope
         let.context = self.create_context_child(repr(let))
+        valid_left = True
         for vvar in left:
-            let.context.define_let_var(vvar)
+            if not let.context.define_let_var(vvar):
+                valid_left = False
         
-        return scope.validate()    
-    
+        if valid_left:
+            return scope.validate()    
+        else:
+            return False
+        
 class CaseContex(LetContext):
     def define_and_validate_case(self, case: CoolCase):
         left:expr = case.case

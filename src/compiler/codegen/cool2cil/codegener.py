@@ -5,8 +5,29 @@ import colorama
 from colorama import Fore
 colorama.init()
 
+
+class NameTempExpression:
+    id = -1  # Contador para generar identificadores
+    def get_name():
+        NameTempExpression.id+=1
+        return f"expr_{NameTempExpression.id}"
+
+class NameLabel:
+    label_id:dict[str:int] = {}  # Contador para generar identificadores
+    def __init__(self, label = 'else') -> None:
+        self.label = label
+        if NameLabel.label_id.__contains__(label):
+            NameLabel.label_id[label]+=1
+        else:
+            NameLabel.label_id[label]=0
+    
+    def get(self):
+        return f"{self.label}_{NameLabel.label_id[self.label]}"
+
+
 class CILExpr():
     def __init__(self) -> None:
+    
         self.use_in_code_line = True
         self.tab_lv = 0
         self.return_void = False
@@ -14,8 +35,19 @@ class CILExpr():
     def add_tab_lv(self):
         self.tab_lv+=1    
 
+class CILLabel(CILExpr):
+    def __init__(self, name_label) -> None:
+        super().__init__()
+        self.name = name_label
+
+    def __str__(self) -> str:
+        return f"{Fore.MAGENTA}LABEL {self.name}{Fore.WHITE}"
+    def __repr__(self) -> str:
+        return self.__str__()
+    
 class CILId(CILExpr):
     def __init__(self, name):#, space = 4) -> None:
+        super().__init__()
         self.use_in_code_line = False #esto implica que estara en el cuerpo que se esta analizando para tenerlo presente como valor de retorno, pero no se usa en el codigo, salvo en el caso exepcional de usarlo de return.
         self.name = name
         self.dest = name
@@ -156,12 +188,6 @@ class CILAttribute():
         super().__init__()
         self.name = name
 
-class NameTempExpression:
-    id = -1  # Contador para generar identificadores
-    def get_name():
-        NameTempExpression.id+=1
-        return f"expr_{NameTempExpression.id}"
-
 class CILAssign(CILExpr):
     def __init__(self, dest:str, source):
         super().__init__()
@@ -186,31 +212,28 @@ class CILArithmeticOp(CILExpr):
         return self.__str__()
     
 class CILLogicalOP(CILExpr):
-  
-    def __init__(self, operation, left, right=None):
+    def __init__(self,left, right, operation):
         super().__init__()
-        self.operation = operation  # ('and', 'or', 'not')
+        self.operation = operation
         self.left = left   
         self.right = right
 
     def __str__(self):
-        if self.right is not None:
-            return f"{self.get_id()} = {self.left.get_id()} {self.operation} {self.right.get_id()};"
-        else:
-            return f"{self.get_id()} = {self.operation} {self.left.get_id()};"
+        return f"{self.left} {self.operation} {self.right}"
+    def __repr__(self) -> str:
+        return self.__str__()
 
 class CILIf(CILExpr):
-
-    def __init__(self, condition, then_body, else_body=None):
+    def __init__(self, condition, else_label):
         super().__init__()
-        self.condition = condition  # Expresión de condición
-        self.then_body = then_body  # Lista de CILExpr para el cuerpo del then
-        self.else_body = else_body  # """"""""""""""""""""""""""""""""""  else 
+        self.condition = condition
+        self.else_label = else_label 
+        # self.then_label = then_label
 
     def __str__(self):
-        then_str = " ".join(str(node) for node in self.then_body)
-        else_str = " ".join(str(node) for node in self.else_body) if self.else_body else ""
-        return f"if {self.condition.get_id()} then {then_str} else {else_str} fi"
+        return f'if not {self.condition} GOTO {Fore.MAGENTA}{self.else_label}{Fore.WHITE}'
+    def __repr__(self) -> str:
+        return self.__str__()
 
 class CILWhile(CILExpr):
     
@@ -283,6 +306,16 @@ class CILCommet(CILExpr):
     def __repr__(self) -> str:
         return str(self)
 
+class GOTO(CILExpr):
+    def __init__(self, label) -> None:
+        super().__init__()
+        self.label = label
+        self.return_void = True
+    def __str__(self) -> str:
+        return f"GOTO {Fore.YELLOW}{self.label}{Fore.WHITE}"    
+    def __repr__(self) -> str:
+        return self.__str__()
+
 ################################################## PROCESADOR DE COOL ###########################################################
 class Body:
     def __init__(self) -> None:
@@ -321,16 +354,20 @@ class IsType:
     def id(e): return isinstance(e, CoolID)
     def simple_id(e): return IsType.id(e) and not IsType.atr(e)
     def arithmetic(e): return isinstance(e, ArithmeticOP)
+    def logical(e): return isinstance(e, Logicar)
     def let(e): return isinstance(e, CoolLet)
     def block(e): return isinstance(e, CoolBlockScope)
     def assign(e): return isinstance(e, Assign)
     def dispatch(e): return isinstance(e, Dispatch)
     def new(e): return isinstance(e, CoolNew)
+    def _if(e): return isinstance(e, CoolIf)
 
 class DivExpression:
     def __init__ (self, e:expr, body:Body):
         if IsType.arithmetic(e):
             DivExpression.arithmetic(e, body)
+        if IsType.logical(e):
+            DivExpression.logical(e, body)
         if IsType.atr(e):
             DivExpression.atr(e,body) 
         if IsType.id(e):
@@ -345,6 +382,8 @@ class DivExpression:
             DivExpression.dispatch(e,body)    
         if IsType.new(e):
             DivExpression.new(e,body)    
+        if IsType._if(e):
+            DivExpression._if(e,body)
 
     def arithmetic(aritmetic: ArithmeticOP, body:Body):
         lefth_is_id_and_not_atr = IsType.id(aritmetic.left) and not aritmetic.left.is_atr()
@@ -363,6 +402,30 @@ class DivExpression:
             temp_current = body.current_value()
             DivExpression(aritmetic.right,body)
             body.add_expr(CILAssign(NameTempExpression.get_name(),CILArithmeticOp(temp_current,body.current_value(),aritmetic.op)))
+    
+    def logical(logicar:Logicar, body:Body):
+        if logicar.op != '=':
+            DivExpression.logicar_not_eq(logicar, body)
+        else:
+            pass
+            
+    def logicar_not_eq(logicar:Logicar, body:Body):
+        lefth_is_id_and_not_atr = IsType.id(logicar.left) and not logicar.left.is_atr()
+        right_is_id_and_not_atr = IsType.id(logicar.right) and not logicar.right.is_atr()
+
+        if (IsType.int(logicar.left) or lefth_is_id_and_not_atr)  and (IsType.int(logicar.right) or right_is_id_and_not_atr ):
+            body.add_expr(CILAssign(NameTempExpression.get_name(),CILLogicalOP(logicar.left,logicar.right, logicar.op)))
+        elif isinstance(logicar.left, IntNode) or lefth_is_id_and_not_atr:
+            DivExpression(logicar.right,body)
+            body.add_expr(CILAssign(NameTempExpression.get_name(),CILLogicalOP(logicar.left,body.current_value(),logicar.op)))
+        elif isinstance(logicar.right, IntNode) or right_is_id_and_not_atr:
+            DivExpression(logicar.left,body)
+            body.add_expr(CILAssign(NameTempExpression.get_name(),CILLogicalOP(body.current_value(),logicar.right,logicar.op)))
+        else:
+            DivExpression(logicar.left,body)
+            temp_current = body.current_value()
+            DivExpression(logicar.right,body)
+            body.add_expr(CILAssign(NameTempExpression.get_name(),CILLogicalOP(temp_current,body.current_value(),logicar.op)))
     
     def atr(id:CoolID, body:Body):
         body.add_expr(CILAssign(NameTempExpression.get_name(),CILCallAtr(id)))
@@ -408,7 +471,37 @@ class DivExpression:
         pass
 
     def _while(_while:CoolWhile):
+        condition = _while.condition
+        
         pass
     
-    def _if (_if:CoolIf):
-        pass
+    def _if (_if:CoolIf, body:Body):
+        condition = _if.condition
+        then_s = _if.then_scope
+        else_s = _if.else_scope
+        label = NameLabel('else').get()
+        label_end = NameLabel('endif').get()
+        result_expr = NameTempExpression.get_name()
+
+        if IsType.bool(condition):
+            if condition:
+                body.add_expr(CILIf(IntNode(1),else_label=label))
+            else:
+                body.add_expr(CILIf(IntNode(0),else_label=label))
+        else:
+            DivExpression(condition,body)
+            body.add_expr(CILIf(body.current_value(),else_label=label))
+
+        DivExpression(then_s,body)
+        body.add_expr(CILAssign(result_expr,body.current_value()))
+        # then_return = body.current_value()
+        body.add_expr(GOTO(label_end))
+        body.add_expr(CILLabel(label))
+        DivExpression(else_s,body)
+        body.add_expr(CILAssign(result_expr,body.current_value()))
+        body.add_expr(CILLabel(label_end))
+        body.add_expr(CILId(result_expr))
+
+            
+
+        
