@@ -45,22 +45,26 @@ class CIL2MIPS():
             self.assign(cil_expr,register)
 
     def assign (self, cil_assign:CILAssign, register:Registers):
-        if isinstance(cil_assign.source,CILArithmeticOp):
-            arithmetic = self.op(cil_assign.source,register)
-            r = register.get_temp(cil_assign.dest)
-            line = f'{arithmetic[0]} {r} {arithmetic[1]} {arithmetic[2]}'
-            self.mips.add_line(line=line)
-        
-        if isinstance(cil_assign.source,IntNode):
-            r = register.get_temp(cil_assign.dest)
-            line = f'move {r} {cil_assign.source}'
-            self.mips.add_line(line=line)
+        if cil_assign.is_temp:
+            if isinstance(cil_assign.source,CILArithmeticOp):
+                arithmetic = self.op(cil_assign.source,register)
+                r = register.get_temp(cil_assign.dest)
+                line = f'{arithmetic[0]} {r} {arithmetic[1]} {arithmetic[2]}'
+                self.mips.add_line(line=line)
+
+            if isinstance(cil_assign.source,IntNode):
+                r = register.get_temp(cil_assign.dest)
+                line = f'move {r} {cil_assign.source}'
+                self.mips.add_line(line=line)
+        else:
+            #Este es el caso donde se le asigna valor a una variable
+            pass        
 
     def op(self, cil_add:CILArithmeticOp, register:Registers):
         if cil_add.operation == '+':
             operation = 'add'
         if cil_add.operation == '-':
-            operation = 'rest'
+            operation = 'sub'
         if cil_add.operation == '*':
             operation = 'mul'    
         if cil_add.operation == '/':

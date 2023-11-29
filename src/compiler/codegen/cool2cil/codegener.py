@@ -6,6 +6,22 @@ from colorama import Fore
 colorama.init()
 
 
+class TempNames:
+    used_id = [False, False,False, False, False, False, False, False, False]
+    def get_name():
+        for i in range(len(TempNames.used_id)):
+            if not TempNames.used_id[i]:
+                TempNames.used_id[i]= True
+                return f"expr_{i}"
+        else:    
+            TempNames.used_id.append(True)
+            return f"expr_{len(TempNames.used_id)-1}"
+    
+    def free(names:list):
+        for name in names:
+            id = int(name[5:])
+            TempNames.used_id[id] = False
+
 class NameTempExpression:
     id = -1  # Contador para generar identificadores
     def get_name():
@@ -168,8 +184,7 @@ class CILMethod():
             self.locals.append(local)
         for param in cool_meth.params.childs():
             self.params.append(param)
-            self.set_body(cool_meth)
-    
+        
     def set_body(self, cool_meth:Feature.CoolDef):    
         body = Body()
         DivExpression(cool_meth.scope, body)
@@ -195,11 +210,12 @@ class CILAttribute():
         self.name = name
 
 class CILAssign(CILExpr):
-    def __init__(self, dest:str, source):
+    def __init__(self, dest:str, source, is_temp = True):
         super().__init__()
         self.dest:str = dest      # Vrle a la que se asigna el valor
         # self.dest:CILVar = CILVar(dest)      # Vrle a la que se asigna el valor
         self.source:CILExpr = source  # Expresin que se asigna a la variable
+        self.is_temp = is_temp
 
     def __str__(self):
         return f"{self.dest} = {self.source}"
@@ -402,21 +418,32 @@ class DivExpression:
         lefth_is_id_and_not_atr = IsType.id(aritmetic.left) and not aritmetic.left.is_atr()
         right_is_id_and_not_atr = IsType.id(aritmetic.right) and not aritmetic.right.is_atr()
 
-        if (IsType.int(aritmetic.left) or lefth_is_id_and_not_atr)  and (IsType.int(aritmetic.right) or right_is_id_and_not_atr ):
-            body.add_expr(CILAssign(NameTempExpression.get_name(),aritmetic.left))
-            body.add_expr(CILAssign(NameTempExpression.get_name(),CILArithmeticOp(body.current_value(),aritmetic.right, aritmetic.op, constant=True)))
+        # if (IsType.int(aritmetic.left) or lefth_is_id_and_not_atr)  and (IsType.int(aritmetic.right) or right_is_id_and_not_atr ):
+        if (IsType.int(aritmetic.left))  and (IsType.int(aritmetic.right)):
+            body.add_expr(CILAssign(TempNames.get_name(),aritmetic.left))
+            left_value = body.current_value()
+            body.add_expr(CILAssign(TempNames.get_name(),CILArithmeticOp(left_value,aritmetic.right, aritmetic.op, constant=True)))
+            TempNames.free([left_value])
         elif isinstance(aritmetic.left, IntNode) and (aritmetic.op == '+' or aritmetic.op == '*') :# or lefth_is_id_and_not_atr):
             DivExpression(aritmetic.right,body)
-            body.add_expr(CILAssign(NameTempExpression.get_name(),CILArithmeticOp(body.current_value(),aritmetic.left,aritmetic.op, constant=True)))
-            # body.add_expr(CILAssign(NameTempExpression.get_name(),CILArithmeticOp(aritmetic.left,body.current_value(),aritmetic.op)))
-        elif (isinstance(aritmetic.right, IntNode) or right_is_id_and_not_atr):
+            rigth_value = body.current_value()
+            body.add_expr(CILAssign(TempNames.get_name(),CILArithmeticOp(rigth_value,aritmetic.left,aritmetic.op, constant=True)))
+            TempNames.free([rigth_value])
+            # body.add_expr(CILAssign(TempNames.get_name(),CILArithmeticOp(aritmetic.left,body.current_value(),aritmetic.op)))
+        # elif (isinstance(aritmetic.right, IntNode) or right_is_id_and_not_atr):
+        elif (isinstance(aritmetic.right, IntNode)):
             DivExpression(aritmetic.left,body)
-            body.add_expr(CILAssign(NameTempExpression.get_name(),CILArithmeticOp(body.current_value(),aritmetic.right,aritmetic.op, constant=True)))
+            left_value = body.current_value()
+            body.add_expr(CILAssign(TempNames.get_name(),CILArithmeticOp(body.current_value(),aritmetic.right,aritmetic.op, constant=True)))
+            TempNames.free([ left_value])
         else:
             DivExpression(aritmetic.left,body)
-            temp_current = body.current_value()
+            left_value = body.current_value()
             DivExpression(aritmetic.right,body)
-            body.add_expr(CILAssign(NameTempExpression.get_name(),CILArithmeticOp(temp_current,body.current_value(),aritmetic.op)))
+            rigth_value = body.current_value()
+            body.add_expr(CILAssign(TempNames.get_name(),CILArithmeticOp(left_value,rigth_value,aritmetic.op)))
+            #cuando yo termino una operacion aritmetica, yo puedo volver a utilizar los variables donde no guarde el resultado, dado la naturaleza del codigo recursivo que va desde hijos a padres, solo me interesa conservar la varable donde se asigno el valor de la operacion. Luego las variables que use en el cuerpo de la operacion no las necesito, por lo tanto pueden volver a usarse.
+            TempNames.free([left_value,rigth_value])
     
     def logical(logicar:Logicar, body:Body):
         if logicar.op != '=':
@@ -428,35 +455,53 @@ class DivExpression:
         lefth_is_id_and_not_atr = IsType.id(logicar.left) and not logicar.left.is_atr()
         right_is_id_and_not_atr = IsType.id(logicar.right) and not logicar.right.is_atr()
 
-        if (IsType.int(logicar.left) or lefth_is_id_and_not_atr)  and (IsType.int(logicar.right) or right_is_id_and_not_atr ):
-            body.add_expr(CILAssign(NameTempExpression.get_name(),CILLogicalOP(logicar.left,logicar.right, logicar.op)))
+        # if (IsType.int(logicar.left) or lefth_is_id_and_not_atr)  and (IsType.int(logicar.right) or right_is_id_and_not_atr ):
+        if (IsType.int(logicar.left)) and (IsType.int(logicar.right)):
+            body.add_expr(CILAssign(TempNames.get_name(),logicar.left))
+            left_value = body.current_value()
+            body.add_expr(CILAssign(TempNames.get_name(),logicar.right))
+            rigth_value = body.current_value()
+            body.add_expr(CILAssign(TempNames.get_name(),CILLogicalOP(left_value,rigth_value, logicar.op)))
+            TempNames.free([left_value,rigth_value])
+
         elif isinstance(logicar.left, IntNode) or lefth_is_id_and_not_atr:
+            body.add_expr(CILAssign(TempNames.get_name(),logicar.left))
+            left_value = body.current_value()
             DivExpression(logicar.right,body)
-            body.add_expr(CILAssign(NameTempExpression.get_name(),CILLogicalOP(logicar.left,body.current_value(),logicar.op)))
+            rigth_value = body.current_value()
+            body.add_expr(CILAssign(TempNames.get_name(),CILLogicalOP(left_value,rigth_value,logicar.op)))
+            TempNames.free([left_value,rigth_value])
+        
         elif isinstance(logicar.right, IntNode) or right_is_id_and_not_atr:
+            body.add_expr(CILAssign(TempNames.get_name(),logicar.right))
+            rigth_value = body.current_value()
             DivExpression(logicar.left,body)
-            body.add_expr(CILAssign(NameTempExpression.get_name(),CILLogicalOP(body.current_value(),logicar.right,logicar.op)))
+            left_value = body.current_value()
+            body.add_expr(CILAssign(TempNames.get_name(),CILLogicalOP(body.current_value(),rigth_value,logicar.op)))
+            TempNames.free([left_value,rigth_value])
         else:
             DivExpression(logicar.left,body)
-            temp_current = body.current_value()
+            left_value = body.current_value()
             DivExpression(logicar.right,body)
-            body.add_expr(CILAssign(NameTempExpression.get_name(),CILLogicalOP(temp_current,body.current_value(),logicar.op)))
+            rigth_value = body.current_value()
+            body.add_expr(CILAssign(TempNames.get_name(),CILLogicalOP(left_value,rigth_value,logicar.op)))
+            TempNames.free([left_value,rigth_value])
     
     def int(_int:IntNode, body:Body):
-        body.add_expr(CILAssign(NameTempExpression.get_name(),_int))
+        body.add_expr(CILAssign(TempNames.get_name(),_int))
 
     def atr(id:CoolID, body:Body):
-        body.add_expr(CILAssign(NameTempExpression.get_name(),CILCallAtr(id)))
+        body.add_expr(CILAssign(TempNames.get_name(),CILCallAtr(id)))
 
     def let(let:CoolLet, body:Body):
         body.add_expr(CILCommet('#Region Let'))
         for vvar in let.let:
             if vvar.value is not None:
                 if IsType.simple_type(vvar.value):
-                    body.add_expr(CILAssign(vvar.id,vvar.value))
+                    body.add_expr(CILAssign(vvar.id,vvar.value,is_temp=False))
                 else:
                     DivExpression(vvar.value, body)
-                    body.add_expr(CILAssign(vvar.id,body.current_value()))
+                    body.add_expr(CILAssign(vvar.id,body.current_value(),is_temp=False))
             else:
                 pass #este es el caso de una instancia de clase, hay que analizarlo
         DivExpression(let.in_scope, body)        
@@ -464,20 +509,24 @@ class DivExpression:
 
     def assing(assign: Assign, body:Body):
         if IsType.simple_type(assign.right):
-            body.add_expr(CILAssign(assign.left.id,assign.right))
+            body.add_expr(CILAssign(assign.left.id,assign.right,is_temp=False))
         else:
             DivExpression(assign.right, body)
-            body.add_expr(CILAssign(assign.left.id,body.current_value()))
+            body.add_expr(CILAssign(assign.left.id,body.current_value(),is_temp=False))
     
     def block(block:CoolBlockScope, body:Body):
         for e in block.exprs:
             DivExpression(e,body)
 
     def id_value(e:CoolID,body):
-        body.add_expr(CILId(e.id))
+        # if in_params(e):
+            #tratarlo como parametro
+            # pass
+        body.add_expr(CILAssign(TempNames.get_name(),e.id))
+        # body.add_expr(CILId(e.id))
 
     def new(e:CoolID, body):
-        body.add_expr(CILAssign(NameTempExpression.get_name,e))
+        body.add_expr(CILAssign(TempNames.get_name,e))
         
     def dispatch(dispatch:Dispatch, body:Body):
         callable:CoolCallable = dispatch.function
@@ -519,7 +568,7 @@ class DivExpression:
         else_s = _if.else_scope
         label = NameLabel('else').get()
         label_end = NameLabel('endif').get()
-        result_expr = NameTempExpression.get_name()
+        result_expr = TempNames.get_name()
 
         if IsType.bool(condition):
             if condition:
