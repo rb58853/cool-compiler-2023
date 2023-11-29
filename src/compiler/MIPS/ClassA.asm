@@ -44,6 +44,9 @@ A_use_B_C:
     jalr $t1        # Llama a B_method
 
     #si queremos usar el resultado de B_method en un mtdo de C
+    
+    
+    
     move $a1, $v0   # Mueve el resultado a $a1
     lw $t0, 12($a0) # Carga la direcc de la instancia de C
     # Supongamos que C tiene un mtdo C_method que toma un argumento
@@ -51,3 +54,4 @@ A_use_B_C:
     jalr $t1        # Llama a C_method con el resultado de B_method
 
     jr $ra       
+
