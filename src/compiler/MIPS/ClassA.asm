@@ -7,7 +7,9 @@
 # Tamaño total: 1036 bytes (4 + 1024 + 4 + 4)
 
 .data
+default_string: .asciiz "default value for A"
 A_vtable: .word A_set_x, A_get_x, A_update_y, A_use_B_C  # Act de la tabla de mtdos virtuales (disptac)
+
 
 .text
 A_set_x:
