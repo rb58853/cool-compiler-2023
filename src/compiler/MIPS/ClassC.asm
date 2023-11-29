@@ -4,6 +4,7 @@
 # Tamaño total: 1024 bytes
 .data
 C_vtable: .word C_print_c  # Direcc del mtdo de la clase C
+C_string: .asciiz "c_string"  # Cadena por defecto para el atributo s
 
 .text
 C_print_c:
@@ -12,4 +13,4 @@ C_print_c:
     la $v0, C_string  # Carga la dirección de la cadena "c_string"
     jr $ra            # llamada
 
-C_string: .asciiz "c_string"
+

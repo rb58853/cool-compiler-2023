@@ -12,3 +12,6 @@ B_c_f:
     # Retorna el puntero al atributo c
     lw $v0, 4($a0)  # Carga la dirección de c (sabemos que a0 tiene la direcc de la instancia de B)
     jr $ra          # Retorna a la llamada
+
+
+
