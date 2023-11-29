@@ -20,6 +20,6 @@ if len(semantic.errors) > 0: raise Exception(str(semantic.errors[0]))
 
 from codegen.cool2cil.codegener import CILProgram
 
-def test():
+def cil_program():
     cil_program = CILProgram(cool_program)
-    print(cil_program)
+    return cil_program

@@ -197,7 +197,8 @@ class CILAttribute():
 class CILAssign(CILExpr):
     def __init__(self, dest:str, source):
         super().__init__()
-        self.dest:CILVar = CILVar(dest)      # Vrle a la que se asigna el valor
+        self.dest:str = dest      # Vrle a la que se asigna el valor
+        # self.dest:CILVar = CILVar(dest)      # Vrle a la que se asigna el valor
         self.source:CILExpr = source  # Expresin que se asigna a la variable
 
     def __str__(self):
@@ -206,11 +207,12 @@ class CILAssign(CILExpr):
         return self.__str__()
 
 class CILArithmeticOp(CILExpr):
-    def __init__(self, left, right, operation):
+    def __init__(self, left, right, operation, constant = False):
         super().__init__()
         self.left = left       # lado izquierdo
         self.right = right     # lado derecho
         self.operation = operation  #('+', '-', '*', '/')
+        self.constant = constant
 
     def __str__(self):
         return f"{self.left} {self.operation} {self.right}"
@@ -393,19 +395,23 @@ class DivExpression:
             DivExpression._if(e,body)
         if IsType._while(e):
             DivExpression._while(e,body)
+        if IsType.int(e):
+            DivExpression.int(e,body)    
 
     def arithmetic(aritmetic: ArithmeticOP, body:Body):
         lefth_is_id_and_not_atr = IsType.id(aritmetic.left) and not aritmetic.left.is_atr()
         right_is_id_and_not_atr = IsType.id(aritmetic.right) and not aritmetic.right.is_atr()
 
         if (IsType.int(aritmetic.left) or lefth_is_id_and_not_atr)  and (IsType.int(aritmetic.right) or right_is_id_and_not_atr ):
-            body.add_expr(CILAssign(NameTempExpression.get_name(),CILArithmeticOp(aritmetic.left,aritmetic.right, aritmetic.op)))
-        elif isinstance(aritmetic.left, IntNode) or lefth_is_id_and_not_atr:
+            body.add_expr(CILAssign(NameTempExpression.get_name(),aritmetic.left))
+            body.add_expr(CILAssign(NameTempExpression.get_name(),CILArithmeticOp(body.current_value(),aritmetic.right, aritmetic.op, constant=True)))
+        elif isinstance(aritmetic.left, IntNode) and (aritmetic.op == '+' or aritmetic.op == '*') :# or lefth_is_id_and_not_atr):
             DivExpression(aritmetic.right,body)
-            body.add_expr(CILAssign(NameTempExpression.get_name(),CILArithmeticOp(aritmetic.left,body.current_value(),aritmetic.op)))
-        elif isinstance(aritmetic.right, IntNode) or right_is_id_and_not_atr:
+            body.add_expr(CILAssign(NameTempExpression.get_name(),CILArithmeticOp(body.current_value(),aritmetic.left,aritmetic.op, constant=True)))
+            # body.add_expr(CILAssign(NameTempExpression.get_name(),CILArithmeticOp(aritmetic.left,body.current_value(),aritmetic.op)))
+        elif (isinstance(aritmetic.right, IntNode) or right_is_id_and_not_atr):
             DivExpression(aritmetic.left,body)
-            body.add_expr(CILAssign(NameTempExpression.get_name(),CILArithmeticOp(body.current_value(),aritmetic.right,aritmetic.op)))
+            body.add_expr(CILAssign(NameTempExpression.get_name(),CILArithmeticOp(body.current_value(),aritmetic.right,aritmetic.op, constant=True)))
         else:
             DivExpression(aritmetic.left,body)
             temp_current = body.current_value()
@@ -436,6 +442,9 @@ class DivExpression:
             DivExpression(logicar.right,body)
             body.add_expr(CILAssign(NameTempExpression.get_name(),CILLogicalOP(temp_current,body.current_value(),logicar.op)))
     
+    def int(_int:IntNode, body:Body):
+        body.add_expr(CILAssign(NameTempExpression.get_name(),_int))
+
     def atr(id:CoolID, body:Body):
         body.add_expr(CILAssign(NameTempExpression.get_name(),CILCallAtr(id)))
 
