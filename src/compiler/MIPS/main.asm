@@ -1,3 +1,10 @@
+# main.asm
+.include "ClassA.asm"
+.include "ClassB.asm"
+.include "ClassC.asm"
+.include "ClassInstances.asm"
+
+
 .text
 .globl main
 main:

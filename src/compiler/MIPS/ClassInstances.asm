@@ -12,15 +12,13 @@ create_A_instance:
     la $t0, default_string   # Dirección de una cadena por defecto
     sw $t0, 4($s0)           # Inicializa y
 
-    # Crear e inicializar puntero a B
+    # Crear instancia de B y almacenar su dirección en A
     jal create_B_instance
-    move $t0, $v0            # Dirección de la instancia de B
-    sw $t0, 8($s0)           # Establece el puntero a B en la instancia de A
+    sw $v0, 8($s0)           # Almacena la dirección de B en A
 
-    # Crear e inicializar puntero a C
+    # Crear instancia de C y almacenar su dirección en A
     jal create_C_instance
-    move $t0, $v0            # Dirección de la instancia de C
-    sw $t0, 12($s0)          # Establece el puntero a C en la instancia de A
+    sw $v0, 12($s0)          # Almacena la dirección de C en A
 
     jr $ra
 
