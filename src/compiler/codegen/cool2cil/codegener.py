@@ -291,6 +291,18 @@ class CILWhile(CILExpr):
         body_str = " ".join(str(node) for node in self.body)
         return f"while {self.condition.get_id()} loop {body_str} pool"
 
+class CILCallLocal(CILExpr):
+    def __init__(self, id:CoolID, pos) -> None:
+        super().__init__()
+        self.name = id.id
+        self.pos = pos #esta es la posicion relativa en la pila.
+
+    def __str__(self) -> str:
+        return f'GETVAR {self.name}'
+    
+    def __repr__(self) -> str:
+        return self.__str__()
+
 class CILCallAtr(CILExpr):
     def __init__(self, id:CoolID) -> None:
         super().__init__()
@@ -360,6 +372,27 @@ class GOTO(CILExpr):
         return f"GOTO {Fore.YELLOW}{self.label}{Fore.WHITE}"    
     def __repr__(self) -> str:
         return self.__str__()
+
+class ReserveSTACK(CILExpr):
+    def __init__(self, space ) -> None:
+        super().__init__()
+        self.space = space
+    def __str__(self) -> str:
+        return f"Reserve Stack {self.space}"    
+    def __repr__(self) -> str:
+        return self.__str__()
+    
+class FreeStack(CILExpr):
+    def __init__(self, space) -> None:
+        super().__init__()
+        self.space = space
+    def __str__(self) -> str:
+        return f"Free Stack {self.space}"    
+    def __repr__(self) -> str:
+        return self.__str__()
+        
+
+    
 
 ################################################## PROCESADOR DE COOL ###########################################################
 class Body:
@@ -516,33 +549,46 @@ class DivExpression:
     def atr(id:CoolID, body:Body, scope:dict[str:int] = {}):
         body.add_expr(CILAssign(TempNames.get_name(),CILCallAtr(id)))
     
+    def atr(id:CoolID, body:Body, scope:dict[str:int] = {}):
+        body.add_expr(CILAssign(TempNames.get_name(),CILCallLocal(id,scope[id.id])))
+    
+    def local_var(vvar, body:Body, scope:dict[str:int] = {}):
+
+        pass
+    
     def let(let:CoolLet, body:Body, scope:dict[str:int] = {}):
         color = get_color()
         body.add_expr(CILCommet(f'{color}#Region Let'))
         
         let_scope:dict[str:int]= {}
-        for var in scope.keys():
-            let_scope[var] = scope[var] #esto toma el scope suerior y en caso de tener que sobreescrbir variables se hace debajo
-        pos = 0
         length = 0
+        pos = 0
         
         for vvar in let.let:
             length += TYPE_LENGTH[vvar.get_type()]
-        #TODO Reservar espacio en la pila para un tamanno = length
-            
+        
+        for var in scope.keys():
+            #esto toma el scope suerior y en caso de tener que sobreescrbir variables se hace debajo. Como se vuelve a reservar pila, la posicion de las variables de scpe anteriro con respecto al puntero de pila deben deben aumentar.
+            let_scope[var] = scope[var] + length 
+
+        #Reservar espacio en la pila para un tamanno = length
+        body.add_expr(ReserveSTACK(length))
+
         for vvar in let.let:
             let_scope[vvar.id] = pos
             pos += TYPE_LENGTH[vvar.get_type()]
             if vvar.value is not None:
                 if IsType.simple_type(vvar.value):
-                    body.add_expr(CILAssign(vvar.id,vvar.value,is_temp=False))
+                    body.add_expr(CILAssign(vvar.id, vvar.value, is_temp=False))
                 else:
                     DivExpression(vvar.value, body, scope = let_scope)
-                    body.add_expr(CILAssign(vvar.id,body.current_value(),is_temp=False))
+                    body.add_expr(CILAssign(vvar.id, body.current_value(), is_temp=False))
             else:
                 pass #este es el caso de una instancia de clase, hay que analizarlo
         
-        DivExpression(let.in_scope, body, scope = let_scope)        
+        DivExpression(let.in_scope, body, scope = let_scope)
+        #Liberar espacio de la pila una vez se sale del let, el scope anterior al del let debe salir igual que antes por recursividad
+        body.add_expr(FreeStack(length))        
         body.add_expr(CILCommet(f'{color}#End Region Let'))
 
     def assing(assign: Assign, body:Body, scope:dict[str:int] = {}):
