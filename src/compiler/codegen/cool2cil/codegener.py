@@ -4,7 +4,19 @@ from AST.ast import CoolProgram, CoolClass, Feature, expr, IntNode, CoolBool, Co
 import colorama
 from colorama import Fore
 colorama.init()
+colors = [Fore.RED, Fore.GREEN, Fore.YELLOW, Fore.BLUE, Fore.MAGENTA, Fore.CYAN]
+count_colors = 0
+def get_color():
+    global colors
+    global count_colors
+    count_colors= (1+count_colors)%6
+    return colors[count_colors]
 
+#esto es para usar operaciones con valores inmediatos, por ejemplo addi $s0, $1, 5 . Las constantes solo admiten 16 bytes. Valor default = False
+USE_i = True
+
+TYPE_LENGTH= {'Int':4, 'Bool':4, 'String':32,}
+TYPE_ATRS = {}
 
 class TempNames:
     used_id = [False, False,False, False, False, False, False, False, False]
@@ -39,7 +51,6 @@ class NameLabel:
     
     def get(self):
         return f"{self.label}_{NameLabel.label_id[self.label]}"
-
 
 class CILExpr():
     def __init__(self) -> None:
@@ -138,6 +149,8 @@ class CILType():
         self.methods:list[CILId] = []  # Lista de CILMethod
         self.attributes:list[CILVar] = []  # Lista de CILAttribute
         self.space = self.get_all_from(cclass)
+        self.atrs = {}
+        TYPE_ATRS[self.name] = self.atrs
 
     def get_all_from(self, cclass:CoolClass):
         self.process_class(cclass)
@@ -147,17 +160,25 @@ class CILType():
         result = 0
         for atr in self.attributes:
             result += atr.space
-        for met in self.methods:
-            result += met.space
-        return result
+            
+        # for met in self.methods:
+        #     result += met.space
+        TYPE_LENGTH[self.name] = result
     
     def process_class(self,cclass:CoolClass):
         if cclass.type != env.object_type_name:
             self.process_class(cclass.inherit_class)
 
         for feature in cclass.features:
+            space = 0
             if isinstance(feature,Feature.CoolAtr):
-                self.attributes.append(CILVar(f'{self.name}_{feature.ID.id}', value=feature.value))
+                self.atrs[feature.ID.id] = space 
+                if feature.get_type == env.string_type_name:
+                    self.attributes.append(CILVar(f'{self.name}_{feature.ID.id}', value=feature.value,space=32))
+                    space += 32
+                else:
+                    self.attributes.append(CILVar(f'{self.name}_{feature.ID.id}', value=feature.value,space=4))
+                    space += 4
             else:    
                 self.methods.append(CILId(f'{self.name}_{feature.ID.id}')) #Esto apunta a una dirccion de memoria y su tamanno siempre es 4 bytes
     
@@ -414,24 +435,26 @@ class DivExpression:
         if IsType.int(e):
             DivExpression.int(e,body)    
 
-    def arithmetic(aritmetic: ArithmeticOP, body:Body):
-        lefth_is_id_and_not_atr = IsType.id(aritmetic.left) and not aritmetic.left.is_atr()
-        right_is_id_and_not_atr = IsType.id(aritmetic.right) and not aritmetic.right.is_atr()
+    def arithmetic(aritmetic: ArithmeticOP, body:Body, scope:dict[str:int] = {}):
+        # lefth_is_id_and_not_atr = IsType.id(aritmetic.left) and not aritmetic.left.is_atr()
+        # right_is_id_and_not_atr = IsType.id(aritmetic.right) and not aritmetic.right.is_atr()
+        
+        mult_div = (aritmetic.op == '/' or aritmetic.op == '*')
 
         # if (IsType.int(aritmetic.left) or lefth_is_id_and_not_atr)  and (IsType.int(aritmetic.right) or right_is_id_and_not_atr ):
-        if (IsType.int(aritmetic.left))  and (IsType.int(aritmetic.right)):
+        if (IsType.int(aritmetic.left)) and (IsType.int(aritmetic.right) ) and not mult_div and USE_i:
             body.add_expr(CILAssign(TempNames.get_name(),aritmetic.left))
             left_value = body.current_value()
             body.add_expr(CILAssign(TempNames.get_name(),CILArithmeticOp(left_value,aritmetic.right, aritmetic.op, constant=True)))
             TempNames.free([left_value])
-        elif isinstance(aritmetic.left, IntNode) and (aritmetic.op == '+' or aritmetic.op == '*') :# or lefth_is_id_and_not_atr):
+        elif isinstance(aritmetic.left, IntNode) and (aritmetic.op == '+') and not mult_div and USE_i:# or lefth_is_id_and_not_atr):
             DivExpression(aritmetic.right,body)
             rigth_value = body.current_value()
             body.add_expr(CILAssign(TempNames.get_name(),CILArithmeticOp(rigth_value,aritmetic.left,aritmetic.op, constant=True)))
             TempNames.free([rigth_value])
             # body.add_expr(CILAssign(TempNames.get_name(),CILArithmeticOp(aritmetic.left,body.current_value(),aritmetic.op)))
         # elif (isinstance(aritmetic.right, IntNode) or right_is_id_and_not_atr):
-        elif (isinstance(aritmetic.right, IntNode)):
+        elif (isinstance(aritmetic.right, IntNode))and not mult_div and USE_i:
             DivExpression(aritmetic.left,body)
             left_value = body.current_value()
             body.add_expr(CILAssign(TempNames.get_name(),CILArithmeticOp(body.current_value(),aritmetic.right,aritmetic.op, constant=True)))
@@ -445,13 +468,13 @@ class DivExpression:
             #cuando yo termino una operacion aritmetica, yo puedo volver a utilizar los variables donde no guarde el resultado, dado la naturaleza del codigo recursivo que va desde hijos a padres, solo me interesa conservar la varable donde se asigno el valor de la operacion. Luego las variables que use en el cuerpo de la operacion no las necesito, por lo tanto pueden volver a usarse.
             TempNames.free([left_value,rigth_value])
     
-    def logical(logicar:Logicar, body:Body):
+    def logical(logicar:Logicar, body:Body, scope:dict[str:int] = {}):
         if logicar.op != '=':
             DivExpression.logicar_not_eq(logicar, body)
         else:
             pass
             
-    def logicar_not_eq(logicar:Logicar, body:Body):
+    def logicar_not_eq(logicar:Logicar, body:Body, scope:dict[str:int] = {}):
         lefth_is_id_and_not_atr = IsType.id(logicar.left) and not logicar.left.is_atr()
         right_is_id_and_not_atr = IsType.id(logicar.right) and not logicar.right.is_atr()
 
@@ -487,57 +510,72 @@ class DivExpression:
             body.add_expr(CILAssign(TempNames.get_name(),CILLogicalOP(left_value,rigth_value,logicar.op)))
             TempNames.free([left_value,rigth_value])
     
-    def int(_int:IntNode, body:Body):
+    def int(_int:IntNode, body:Body, scope:dict[str:int] = {}):
         body.add_expr(CILAssign(TempNames.get_name(),_int))
 
-    def atr(id:CoolID, body:Body):
+    def atr(id:CoolID, body:Body, scope:dict[str:int] = {}):
         body.add_expr(CILAssign(TempNames.get_name(),CILCallAtr(id)))
-
-    def let(let:CoolLet, body:Body):
-        body.add_expr(CILCommet('#Region Let'))
+    
+    def let(let:CoolLet, body:Body, scope:dict[str:int] = {}):
+        color = get_color()
+        body.add_expr(CILCommet(f'{color}#Region Let'))
+        
+        let_scope:dict[str:int]= {}
+        for var in scope.keys():
+            let_scope[var] = scope[var] #esto toma el scope suerior y en caso de tener que sobreescrbir variables se hace debajo
+        pos = 0
+        length = 0
+        
         for vvar in let.let:
+            length += TYPE_LENGTH[vvar.get_type()]
+        #TODO Reservar espacio en la pila para un tamanno = length
+            
+        for vvar in let.let:
+            let_scope[vvar.id] = pos
+            pos += TYPE_LENGTH[vvar.get_type()]
             if vvar.value is not None:
                 if IsType.simple_type(vvar.value):
                     body.add_expr(CILAssign(vvar.id,vvar.value,is_temp=False))
                 else:
-                    DivExpression(vvar.value, body)
+                    DivExpression(vvar.value, body, scope = let_scope)
                     body.add_expr(CILAssign(vvar.id,body.current_value(),is_temp=False))
             else:
                 pass #este es el caso de una instancia de clase, hay que analizarlo
-        DivExpression(let.in_scope, body)        
-        body.add_expr(CILCommet('#End Region Let'))
+        
+        DivExpression(let.in_scope, body, scope = let_scope)        
+        body.add_expr(CILCommet(f'{color}#End Region Let'))
 
-    def assing(assign: Assign, body:Body):
+    def assing(assign: Assign, body:Body, scope:dict[str:int] = {}):
         if IsType.simple_type(assign.right):
             body.add_expr(CILAssign(assign.left.id,assign.right,is_temp=False))
         else:
             DivExpression(assign.right, body)
             body.add_expr(CILAssign(assign.left.id,body.current_value(),is_temp=False))
     
-    def block(block:CoolBlockScope, body:Body):
+    def block(block:CoolBlockScope, body:Body, scope:dict[str:int] = {}):
         for e in block.exprs:
             DivExpression(e,body)
 
-    def id_value(e:CoolID,body):
+    def id_value(e:CoolID,body, scope:dict[str:int] = {}):
         # if in_params(e):
             #tratarlo como parametro
             # pass
         body.add_expr(CILAssign(TempNames.get_name(),e.id))
         # body.add_expr(CILId(e.id))
 
-    def new(e:CoolID, body):
+    def new(e:CoolID, body, scope:dict[str:int] = {}):
         body.add_expr(CILAssign(TempNames.get_name,e))
         
-    def dispatch(dispatch:Dispatch, body:Body):
+    def dispatch(dispatch:Dispatch, body:Body, scope:dict[str:int] = {}):
         callable:CoolCallable = dispatch.function
         type = dispatch.type
         body.add_expr(CILCall(type, callable.id.id,callable.params))
         pass
     
-    def case(case:CoolCase):
+    def case(case:CoolCase, scope:dict[str:int] = {}):
         pass
 
-    def _while(_while:CoolWhile, body:Body):
+    def _while(_while:CoolWhile, body:Body, scope:dict[str:int] = {}):
         loop = NameLabel('loop').get()
         condition = _while.condition
         scope = _while.loop_scope
@@ -562,7 +600,7 @@ class DivExpression:
         body.add_expr(CILLabel(end_while))
         body.add_expr(CILVoid()) #esto sirve para que se sepa que si el valor de retorno de la funcion es el while, entonces es tipo void
 
-    def _if (_if:CoolIf, body:Body):
+    def _if (_if:CoolIf, body:Body, scope:dict[str:int] = {}):
         condition = _if.condition
         then_s = _if.then_scope
         else_s = _if.else_scope

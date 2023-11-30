@@ -1,5 +1,5 @@
-from codegen.cool2cil.codegener import CILExpr, CILArithmeticOp, CILMethod, CILAssign, CILProgram, CILVar, IntNode
-
+from codegen.cool2cil.codegener import CILExpr, CILArithmeticOp, CILMethod, CILAssign, CILProgram, CILVar, IntNode, CILCommet, USE_i
+from codegen.cil2mips.utils import to_hex
 
 class Registers():
     def __init__(self, cil_method:CILMethod) -> None:
@@ -25,6 +25,7 @@ class MIPS:
         for line in self.body:
             result+= f'{line}\n'        
         return result
+    
 class CIL2MIPS():
     '''Recive un CILProgram y un MIPS, crea un codigo en mips con la informacion de CILProgram '''
     def __init__(self, cil, mips) -> None:
@@ -43,42 +44,48 @@ class CIL2MIPS():
     def generate_line_from_expr(self, cil_expr:CILExpr, register:Registers):
         if isinstance(cil_expr, CILAssign):
             self.assign(cil_expr,register)
+        
+        if isinstance(cil_expr, CILCommet):
+            self.mips.add_line(str(cil_expr))
 
     def assign (self, cil_assign:CILAssign, register:Registers):
         if cil_assign.is_temp:
             if isinstance(cil_assign.source,CILArithmeticOp):
-                arithmetic = self.op(cil_assign.source,register)
-                r = register.get_temp(cil_assign.dest)
-                line = f'{arithmetic[0]} {r} {arithmetic[1]} {arithmetic[2]}'
-                self.mips.add_line(line=line)
+                lines = self.op(cil_assign.source,register, cil_assign.dest)
+                for line in lines:
+                    self.mips.add_line(line=line)
 
             if isinstance(cil_assign.source,IntNode):
                 r = register.get_temp(cil_assign.dest)
-                line = f'move {r} {cil_assign.source}'
-                self.mips.add_line(line=line)
+                if not USE_i:
+                    hex_num = to_hex(cil_assign.source.value)
+                    self.mips.add_line(f'lui {r} {hex_num[:6]}')
+                    self.mips.add_line(f'ori {r} 0x{hex_num[4:]}')
+                else:
+                    self.mips.add_line(f'li {r} {cil_assign.source.value}')
         else:
             #Este es el caso donde se le asigna valor a una variable
             pass        
 
-    def op(self, cil_add:CILArithmeticOp, register:Registers):
-        if cil_add.operation == '+':
-            operation = 'add'
-        if cil_add.operation == '-':
-            operation = 'sub'
-        if cil_add.operation == '*':
-            operation = 'mul'    
-        if cil_add.operation == '/':
-            operation = 'div'
-                    
-        if cil_add.constant: operation +='i'
+    def op(self, cil_add:CILArithmeticOp, register:Registers, dest):
+        r = register.get_temp(dest)
         left = cil_add.left
         rigth = cil_add.right
         if not isinstance (left, IntNode):left = register.get_temp(left)
         if not isinstance (rigth, IntNode): rigth = register.get_temp(rigth)
         
-        return (operation, left, rigth)
-
-                
+        if cil_add.operation == '+':
+            operation = 'add'
+        if cil_add.operation == '-':
+            operation = 'sub'
         
+        if cil_add.operation == '*' or cil_add.operation == '/':   
+            if cil_add.operation == '*':
+                operation = 'mul'    
+            if cil_add.operation == '/':
+                operation = 'div'
 
-    
+            return [f'{operation} {left} {rigth}',f'mflo {r}']                    
+        
+        if cil_add.constant: operation +='i'
+        return [f'{operation} {r} {left} {rigth}']
