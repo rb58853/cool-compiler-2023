@@ -2,6 +2,7 @@
 .include "ClassA.asm"
 .include "ClassB.asm"
 .include "ClassC.asm"
+.include "String.asm
 .include "ClassInstances.asm"
 
 .text
