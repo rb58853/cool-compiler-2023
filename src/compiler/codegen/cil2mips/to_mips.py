@@ -1,5 +1,28 @@
-from codegen.cool2cil.codegener import CILExpr, CILArithmeticOp, CILMethod, CILAssign, CILProgram, CILVar, IntNode, CILCommet, USE_i
 from codegen.cil2mips.utils import to_hex
+import AST.environment as env
+from codegen.cool2cil.codegener import CILExpr, CILArithmeticOp, CILMethod, CILAssign, CILProgram, CILVar, IntNode, CILCommet, USE_i, StoreLocal, CILCallLocal, ReserveSTACK, FreeStack, CILReturn, Label, CILLogicalOP, CILIf, GOTO
+
+def write_in_heap(bytes_dir, space, free_register_0 = '$s0',free_register_1 = '$s1', temp_register = '$t9'):
+    lines= [
+        f'li $a0, {space}', # Número de bytes para asignar
+        f'li $v0, 9', # Código de la llamada al sistema para sbrk
+        f'syscall', # Asignar memoria en el heap
+        f'move {free_register_0}, $v0', # Guardar la dirección de la memoria asignada en un registro, desde aqui se empieza a escribir en el heap 
+        f'la {free_register_0}, {bytes_dir}', # Cargar en un registro la dirección de los bytes que se quieren escribir 
+        'copy:',
+        f'lb {temp_register},({free_register_0})', # Leer un byte desde la dirección de origen
+        f'sb {temp_register},({free_register_1})', # Almacenarlo en la dirección de destino
+        f'addiu {free_register_0},{free_register_0},1',
+        f'addiu {free_register_1},{free_register_1},1',
+        f'bne {temp_register},$zero,copy' # Repetir hasta que el terminador NUL haya sido copiado'
+    ]
+    return lines
+
+def load_from_heap(heap_dir, register, space):
+    lines = [
+
+    ]
+    return lines
 
 class Registers():
     def __init__(self, cil_method:CILMethod) -> None:
@@ -33,6 +56,7 @@ class CIL2MIPS():
         self.generate_code(cil)
 
     def generate_code(self,cil:CILProgram):
+        self.mips.add_line('.globl main')
         for method in cil.methods:
             self.generate_from_method(method)
 
@@ -42,11 +66,65 @@ class CIL2MIPS():
             self.generate_line_from_expr(expr, register)
     
     def generate_line_from_expr(self, cil_expr:CILExpr, register:Registers):
+        if isinstance(cil_expr, CILReturn):
+            self._return(cil_expr, register)
+        
+        if isinstance(cil_expr, StoreLocal):
+            self.store_stack(cil_expr,register)
+        
+        if isinstance(cil_expr, ReserveSTACK):
+            self.reserve_stack(cil_expr)
+
+        if isinstance(cil_expr, FreeStack):
+            self.free_stack(cil_expr)
+
         if isinstance(cil_expr, CILAssign):
             self.assign(cil_expr,register)
         
         if isinstance(cil_expr, CILCommet):
             self.mips.add_line(str(cil_expr))
+
+        if isinstance(cil_expr, Label):
+            self.mips.add_line(str(cil_expr))    
+        
+        if isinstance(cil_expr, CILIf):
+            self._if(cil_expr, register)
+        
+        if isinstance(cil_expr, GOTO):
+            self.jump(cil_expr)
+
+    def jump (self, goto:GOTO):
+        self.mips.add_line(f'j {goto.label}')
+
+    def _return(self, ret:CILReturn, register:Registers):
+        result = ret.ret
+        self.mips.add_line(f'move $a0, {register.get_temp(result)}')
+        self.mips.add_line('jr $ra')    
+
+    def free_stack(self, free_s:FreeStack):
+        space = free_s.space
+        self.mips.add_line(f'addi $sp, $sp, {space}')
+
+    def reserve_stack(self, res_stack:ReserveSTACK):
+        space = res_stack.space
+        self.mips.add_line(f'addi $sp, $sp, -{space}')
+    
+    def store_stack(self, s_local:StoreLocal, register:Registers):
+        pos = s_local.pos
+        if s_local.type == env.int_type_name:
+            self.mips.add_line(f'sw {s_local.register}, {pos}($sp)')
+    
+    def load_stack(self, c_local:CILCallLocal, register):
+        pos = c_local.pos
+        return f'lw {register}, {pos}($sp)'
+
+    def _if(self, cil_if:CILIf, register: Registers):
+        condition = cil_if.condition
+        label = cil_if.else_label
+        op = 'beq' # saltar al 'label' si condition == 0
+        # if cil_if._while:
+        #     op = 'bne' # saltar al 'label' si condition != 0
+        self.mips.add_line(f'{op} {register.get_temp(condition)}, $zero, {label}') 
 
     def assign (self, cil_assign:CILAssign, register:Registers):
         if cil_assign.is_temp:
@@ -63,9 +141,34 @@ class CIL2MIPS():
                     self.mips.add_line(f'ori {r} 0x{hex_num[4:]}')
                 else:
                     self.mips.add_line(f'li {r} {cil_assign.source.value}')
+            
+            if isinstance(cil_assign.source,CILCallLocal):
+                r = register.get_temp(cil_assign.dest)
+                self.mips.add_line(self.load_stack(cil_assign.source,r))
+            
+            if isinstance(cil_assign.source, CILLogicalOP):
+                lines = self.logicar_op(cil_assign.source,register, cil_assign.dest)
+                for line in lines:
+                    self.mips.add_line(line=line)
         else:
             #Este es el caso donde se le asigna valor a una variable
             pass        
+
+    def logicar_op(self, cil_logicar:CILLogicalOP, register:Registers, dest):
+        r = register.get_temp(dest)
+        left = register.get_temp(cil_logicar.left)
+        rigth = register.get_temp(cil_logicar.right)
+        
+        if cil_logicar.operation == '<':
+            return [f'slt {r}, {left}, {rigth}'] # $r = 1 si $lefth < right, de lo contrario r = 0
+        if cil_logicar.operation == '<=':
+            return [f'slt {r}, {rigth}, {left}', # $r = 1 si $rigth < lefth, r = 0 implica left <= rigth
+                    f'li {rigth}, 1', 
+                    f'slt {r}, {r}, {rigth}'] #si r < 1 entonces es 1, sino, es cero. Se usa un mismo registro que no necesito ya, luego esta libre. 
+        if cil_logicar.operation == '=':
+            pass
+        
+        #TODO falta el caso = compara bit a bit los string. Lo demas es por direcciones.
 
     def op(self, cil_add:CILArithmeticOp, register:Registers, dest):
         r = register.get_temp(dest)
@@ -85,7 +188,12 @@ class CIL2MIPS():
             if cil_add.operation == '/':
                 operation = 'div'
 
-            return [f'{operation} {left} {rigth}',f'mflo {r}']                    
+            return [f'{operation} {left}, {rigth}',f'mflo {r}']                    
         
-        if cil_add.constant: operation +='i'
-        return [f'{operation} {r} {left} {rigth}']
+        if cil_add.constant:
+            if operation == 'sub':
+                rigth.value = -rigth.value
+                return [f'addi {r}, {left}, {rigth}']
+            operation +='i'
+        return [f'{operation} {r}, {left}, {rigth}']
+    

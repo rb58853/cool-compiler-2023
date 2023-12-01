@@ -3,6 +3,8 @@ from error.cool_error import SemanticError
 from semantic.special_cases import case_case, if_case, case_multiple_types
 from AST.ast import Feature, CoolClass, CoolString, CoolVar, CoolID, BinOp, IntNode, CoolBool, CoolCallable, Dispatch, Assign, Node, CoolLet, CoolCase, CoolIf, expr, CoolWhile, CoolNew
 
+#TODO Dentro de la definicion de un let, no se esta asignando el tokenpos a las variables, hacer esto en el parser bien
+
 class VariableContext():
     def __init__(self, father) -> None:
         self.types:dict[str:Context] = {}

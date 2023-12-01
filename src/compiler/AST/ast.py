@@ -229,6 +229,7 @@ class CoolVar(expr):
         return self.context.is_defined_type(self.type)
     
     def is_atr(self):
+        #TODO esto hay que camiarlo
         return self.get_class_context().is_defined_var(self.id)
     
 class BinOp(expr):

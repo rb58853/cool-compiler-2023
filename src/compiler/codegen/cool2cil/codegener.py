@@ -15,8 +15,12 @@ def get_color():
 #esto es para usar operaciones con valores inmediatos, por ejemplo addi $s0, $1, 5 . Las constantes solo admiten 16 bytes. Valor default = False
 USE_i = True
 
+#Esto hace que se reserve pila de forma dinamica y no total. Por ejemplo en let x:int<-1, a:int <- (let <expr>), b:int.... En este caso se reserva memoria para x, luego se reserva para a y luego para b, dado que en el llamado del le que se le asigna a `a` no nos interesa la variable b, pero si la variable x, por lo tanto no se reserva memoria que no se usara en ese llamado. La forma standar sera reservar toda la memoria necesaria para cada varaible del let, DEFAULT = False
+DYNAMIC_STACK = True
+
 TYPE_LENGTH= {'Int':4, 'Bool':4, 'String':32,}
 TYPE_ATRS = {}
+
 
 class TempNames:
     used_id = [False, False,False, False, False, False, False, False, False]
@@ -40,7 +44,7 @@ class NameTempExpression:
         NameTempExpression.id+=1
         return f"expr_{NameTempExpression.id}"
 
-class NameLabel:
+class NameLabel():
     label_id:dict[str:int] = {}  # Contador para generar identificadores
     def __init__(self, label = 'else') -> None:
         self.label = label
@@ -54,7 +58,6 @@ class NameLabel:
 
 class CILExpr():
     def __init__(self) -> None:
-    
         self.use_in_code_line = True
         self.tab_lv = 0
         self.return_void = False
@@ -68,13 +71,13 @@ class CILVoid(CILExpr):
         self.return_void = True
         self.use_in_code_line = False
 
-class CILLabel(CILExpr):
+class Label(CILExpr):
     def __init__(self, name_label) -> None:
         super().__init__()
-        self.name = name_label
+        self.name = name_label + ':'
 
     def __str__(self) -> str:
-        return f"{Fore.MAGENTA}LABEL {self.name}{Fore.WHITE}"
+        return f"{Fore.MAGENTA}{self.name}{Fore.WHITE}"
     def __repr__(self) -> str:
         return self.__str__()
     
@@ -138,18 +141,26 @@ class CILProgram():
     
     def generate_methods(self, cool_program:CoolProgram):
         for cclass in cool_program.classes:
+            if cclass.type == 'Main':
+                for feature in cclass.features:
+                    if isinstance(feature,Feature.CoolDef) and feature.ID.id == 'main':
+                        self.methods.append(CILMethod(feature, self))
+
+
+        for cclass in cool_program.classes:
             if not cclass.type in env.base_classes:
                 for feature in cclass.features:
                     if isinstance(feature,Feature.CoolDef):
-                        self.methods.append(CILMethod(feature, self))
+                        if cclass.type != 'Main' and feature.ID.id != 'main':
+                            self.methods.append(CILMethod(feature, self))
     
 class CILType():
     def __init__(self, cclass:CoolClass):
         self.name = cclass.type
         self.methods:list[CILId] = []  # Lista de CILMethod
         self.attributes:list[CILVar] = []  # Lista de CILAttribute
-        self.space = self.get_all_from(cclass)
         self.atrs = {}
+        self.space = self.get_all_from(cclass)
         TYPE_ATRS[self.name] = self.atrs
 
     def get_all_from(self, cclass:CoolClass):
@@ -197,32 +208,51 @@ class CILMethod():
         self.body:list[CILExpr] = []  # Lista de CILExpr, representa el cuerpo del método
         self.params:list[CILId] = []
         self.locals:list[CILVar] = []
+        self.context = {}
         self.set_vars(cool_meth, cil_program)
         self.set_body(cool_meth)
     
     def set_vars(self, cool_meth:Feature.CoolDef, cil_program:CILProgram):
-        for local in cil_program.types[cool_meth.father.type].attributes:
-            self.locals.append(local)
+        pos= 0
+        for atr in cil_program.types[cool_meth.father.type].attributes:
+            self.locals.append(atr)
+            self.context[atr.id.id] = pos
+            pos+=4
+            if atr.get_type() == env.string_type_name:
+                pos+=28
         for param in cool_meth.params.childs():
             self.params.append(param)
+            self.context[param.id] = pos
+            pos+=4
+            if param.get_type() == env.string_type_name:
+                pos+=28
         
     def set_body(self, cool_meth:Feature.CoolDef):    
         body = Body()
-        DivExpression(cool_meth.scope, body)
+        DivExpression(cool_meth.scope, body, self.context)
         self.body = [e for e in body.expressions if e.use_in_code_line]
+        if self.name != 'Main_main':
+            self.body.insert(0,Label(self.name))
+        else:
+            self.body.insert(0,Label('main'))
+
         self.body.append(CILReturn(body.return_value()))
 
     def __str__(self) -> str:
-        result = f'\n.method {self.name}'+' {\n'
+        result = str(self.body[0])
+        result += '{\n'
         for local in self.locals:
             result+= f'\tLocal {local};\n'
         for param in self.params:
             result+= f'\tParam {param};\n'
+        i = 0
         for e in self.body:
-            if isinstance (e,CILCommet):
-                result+= f'\t{e}\n'
-            else:
-                result+= f'\t{e};\n'
+            if i > 0:
+                if isinstance (e,CILCommet):
+                    result+= f'\t{e}\n'
+                else:
+                    result+= f'\t{e};\n'
+            i+=1
         return result +'}\n'
 
 class CILAttribute():
@@ -269,8 +299,9 @@ class CILLogicalOP(CILExpr):
         return self.__str__()
 
 class CILIf(CILExpr):
-    def __init__(self, condition, else_label):
+    def __init__(self, condition, else_label, _while = False):
         super().__init__()
+        self._while = _while
         self.condition = condition
         self.else_label = else_label 
         # self.then_label = then_label
@@ -298,7 +329,7 @@ class CILCallLocal(CILExpr):
         self.pos = pos #esta es la posicion relativa en la pila.
 
     def __str__(self) -> str:
-        return f'GETVAR {self.name}'
+        return f'GETLOCAL {self.name}({self.pos})'
     
     def __repr__(self) -> str:
         return self.__str__()
@@ -390,8 +421,22 @@ class FreeStack(CILExpr):
         return f"Free Stack {self.space}"    
     def __repr__(self) -> str:
         return self.__str__()
-        
 
+class StoreLocal(CILExpr):
+    def __init__(self, id:CoolID, pos, value, register ='$t', type = env.int_type_name) -> None:
+        super().__init__()
+        self.name = id.id
+        self.value = value
+        self.pos = pos #esta es la posicion relativa en la pila.
+        self.dest = value
+        self.register = f'{register}{value[5:]}'
+        self.type = type
+
+    def __str__(self) -> str:
+        return f'{self.name} => STORELOCAL {self.value}({self.pos})'
+    
+    def __repr__(self) -> str:
+        return self.__str__()
     
 
 ################################################## PROCESADOR DE COOL ###########################################################
@@ -405,7 +450,9 @@ class Body:
     def current(self):
         index = 1
         for i in range(len(self.expressions)-1, -1,-1):
-            if isinstance(self.expressions[i], CILCommet):
+            if isinstance(self.expressions[i], CILCommet)\
+                or isinstance(self.expressions[i], FreeStack)\
+                or isinstance(self.expressions[i], ReserveSTACK):
                 index+=1
             else:
                 break
@@ -430,6 +477,7 @@ class IsType:
     def string(e): return isinstance(e, CoolString)
     def bool(e): return isinstance(e, CoolBool)
     def id(e): return isinstance(e, CoolID)
+    def local(e): return isinstance(e, CoolID) and not e.is_atr()
     def simple_id(e): return IsType.id(e) and not IsType.atr(e)
     def arithmetic(e): return isinstance(e, ArithmeticOP)
     def logical(e): return isinstance(e, Logicar)
@@ -442,33 +490,35 @@ class IsType:
     def _while(e): return isinstance(e, CoolWhile)
 
 class DivExpression:
-    def __init__ (self, e:expr, body:Body):
+    def __init__ (self, e:expr, body:Body, scope = {}):
         if IsType.arithmetic(e):
-            DivExpression.arithmetic(e, body)
+            DivExpression.arithmetic(e, body, scope)
         if IsType.logical(e):
-            DivExpression.logical(e, body)
+            DivExpression.logical(e, body, scope)
         if IsType.atr(e):
-            DivExpression.atr(e,body) 
-        if IsType.id(e):
-            DivExpression.id_value(e,body) 
+            DivExpression.atr(e,body, scope) 
+        # if IsType.id(e):
+            # DivExpression.id_value(e,body) 
+        if IsType.local(e):
+            DivExpression.local_var(e,body, scope) 
         if IsType.let(e):
-            DivExpression.let(e,body)
+            DivExpression.let(e,body, scope)
         if IsType.block(e):
-            DivExpression.block(e,body)
+            DivExpression.block(e,body, scope)
         if IsType.assign(e):
-            DivExpression.assing(e,body)
+            DivExpression.assing(e,body, scope)
         if IsType.dispatch(e):
-            DivExpression.dispatch(e,body)    
+            DivExpression.dispatch(e,body, scope)    
         if IsType.new(e):
-            DivExpression.new(e,body)    
+            DivExpression.new(e,body, scope)    
         if IsType._if(e):
-            DivExpression._if(e,body)
+            DivExpression._if(e,body, scope)
         if IsType._while(e):
-            DivExpression._while(e,body)
+            DivExpression._while(e,body, scope)
         if IsType.int(e):
-            DivExpression.int(e,body)    
+            DivExpression.int(e,body, scope)    
 
-    def arithmetic(aritmetic: ArithmeticOP, body:Body, scope:dict[str:int] = {}):
+    def arithmetic(aritmetic: ArithmeticOP, body:Body, scope:dict = {}):
         # lefth_is_id_and_not_atr = IsType.id(aritmetic.left) and not aritmetic.left.is_atr()
         # right_is_id_and_not_atr = IsType.id(aritmetic.right) and not aritmetic.right.is_atr()
         
@@ -481,33 +531,33 @@ class DivExpression:
             body.add_expr(CILAssign(TempNames.get_name(),CILArithmeticOp(left_value,aritmetic.right, aritmetic.op, constant=True)))
             TempNames.free([left_value])
         elif isinstance(aritmetic.left, IntNode) and (aritmetic.op == '+') and not mult_div and USE_i:# or lefth_is_id_and_not_atr):
-            DivExpression(aritmetic.right,body)
+            DivExpression(aritmetic.right,body,scope)
             rigth_value = body.current_value()
             body.add_expr(CILAssign(TempNames.get_name(),CILArithmeticOp(rigth_value,aritmetic.left,aritmetic.op, constant=True)))
             TempNames.free([rigth_value])
             # body.add_expr(CILAssign(TempNames.get_name(),CILArithmeticOp(aritmetic.left,body.current_value(),aritmetic.op)))
         # elif (isinstance(aritmetic.right, IntNode) or right_is_id_and_not_atr):
         elif (isinstance(aritmetic.right, IntNode))and not mult_div and USE_i:
-            DivExpression(aritmetic.left,body)
+            DivExpression(aritmetic.left,body,scope)
             left_value = body.current_value()
             body.add_expr(CILAssign(TempNames.get_name(),CILArithmeticOp(body.current_value(),aritmetic.right,aritmetic.op, constant=True)))
             TempNames.free([ left_value])
         else:
-            DivExpression(aritmetic.left,body)
+            DivExpression(aritmetic.left,body,scope)
             left_value = body.current_value()
-            DivExpression(aritmetic.right,body)
+            DivExpression(aritmetic.right,body,scope)
             rigth_value = body.current_value()
             body.add_expr(CILAssign(TempNames.get_name(),CILArithmeticOp(left_value,rigth_value,aritmetic.op)))
             #cuando yo termino una operacion aritmetica, yo puedo volver a utilizar los variables donde no guarde el resultado, dado la naturaleza del codigo recursivo que va desde hijos a padres, solo me interesa conservar la varable donde se asigno el valor de la operacion. Luego las variables que use en el cuerpo de la operacion no las necesito, por lo tanto pueden volver a usarse.
             TempNames.free([left_value,rigth_value])
     
-    def logical(logicar:Logicar, body:Body, scope:dict[str:int] = {}):
+    def logical(logicar:Logicar, body:Body, scope:dict = {}):
         if logicar.op != '=':
-            DivExpression.logicar_not_eq(logicar, body)
+            DivExpression.logicar_not_eq(logicar, body, scope)
         else:
             pass
             
-    def logicar_not_eq(logicar:Logicar, body:Body, scope:dict[str:int] = {}):
+    def logicar_not_eq(logicar:Logicar, body:Body, scope:dict = {}):
         lefth_is_id_and_not_atr = IsType.id(logicar.left) and not logicar.left.is_atr()
         right_is_id_and_not_atr = IsType.id(logicar.right) and not logicar.right.is_atr()
 
@@ -523,7 +573,7 @@ class DivExpression:
         elif isinstance(logicar.left, IntNode) or lefth_is_id_and_not_atr:
             body.add_expr(CILAssign(TempNames.get_name(),logicar.left))
             left_value = body.current_value()
-            DivExpression(logicar.right,body)
+            DivExpression(logicar.right,body,scope)
             rigth_value = body.current_value()
             body.add_expr(CILAssign(TempNames.get_name(),CILLogicalOP(left_value,rigth_value,logicar.op)))
             TempNames.free([left_value,rigth_value])
@@ -531,122 +581,230 @@ class DivExpression:
         elif isinstance(logicar.right, IntNode) or right_is_id_and_not_atr:
             body.add_expr(CILAssign(TempNames.get_name(),logicar.right))
             rigth_value = body.current_value()
-            DivExpression(logicar.left,body)
+            DivExpression(logicar.left,body,scope)
             left_value = body.current_value()
             body.add_expr(CILAssign(TempNames.get_name(),CILLogicalOP(body.current_value(),rigth_value,logicar.op)))
             TempNames.free([left_value,rigth_value])
         else:
-            DivExpression(logicar.left,body)
+            DivExpression(logicar.left,body,scope)
             left_value = body.current_value()
-            DivExpression(logicar.right,body)
+            DivExpression(logicar.right,body,scope)
             rigth_value = body.current_value()
             body.add_expr(CILAssign(TempNames.get_name(),CILLogicalOP(left_value,rigth_value,logicar.op)))
             TempNames.free([left_value,rigth_value])
     
-    def int(_int:IntNode, body:Body, scope:dict[str:int] = {}):
+    def int(_int:IntNode, body:Body, scope:dict = {}):
         body.add_expr(CILAssign(TempNames.get_name(),_int))
 
-    def atr(id:CoolID, body:Body, scope:dict[str:int] = {}):
+    def atr(id:CoolID, body:Body, scope:dict = {}):
         body.add_expr(CILAssign(TempNames.get_name(),CILCallAtr(id)))
     
-    def atr(id:CoolID, body:Body, scope:dict[str:int] = {}):
+    def atr(id:CoolID, body:Body, scope:dict = {}):
         body.add_expr(CILAssign(TempNames.get_name(),CILCallLocal(id,scope[id.id])))
     
-    def local_var(vvar, body:Body, scope:dict[str:int] = {}):
-
-        pass
+    def local_var(vvar, body:Body, scope:dict = {}):
+        #Si el scope tiene dos posiciones para ua variable entonces, se ha definido que la variable que se usa para definir a una con su mismo nombre estara en la posicion 1, y la variable nueva creada es la que esta en la posision 0.
+        if isinstance(scope[vvar.id], list):
+            body.add_expr(CILAssign(TempNames.get_name(),CILCallLocal(vvar,scope[vvar.id])))
+        else:
+            body.add_expr(CILAssign(TempNames.get_name(),CILCallLocal(vvar,scope[vvar.id])))
     
-    def let(let:CoolLet, body:Body, scope:dict[str:int] = {}):
+    def full_space_let(let, body:Body, scope:dict = {}):
         color = get_color()
         body.add_expr(CILCommet(f'{color}#Region Let'))
         
-        let_scope:dict[str:int]= {}
+        let_scope:dict= {}
         length = 0
         pos = 0
         
         for vvar in let.let:
-            length += TYPE_LENGTH[vvar.get_type()]
+            if vvar.get_type() == env.string_type_name:
+                length += 32
+            else:
+                length += 4
+        
         
         for var in scope.keys():
-            #esto toma el scope suerior y en caso de tener que sobreescrbir variables se hace debajo. Como se vuelve a reservar pila, la posicion de las variables de scpe anteriro con respecto al puntero de pila deben deben aumentar.
+            #esto toma el scope superior y en caso de tener que sobreescrbir variables se hace debajo. Como se vuelve a reservar pila, la posicion de las variables de scpe anteriro con respecto al puntero de pila deben deben aumentar.
             let_scope[var] = scope[var] + length 
-
         #Reservar espacio en la pila para un tamanno = length
         body.add_expr(ReserveSTACK(length))
-
+        
         for vvar in let.let:
-            let_scope[vvar.id] = pos
-            pos += TYPE_LENGTH[vvar.get_type()]
-            if vvar.value is not None:
-                if IsType.simple_type(vvar.value):
-                    body.add_expr(CILAssign(vvar.id, vvar.value, is_temp=False))
+            if not scope.__contains__(vvar.id):
+                let_scope[vvar.id] = pos 
+            else:
+                if not isinstance(scope[vvar.id], list):
+                    let_scope[vvar.id] = [pos, scope[vvar.id]]
                 else:
-                    DivExpression(vvar.value, body, scope = let_scope)
-                    body.add_expr(CILAssign(vvar.id, body.current_value(), is_temp=False))
+                    let_scope[vvar.id] = [pos, scope[vvar.id][1]]
+
+            move = 4 
+            if vvar.get_type() == env.string_type_name:
+                move = 32
+            
+            pos += move
+            
+            if vvar.value is not None:
+                DivExpression(vvar.value, body, scope = let_scope)
+                temp = body.current_value()
+                if isinstance(let_scope[vvar.id],list):
+                    body.add_expr(StoreLocal(vvar, value = body.current_value(), pos= let_scope[vvar.id][0]))
+                else:
+                    body.add_expr(StoreLocal(vvar, value = body.current_value(), pos= let_scope[vvar.id]))
+                TempNames.free([temp])    
             else:
                 pass #este es el caso de una instancia de clase, hay que analizarlo
+            
+            #Cuando la variable ya salga de su definicion, del cuerpo del let, hay que eliminar la tupla y dejarlo solo en el valor como entero
+            if isinstance(let_scope[vvar.id], list):
+                let_scope[vvar.id] = let_scope[vvar.id][0]
         
         DivExpression(let.in_scope, body, scope = let_scope)
         #Liberar espacio de la pila una vez se sale del let, el scope anterior al del let debe salir igual que antes por recursividad
         body.add_expr(FreeStack(length))        
         body.add_expr(CILCommet(f'{color}#End Region Let'))
 
-    def assing(assign: Assign, body:Body, scope:dict[str:int] = {}):
-        if IsType.simple_type(assign.right):
-            body.add_expr(CILAssign(assign.left.id,assign.right,is_temp=False))
-        else:
-            DivExpression(assign.right, body)
-            body.add_expr(CILAssign(assign.left.id,body.current_value(),is_temp=False))
-    
-    def block(block:CoolBlockScope, body:Body, scope:dict[str:int] = {}):
-        for e in block.exprs:
-            DivExpression(e,body)
+    def let(let:CoolLet, body:Body, scope:dict = {}):
+        color = get_color()
+        body.add_expr(CILCommet(f'{color}#Region Let'))
+        
+        let_scope:dict= {}
+        length = 0
+        pos = 0
+        for vvar in let.let:
+            if vvar.get_type() == env.string_type_name:
+                length += 32
+            else:
+                length += 4
 
-    def id_value(e:CoolID,body, scope:dict[str:int] = {}):
+        for var in scope.keys():
+            #esto inicializa cada variable del scope anterior en su posicion anterior, se hace esto para usar el scope recursivo
+            let_scope[var] = scope[var] 
+        
+        for vvar in let.let:
+            if not scope.__contains__(vvar.id):
+                let_scope[vvar.id] = 0 #Como se agrega una por una las variables a la pila, lo que se hace es mover la posicion del resto y agregar la nueva en la posicion 0 
+                # let_scope[vvar.id] = pos 
+            else:
+                #va a tener dos posiciones, en la posicion 0 estara la variable principal, y en la posicion 1 estara la referencia a la vieja
+                #esto es para el caso que quiera en la defincion de a variable `x` usar una variable con el nombre `x` en el scope anterior
+                if not isinstance(scope[vvar.id], list):
+                    let_scope[vvar.id] = [0, scope[vvar.id]]
+                else:
+                    #si entra aqui quiere decir que no ha salido de la definicion de la variable, y esta tratando de definir otra con el mimo nombre, por ejemplo en el caso de let x<- let x<-<expr que usa `x`> y la variable `x`` existe en el scope anterior, entonces si va a usar `x` dentro de lainicializacion del segundo let al cual le llega el scope del primer let, a ese let le llegara un scope con `scope[x] = (p1,p2)`, donde p2 es la posicion de la primera de las x, la que en ese momento esta defnida, luego esa sera la x que nos interesa llamar en la expresion donde se inicializara la `x` del segundo let. Por tanto para buscar el valor de `x` en la pila se buscara la posicion 1, scope[1]. Cuando se termina de defnir una variable la x que esta en la pila se sobreescribe por la nueva.(Ultima linea del For).
+                    let_scope[vvar.id] = [0, scope[vvar.id][1]]
+
+            move = 4 
+            # if vvar.get_type() == env.string_type_name:
+            #     move = 32
+            
+            pos += move
+            body.add_expr(ReserveSTACK(move))
+            
+            for var in scope.keys():
+                #Esto mueve los datos de contextos superiores de forma dinamica, en caso que la variable del scope anterior tenga igual nombre que una nueva no se hace este movimiento
+                if vvar.id != var:
+                    let_scope[var] += move
+                else:
+                    #si en el scope anterior hay una variable con el mismo nombre, esta tendra dos posiciones, se mueve la posicion 1
+                    let_scope[var][1] += move
+                    pass
+            
+            for var in let_scope.keys():
+                #las variales que no son de scope anterior hay que moverlas tambien, ya que se crea espacio uno a uno
+                if var not in scope and var != vvar.id:
+                    let_scope[var] += move
+                
+            
+            # if vvar.value is not None:
+            if vvar.get_type() == env.int_type_name:
+                DivExpression(vvar.value, body, scope = let_scope)
+                temp = body.current_value()
+                if isinstance(let_scope[vvar.id],list):
+                    body.add_expr(StoreLocal(vvar, value = body.current_value(), pos= let_scope[vvar.id][0]))
+                else:
+                    body.add_expr(StoreLocal(vvar, value = body.current_value(), pos= let_scope[vvar.id]))
+                TempNames.free([temp])    
+            else:
+                pass #este es el caso de una instancia de clase, hay que analizarlo
+            
+            #Cuando la variable ya salga de su definicion, del cuerpo del let, hay que eliminar la tupla y dejarlo solo en el valor como entero
+            if isinstance(let_scope[vvar.id], list):
+                let_scope[vvar.id] = let_scope[vvar.id][0]
+        
+        DivExpression(let.in_scope, body, scope = let_scope)
+        #Liberar espacio de la pila una vez se sale del let, el scope anterior al del let debe salir igual que antes por recursividad
+        body.add_expr(FreeStack(length))        
+        body.add_expr(CILCommet(f'{color}#End Region Let'))
+
+    def assing(assign: Assign, body:Body, scope:dict = {}):
+        if assign.left.id in scope:
+            #estamos tratando con una variable local, luego hay que guardar su valor en la pila
+            DivExpression(assign.right, body, scope)
+            temp = body.current_value()
+            if isinstance(scope[assign.left.id],list):
+                body.add_expr(StoreLocal(assign.left, value = body.current_value(), pos= scope[assign.left.id][0]))
+            else:
+                body.add_expr(StoreLocal(assign.left, value = body.current_value(), pos= scope[assign.left.id]))
+            TempNames.free([temp])    
+        else:
+            if IsType.simple_type(assign.right):
+                body.add_expr(CILAssign(assign.left.id,assign.right,is_temp=False))
+            else:
+                DivExpression(assign.right, body, scope)
+                body.add_expr(CILAssign(assign.left.id,body.current_value(),is_temp=False))
+    
+    def block(block:CoolBlockScope, body:Body, scope:dict = {}):
+        for e in block.exprs:
+            DivExpression(e,body, scope)
+
+    def id_value(e:CoolID,body, scope:dict = {}):
         # if in_params(e):
             #tratarlo como parametro
             # pass
         body.add_expr(CILAssign(TempNames.get_name(),e.id))
         # body.add_expr(CILId(e.id))
 
-    def new(e:CoolID, body, scope:dict[str:int] = {}):
+    def new(e:CoolID, body, scope:dict = {}):
         body.add_expr(CILAssign(TempNames.get_name,e))
         
-    def dispatch(dispatch:Dispatch, body:Body, scope:dict[str:int] = {}):
+    def dispatch(dispatch:Dispatch, body:Body, scope:dict = {}):
         callable:CoolCallable = dispatch.function
         type = dispatch.type
         body.add_expr(CILCall(type, callable.id.id,callable.params))
         pass
     
-    def case(case:CoolCase, scope:dict[str:int] = {}):
+    def case(case:CoolCase, scope:dict = {}):
         pass
 
-    def _while(_while:CoolWhile, body:Body, scope:dict[str:int] = {}):
-        loop = NameLabel('loop').get()
+    def _while(_while:CoolWhile, body:Body, context:dict = {}):
+        color = get_color()
+        loop = NameLabel(f'{color}loop').get()
         condition = _while.condition
         scope = _while.loop_scope
         end_while = NameLabel('end_while').get()
         
-        body.add_expr(CILLabel(loop)) #Todos los cambios de la condiciona tienen que volverse a pocesar
+        body.add_expr(Label(loop)) #Todos los cambios de la condiciona tienen que volverse a pocesar
 
-        if IsType.bool(condition):
-            if condition:
-                body.add_expr(CILIf(IntNode(1),else_label=end_while))
-            else:
-                body.add_expr(CILIf(IntNode(0),else_label=end_while))
-        else:
-            DivExpression(condition,body)
-            # temp = body.expressions.pop()
-            # body.add_expr(temp)
+        # if IsType.bool(condition):
+        #     if condition:
+        #         body.add_expr(CILIf(IntNode(1),else_label=end_while))
+        #     else:
+        #         body.add_expr(CILIf(IntNode(0),else_label=end_while))
+        # else:
+        DivExpression(condition,body, context)
+        temp = body.current_value()
+        body.add_expr(CILIf(body.current_value(),else_label=end_while, _while=True))
+        TempNames.free([temp])
+        #end_else
 
-            body.add_expr(CILIf(body.current_value(),else_label=end_while))
-
-        DivExpression(scope,body)
-        body.add_expr(CILLabel(loop))
-        body.add_expr(CILLabel(end_while))
+        DivExpression(scope,body,context)
+        body.add_expr(GOTO(loop))
+        body.add_expr(Label(end_while))
         body.add_expr(CILVoid()) #esto sirve para que se sepa que si el valor de retorno de la funcion es el while, entonces es tipo void
 
-    def _if (_if:CoolIf, body:Body, scope:dict[str:int] = {}):
+    def _if (_if:CoolIf, body:Body, scope:dict = {}):
         condition = _if.condition
         then_s = _if.then_scope
         else_s = _if.else_scope
@@ -660,15 +818,15 @@ class DivExpression:
             else:
                 body.add_expr(CILIf(IntNode(0),else_label=label))
         else:
-            DivExpression(condition,body)
+            DivExpression(condition,body,scope)
             body.add_expr(CILIf(body.current_value(),else_label=label))
 
-        DivExpression(then_s,body)
+        DivExpression(then_s,body,scope)
         body.add_expr(CILAssign(result_expr,body.current_value()))
         # then_return = body.current_value()
         body.add_expr(GOTO(label_end))
-        body.add_expr(CILLabel(label))
-        DivExpression(else_s,body)
+        body.add_expr(Label(label))
+        DivExpression(else_s,body,scope)
         body.add_expr(CILAssign(result_expr,body.current_value()))
-        body.add_expr(CILLabel(label_end))
+        body.add_expr(Label(label_end))
         body.add_expr(CILId(result_expr))

@@ -4,5 +4,8 @@ def to_hex(x):
     result = ""
     for i in range (8-len(hex_num)):
         result +='0'
-    return result+hex_num    
+    return result+hex_num
+
+def string_to_hex(s):
+    pass    
 
