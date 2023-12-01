@@ -13,7 +13,7 @@ def run_test(file_path):
 
 
 def main():
-    test_files_directory = 'tests'  # Ajusta según la estructura de tu proyecto
+    test_files_directory = 'tests'  
     for test_file in find_test_files(test_files_directory):
         returncode, stdout, stderr = run_test(test_file)
 
