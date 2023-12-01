@@ -1,5 +1,5 @@
 from sly.lex import Token
-from semantic.semantic_ import semantic
+from compiler.semantic.semantic_ import semantic
 
 class CoolError (Token):
     ERRORS = []

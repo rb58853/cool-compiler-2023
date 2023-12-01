@@ -1,8 +1,8 @@
 from sly import Lexer
-from error.cool_error import LexicalError
-from lexer.string_cool_lexer import StringAnalizer
-from lexer.comment_cool_lexer import CommentAnalizer
-from lexer.tabs_lexer import change_tabs
+from compiler.error.cool_error import LexicalError
+from compiler.lexer.string_cool_lexer import StringAnalizer
+from compiler.lexer.comment_cool_lexer import CommentAnalizer
+from compiler.lexer.tabs_lexer import change_tabs
 
 
 class CoolLexer(Lexer):

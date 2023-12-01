@@ -1,4 +1,4 @@
-from error.cool_error import SemanticError
+from compiler.error.cool_error import SemanticError
 def have_multi_types(type):
     return isinstance(type, list)
 

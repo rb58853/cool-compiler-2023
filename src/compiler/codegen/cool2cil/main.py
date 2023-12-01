@@ -1,9 +1,9 @@
 #region cool
-from parser.cool_parser import CoolLexer, CoolParser
-from AST.ast import CoolProgram
-from semantic.semantic_ import semantic
-from semantic.semantic_visitor import init_classes, init_types, validate_program
-from codegen.cool2cil.codegener import CILProgram
+from compiler.parser.cool_parser import CoolLexer, CoolParser
+from compiler.AST.ast import CoolProgram
+from compiler.semantic.semantic_ import semantic
+from compiler.semantic.semantic_visitor import init_classes, init_types, validate_program
+from compiler.codegen.cool2cil.codegener import CILProgram
 import os
 
 def cil_program(file):

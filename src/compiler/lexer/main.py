@@ -1,4 +1,4 @@
-from lexer.cool_lexer import CoolLexer
+from compiler.lexer.cool_lexer import CoolLexer
 import os
 import colorama
 from colorama import Fore

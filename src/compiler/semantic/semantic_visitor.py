@@ -1,4 +1,4 @@
-from AST.ast import CoolProgram
+from compiler.AST.ast import CoolProgram
 
 def validate_program(program:CoolProgram):
     init_types(program)

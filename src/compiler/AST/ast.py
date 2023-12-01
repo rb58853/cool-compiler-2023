@@ -1,7 +1,7 @@
 import matplotlib.pyplot as plt
-import AST.environment as env
-from error.cool_error import SemanticError
-from semantic.special_cases import case_case, if_case, case_multiple_types, have_multi_types
+import compiler.AST.environment as env
+from compiler.error.cool_error import SemanticError
+from compiler.semantic.special_cases import case_case, if_case, case_multiple_types, have_multi_types
 
 '''
 TODO:
@@ -1192,4 +1192,4 @@ class CoolProgram(Node):
                 result = False
         return result    
 
-from semantic.cool_bases import Context,ObjectClass,IntClass, StringClass,BoolClass, base_classes, BaseContext
+from compiler.semantic.cool_bases import Context,ObjectClass,IntClass, StringClass,BoolClass, base_classes, BaseContext

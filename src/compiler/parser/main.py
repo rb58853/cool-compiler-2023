@@ -1,4 +1,4 @@
-from parser.cool_parser import CoolLexer, CoolParser
+from compiler.parser.cool_parser import CoolLexer, CoolParser
 import os
 import colorama
 from colorama import Fore

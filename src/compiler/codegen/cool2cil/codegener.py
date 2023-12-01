@@ -1,5 +1,5 @@
-import AST.environment as env
-from AST.ast import CoolProgram, CoolClass, Feature, expr, IntNode, CoolBool, CoolString, CoolLet, ArithmeticOP,Logicar,Assign, CoolID, Context, Dispatch, CoolCase, CoolWhile, CoolIf, CoolBlockScope, CoolCallable, CoolNew
+import compiler.AST.environment as env
+from compiler.AST.ast import CoolProgram, CoolClass, Feature, expr, IntNode, CoolBool, CoolString, CoolLet, ArithmeticOP,Logicar,Assign, CoolID, Context, Dispatch, CoolCase, CoolWhile, CoolIf, CoolBlockScope, CoolCallable, CoolNew
 
 import colorama
 from colorama import Fore
@@ -20,106 +20,6 @@ DYNAMIC_STACK = True
 
 TYPE_LENGTH= {'Int':4, 'Bool':4, 'String':32,}
 TYPES = {}
-
-
-class TempNames:
-    used_id = [False, False,False, False, False, False, False, False, False]
-    def get_name():
-        for i in range(len(TempNames.used_id)):
-            if not TempNames.used_id[i]:
-                TempNames.used_id[i]= True
-                return f"expr_{i}"
-        else:    
-            TempNames.used_id.append(True)
-            return f"expr_{len(TempNames.used_id)-1}"
-    
-    def free(names:list):
-        for name in names:
-            if name == 'a0': continue
-            id = int(name[5:])
-            TempNames.used_id[id] = False
-    def free_all():
-        TempNames.used_id = [False, False,False, False, False, False, False, False, False]
-
-class NameTempExpression:
-    id = -1  # Contador para generar identificadores
-    def get_name():
-        NameTempExpression.id+=1
-        return f"expr_{NameTempExpression.id}"
-
-class NameLabel():
-    label_id:dict[str:int] = {}  # Contador para generar identificadores
-    def __init__(self, label = 'else') -> None:
-        self.label = label
-        if NameLabel.label_id.__contains__(label):
-            NameLabel.label_id[label]+=1
-        else:
-            NameLabel.label_id[label]=0
-    
-    def get(self):
-        return f"{self.label}_{NameLabel.label_id[self.label]}"
-
-class CILExpr():
-    def __init__(self) -> None:
-        self.use_in_code_line = True
-        self.tab_lv = 0
-        self.return_void = False
-
-    def add_tab_lv(self):
-        self.tab_lv+=1    
-
-class CILVoid(CILExpr):
-    def __init__(self) -> None:
-        super().__init__()
-        self.return_void = True
-        self.use_in_code_line = False
-
-class Label(CILExpr):
-    def __init__(self, name_label) -> None:
-        super().__init__()
-        self.name = name_label + ':'
-
-    def __str__(self) -> str:
-        # return f"{Fore.MAGENTA}{self.name}{Fore.WHITE}"
-        return f"{self.name}"
-    def __repr__(self) -> str:
-        return self.__str__()
-    
-class CILId(CILExpr):
-    def __init__(self, name):#, space = 4) -> None:
-        super().__init__()
-        self.use_in_code_line = False #esto implica que estara en el cuerpo que se esta analizando para tenerlo presente como valor de retorno, pero no se usa en el codigo, salvo en el caso exepcional de usarlo de return.
-        self.name = name
-        self.dest = name
-        self.space = 4
-
-    def __str__(self) -> str:
-        return self.name
-    def __repr__(self) -> str:
-        return str(self)
-
-class CILVar(CILId):
-    def __init__(self, name, space=4, value = None) -> None:
-        super().__init__(name)
-        self.space = space
-        self.value = value
-
-    def __str__(self) -> str:
-        if self.value is None:
-            return f'{self.name}'
-        else:
-            return f'{self.name} = {self.value}'
-            
-    def __repr__(self) -> str:
-        return str(self)
-
-class CILReturn(CILExpr):
-    def __init__(self, e) -> None:
-        self.ret = e
-    def __str__(self) -> str:
-        return f'return {self.ret}'
-    def __repr__(self) -> str:
-        return self.__str__()    
 
 class CILProgram():
     def __init__(self, program:CoolProgram):
@@ -261,6 +161,106 @@ class CILMethod():
                     result+= f'\t{e};\n'
             i+=1
         return result +'}\n'
+
+class TempNames:
+    used_id = [False, False,False, False, False, False, False, False, False]
+
+    def get_name():
+        for i in range(len(TempNames.used_id)):
+            if not TempNames.used_id[i]:
+                TempNames.used_id[i]= True
+                return f"temp_{i}"
+        else:    
+            TempNames.used_id.append(True)
+            return f"expr_{len(TempNames.used_id)-1}"
+    
+    def free(names:list):
+        for name in names:
+            if name == 'a0': continue
+            id = int(name[5:])
+            TempNames.used_id[id] = False
+    def free_all():
+        TempNames.used_id = [False, False,False, False, False, False, False, False, False]
+
+class NameTempExpression:
+    id = -1  # Contador para generar identificadores
+    def get_name():
+        NameTempExpression.id+=1
+        return f"expr_{NameTempExpression.id}"
+
+class NameLabel():
+    label_id:dict[str:int] = {}  # Contador para generar identificadores
+    def __init__(self, label = 'else') -> None:
+        self.label = label
+        if NameLabel.label_id.__contains__(label):
+            NameLabel.label_id[label]+=1
+        else:
+            NameLabel.label_id[label]=0
+    
+    def get(self):
+        return f"{self.label}_{NameLabel.label_id[self.label]}"
+
+class CILExpr():
+    def __init__(self) -> None:
+        self.use_in_code_line = True
+        self.tab_lv = 0
+        self.return_void = False
+
+    def add_tab_lv(self):
+        self.tab_lv+=1    
+
+class CILVoid(CILExpr):
+    def __init__(self) -> None:
+        super().__init__()
+        self.return_void = True
+        self.use_in_code_line = False
+
+class Label(CILExpr):
+    def __init__(self, name_label) -> None:
+        super().__init__()
+        self.name = name_label + ':'
+
+    def __str__(self) -> str:
+        # return f"{Fore.MAGENTA}{self.name}{Fore.WHITE}"
+        return f"{self.name}"
+    def __repr__(self) -> str:
+        return self.__str__()
+    
+class CILId(CILExpr):
+    def __init__(self, name):#, space = 4) -> None:
+        super().__init__()
+        self.use_in_code_line = False #esto implica que estara en el cuerpo que se esta analizando para tenerlo presente como valor de retorno, pero no se usa en el codigo, salvo en el caso exepcional de usarlo de return.
+        self.name = name
+        self.dest = name
+        self.space = 4
+
+    def __str__(self) -> str:
+        return self.name
+    def __repr__(self) -> str:
+        return str(self)
+
+class CILVar(CILId):
+    def __init__(self, name, space=4, value = None) -> None:
+        super().__init__(name)
+        self.space = space
+        self.value = value
+
+    def __str__(self) -> str:
+        if self.value is None:
+            return f'{self.name}'
+        else:
+            return f'{self.name} = {self.value}'
+            
+    def __repr__(self) -> str:
+        return str(self)
+
+class CILReturn(CILExpr):
+    def __init__(self, e) -> None:
+        self.ret = e
+    def __str__(self) -> str:
+        return f'return {self.ret}'
+    def __repr__(self) -> str:
+        return self.__str__()    
 
 class CILAttribute():
     def __init__(self, name):

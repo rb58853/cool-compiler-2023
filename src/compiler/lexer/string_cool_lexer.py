@@ -1,4 +1,4 @@
-from error.cool_error import LexicalError, Token
+from compiler.error.cool_error import LexicalError, Token
 
 class StringToken (Token):
     def __init__(self, pos, lineno, value, index, end) -> None:
