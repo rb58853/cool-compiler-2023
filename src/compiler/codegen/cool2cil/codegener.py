@@ -1006,6 +1006,10 @@ class DivExpression:
         used_temps = TempNames.used_temps()
         body.add_expr(ReserveSTACK(len(used_temps)*4)) #Reserva pila para los registros temporales en uso
         
+        for i in range(len(used_temps)):
+            #si hay varios llamados dentro de otro que usa el mismo id de temporal, entonces hay que cambiar el key
+            while used_temps[i] in scope:
+                used_temps[i] = used_temps[i]+'0'
         
         #Cuando se reserva pila hay que mover las posiciones relativas de las variables del scope
         for key in scope.keys():
@@ -1019,7 +1023,7 @@ class DivExpression:
         p = 0
         for temp in used_temps:
             scope[temp] = p
-            body.add_expr(StoreLocal(name=temp,pos= p,value=temp))
+            body.add_expr(StoreLocal(name=temp,pos= p,value=temp[:6]))
             p+=4        
 
         #una vez se llega a este punto todo lo anterior deberia haberse guardado debidamente en la pila, luego no se necesita guardar ningun registro temporal. Todo lo que el programador de cool necesita guardado lo esta.
@@ -1052,7 +1056,7 @@ class DivExpression:
         for temp in used_temps:
             scope[temp] -= space
             #ademas asignar a los valores temporales el valor que se guardo en la pila
-            body.add_expr(CILCallLocal(temp, scope.pop(temp))) #esto toma el valor de la pila en la posicion que se encuentra el temp, el .pop elimina el elemento y devuelve el valor. Ya no son necesarios los temporales en la pila
+            body.add_expr(CILAssign(temp[:6],CILCallLocal(temp[:6], scope.pop(temp)))) #esto toma el valor de la pila en la posicion que se encuentra el temp, el .pop elimina el elemento y devuelve el valor. Ya no son necesarios los temporales en la pila
             
 
         #Como ya se recuperaron todos los teporales entonces se puede liberar ese espacio en la pila 

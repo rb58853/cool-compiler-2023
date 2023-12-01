@@ -4,7 +4,7 @@ class Main{
         --     x <- test(y,x);
         --     x;
         -- }
-        let x:Int <- 2, y:Int<- 2 + test(5,2) in{
+        let x:Int <- 2, y:Int<- x + test(test(test(10,10),x),2) in{
             y;
         }
         

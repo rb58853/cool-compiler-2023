@@ -5,21 +5,44 @@ addi $sp, $sp, -4
 li $t0 2
 sw $t0, 0($sp)
 addi $sp, $sp, -4
-addi $sp, $sp, -0
+lw $t0, 4($sp)
+addi $sp, $sp, -4
+sw $t0, 0($sp)
 addi $sp, $sp, -12
-li $t0 5
-sw $t0, 4($sp)
-li $t1 2
-sw $t1, 8($sp)
+addi $sp, $sp, -4
+sw $t0, 0($sp)
+addi $sp, $sp, -12
+addi $sp, $sp, -4
+sw $t0, 0($sp)
+addi $sp, $sp, -12
+li $t1 10
+sw $t1, 4($sp)
+li $t2 10
+sw $t2, 8($sp)
 jal Main_test
 addi $sp, $sp, 12
-addi $sp, $sp, 0
-addi $t2, $a0, 2
-sw $t2, 0($sp)
-lw $t2, 0($sp)
+lw $t0, 0($sp)
+addi $sp, $sp, 4
+sw $a0, 4($sp)
+lw $t3, 36($sp)
+sw $t3, 8($sp)
+jal Main_test
+addi $sp, $sp, 12
+lw $t0, 0($sp)
+addi $sp, $sp, 4
+sw $a0, 4($sp)
+li $t4 2
+sw $t4, 8($sp)
+jal Main_test
+addi $sp, $sp, 12
+lw $t0, 0($sp)
+addi $sp, $sp, 4
+add $t5, $t0, $a0
+sw $t5, 0($sp)
+lw $t0, 0($sp)
 addi $sp, $sp, 8
 #End Region Let
-move $a0, $t2
+move $a0, $t0
 li $v0, 1
 syscall
 li $v0, 10
