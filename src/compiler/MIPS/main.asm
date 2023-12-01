@@ -4,7 +4,6 @@
 .include "ClassC.asm"
 .include "ClassInstances.asm"
 
-
 .text
 .globl main
 main:
@@ -38,20 +37,18 @@ main:
     move $a0, $s0     
     jal A_use_B_C      # Llama al método A_use_B_C
 
-    move $a0, $s1  # Establece el argumento para el mtdo de B Qe la instancia de B
-    lw $t0, 4($a0) # Carga la direcc de la vtable de B
-    lw $t0, 0($t0) # Carga la direcc del mtdo de B
-    jalr $t0       # Llama al método de B
+    # Las siguientes llamadas pueden no ser necesarias si A_use_B_C ya las maneja
+    # Comentarlas para probar si son la causa del error
+    # move $a0, $s1  # Establece el argumento para el método de B que la instancia de B
+    # lw $t0, 4($a0) # Carga la dirección de la vtable de B
+    # lw $t0, 0($t0) # Carga la dirección del método de B
+    # jalr $t0       # Llama al método de B
 
-  
-    move $a0, $s2
-    lw $t0, 4($a0)
-    lw $t0, 0($t0)
-    jalr $t0
+    # move $a0, $s2
+    # lw $t0, 4($a0)
+    # lw $t0, 0($t0)
+    # jalr $t0
 
     # Termina
     li $v0, 10
     syscall
-
-
-

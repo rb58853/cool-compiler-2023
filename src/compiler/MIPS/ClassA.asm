@@ -34,24 +34,24 @@ A_update_y:
     jr $ra       
 
 
-A_use_B_C:
-    # Argumentos:
-    # $a0 - Direccion de la instancia de la clase A
+    A_use_B_C:
+        # Argumentos:
+        # $a0 - Direccion de la instancia de la clase A
 
-    lw $t0, 8($a0)  # Carga la direcc de la instancia de B
-    # Supongamos que B tiene un mtodo B_method que queremos llamar
-    lw $t1, 0($t0)  # Carga la direc del mtdo B_method
-    jalr $t1        # Llama a B_method
+        lw $t0, 8($a0)  # Carga la direcc de la instancia de B
+        # Supongamos que B tiene un mtodo B_method que queremos llamar
+        lw $t1, 0($t0)  # Carga la direc del mtdo B_method
+        jalr $t1        # Llama a B_method
 
-    #si queremos usar el resultado de B_method en un mtdo de C
-    
-    
-    
-    move $a1, $v0   # Mueve el resultado a $a1
-    lw $t0, 12($a0) # Carga la direcc de la instancia de C
-    # Supongamos que C tiene un mtdo C_method que toma un argumento
-    lw $t1, 0($t0)  # Carga la direcc del mtdo C_method
-    jalr $t1        # Llama a C_method con el resultado de B_method
+        #si queremos usar el resultado de B_method en un mtdo de C
+        
+        
+        
+        move $a1, $v0   # Mueve el resultado a $a1
+        lw $t0, 12($a0) # Carga la direcc de la instancia de C
+        # Supongamos que C tiene un mtdo C_method que toma un argumento
+        lw $t1, 0($t0)  # Carga la direcc del mtdo C_method
+        jalr $t1        # Llama a C_method con el resultado de B_method
 
-    jr $ra       
+        jr $ra       
 
