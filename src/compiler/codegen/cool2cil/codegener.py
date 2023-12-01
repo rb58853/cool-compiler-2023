@@ -80,7 +80,8 @@ class Label(CILExpr):
         self.name = name_label + ':'
 
     def __str__(self) -> str:
-        return f"{Fore.MAGENTA}{self.name}{Fore.WHITE}"
+        # return f"{Fore.MAGENTA}{self.name}{Fore.WHITE}"
+        return f"{self.name}"
     def __repr__(self) -> str:
         return self.__str__()
     
@@ -313,7 +314,8 @@ class CILIf(CILExpr):
         # self.then_label = then_label
 
     def __str__(self):
-        return f'if not {self.condition} GOTO {Fore.MAGENTA}{self.else_label}{Fore.WHITE}'
+        # return f'if not {self.condition} GOTO {Fore.MAGENTA}{self.else_label}{Fore.WHITE}'
+        return f'if not {self.condition} GOTO {self.else_label}'
     def __repr__(self) -> str:
         return self.__str__()
 
@@ -395,7 +397,8 @@ class CILCommet(CILExpr):
         self.text = text
 
     def __str__(self) -> str:
-        result = Fore.GREEN + self.text + Fore.WHITE
+        result = self.text
+        # result = Fore.GREEN + self.text + Fore.WHITE
         return result
     def __repr__(self) -> str:
         return str(self)
@@ -406,7 +409,8 @@ class GOTO(CILExpr):
         self.label = label
         self.return_void = True
     def __str__(self) -> str:
-        return f"GOTO {Fore.YELLOW}{self.label}{Fore.WHITE}"    
+        return f"GOTO {self.label}"    
+        # return f"GOTO {Fore.YELLOW}{self.label}{Fore.WHITE}"    
     def __repr__(self) -> str:
         return self.__str__()
 
@@ -487,7 +491,8 @@ class CloseProgram(CILExpr):
         self.ret = e
 
     def __str__(self) -> str:
-        return f'{Fore.RED}CLOSE{Fore.WHITE}'
+        return f'CLOSE'
+        # return f'{Fore.RED}CLOSE{Fore.WHITE}'
 
 class MipsLine(CILExpr):
     def __init__(self, line) -> None:
@@ -669,7 +674,8 @@ class DivExpression:
     
     def full_space_let(let, body:Body, scope:dict = {}):
         color = get_color()
-        body.add_expr(CILCommet(f'{color}#Region Let'))
+        body.add_expr(CILCommet(f'#Region Let'))
+        # body.add_expr(CILCommet(f'{color}#Region Let'))
         
         let_scope:dict= {}
         length = 0
@@ -721,11 +727,13 @@ class DivExpression:
         DivExpression(let.in_scope, body, scope = let_scope)
         #Liberar espacio de la pila una vez se sale del let, el scope anterior al del let debe salir igual que antes por recursividad
         body.add_expr(FreeStack(length))        
-        body.add_expr(CILCommet(f'{color}#End Region Let'))
+        body.add_expr(CILCommet(f'#End Region Let'))
+        # body.add_expr(CILCommet(f'{color}#End Region Let'))
 
     def let(let:CoolLet, body:Body, scope:dict = {}):
         color = get_color()
-        body.add_expr(CILCommet(f'{color}#Region Let'))
+        # body.add_expr(CILCommet(f'{color}#Region Let'))
+        body.add_expr(CILCommet(f'#Region Let'))
         
         let_scope:dict= {}
         length = 0
@@ -794,7 +802,8 @@ class DivExpression:
         DivExpression(let.in_scope, body, scope = let_scope)
         #Liberar espacio de la pila una vez se sale del let, el scope anterior al del let debe salir igual que antes por recursividad
         body.add_expr(FreeStack(length))        
-        body.add_expr(CILCommet(f'{color}#End Region Let'))
+        # body.add_expr(CILCommet(f'{color}#End Region Let'))
+        body.add_expr(CILCommet(f'#End Region Let'))
 
     def assing(assign: Assign, body:Body, scope:dict = {}):
         if assign.left.id in scope:
@@ -832,7 +841,8 @@ class DivExpression:
 
     def _while(_while:CoolWhile, body:Body, context:dict = {}):
         color = get_color()
-        loop = NameLabel(f'{color}loop').get()
+        # loop = NameLabel(f'{color}loop').get()
+        loop = NameLabel(f'loop').get()
         condition = _while.condition
         scope = _while.loop_scope
         end_while = NameLabel('end_while').get()
