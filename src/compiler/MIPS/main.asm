@@ -17,6 +17,10 @@ main:
     jal create_C_instance
     move $s2, $v0  # $s2 ahora apunta a la instancia de C
 
+    # Inicializar y almacenar un string largo en el heap
+    jal initialize_and_store_string  # Llama a la función de String.asm
+    move $s3, $v0  # Guarda la dirección del string en $s3
+
     # Utilizar métodos de la clase A
     # Establecer el valor de x en la instancia de A
     li $a1, 10         # Valor 
