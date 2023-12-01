@@ -40,7 +40,6 @@ class SyntacticError(CoolError):
     def __init__(self, by , token=None, pos=0, lineno=0, value=None, index=0, end=0) -> None:
         super().__init__(by, token, pos, lineno, value, index, end)
 
-
     def __call__(self, text = ""):
         self.type = "SyntacticError"
         self.text = text

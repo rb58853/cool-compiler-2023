@@ -20,6 +20,37 @@ DYNAMIC_STACK = True
 
 TYPE_LENGTH= {'Int':4, 'Bool':4, 'String':32,}
 TYPES = {}
+class TempNames:
+    used_id = [False, False,False, False, False, False, False, False, False]
+    def get_name():
+        for i in range(len(TempNames.used_id)):
+            if not TempNames.used_id[i]:
+                TempNames.used_id[i]= True
+                return f"temp_{i}"
+        else:    
+            TempNames.used_id.append(True)
+            return f"expr_{len(TempNames.used_id)-1}"
+    
+    def free(names:list):
+        for name in names:
+            if name == 'a0': continue
+            id = int(name[5:])
+            TempNames.used_id[id] = False
+    def free_all():
+        TempNames.used_id = [False, False,False, False, False, False, False, False, False]
+    
+    def used_temps():
+        result = []
+        for i in range(len(TempNames.used_id)):
+            if TempNames.used_id[i]:
+                result.append(f'temp_{i}')
+        return result        
+
+class NameTempExpression:
+    id = -1  # Contador para generar identificadores
+    def get_name():
+        NameTempExpression.id+=1
+        return f"expr_{NameTempExpression.id}"
 
 class CILProgram():
     def __init__(self, program:CoolProgram):
@@ -28,7 +59,12 @@ class CILProgram():
         self.methods:list[CILMethod] = []
         self.set_types(program)
         self.generate_methods(program)
+        self.generate_init_types()
 
+    def generate_init_types(self):
+        for type in self.types.values():
+            self.methods.append(type.init_meth())
+            
     def set_types(self, program:CoolProgram):
         for cclass in program.classes:
             if not cclass.type in env.base_classes:
@@ -56,8 +92,9 @@ class CILProgram():
                     if isinstance(feature,Feature.CoolDef):
                         if not(cclass.type == 'Main' and feature.ID.id == 'main'):
                             self.methods.append(CILMethod(feature, self))
-    
+
 class CILType():
+    IN_INIT = False
     def __init__(self, cclass:CoolClass):
         self.name = cclass.type
         self.methods:list[CILId] = []  # Lista de CILMethod
@@ -65,36 +102,36 @@ class CILType():
         self.atrs = {}
         self.space = self.get_all_from(cclass)
         TYPES[self.name] = self
+        self.cclass = cclass
 
     def get_all_from(self, cclass:CoolClass):
         self.process_class(cclass)
         return self.set_space()
 
     def set_space(self):
-        result = 0
+        result = 0 #Hay que analizar si guardar o no espacio para self
         for atr in self.attributes:
             result += atr.space
-            
-        # for met in self.methods:
-        #     result += met.space
+        
         TYPE_LENGTH[self.name] = result
+        return result
     
     def process_class(self,cclass:CoolClass):
         if cclass.type != env.object_type_name:
             self.process_class(cclass.inherit_class)
 
+        pos = 0 #en la posicion 0 no esta self
         for feature in cclass.features:
-            space = 0
             if isinstance(feature,Feature.CoolAtr):
-                self.atrs[feature.ID.id] = space 
-                # if feature.get_type == env.string_type_name:
-                #     self.attributes.append(CILVar(f'{self.name}_{feature.ID.id}', value=feature.value,space=32))
-                #     space += 32
-                # else:
+                self.atrs[feature.ID.id] = pos
                 self.attributes.append(CILVar(f'{self.name}_{feature.ID.id}', value=feature.value,space=4))
-                space += 4
+                pos += 4
             else:    
                 self.methods.append(CILId(f'{self.name}_{feature.ID.id}')) #Esto apunta a una dirccion de memoria y su tamanno siempre es 4 bytes
+    
+    def init_meth(self):
+        result = InitMethod(self.cclass, self.space)
+        return result
     
     def __str__(self) -> str:
         result = f'\n.{self.name}'+' {\n'
@@ -132,6 +169,7 @@ class CILMethod():
         
     def set_body(self, cool_meth:Feature.CoolDef):    
         body = Body()
+        TempNames.free_all() #Cuando se va a definir un nuevo metodo se liberan los temporales
         DivExpression(cool_meth.scope, body, self.context)
         self.body = [e for e in body.expressions if e.use_in_code_line]
         if self.name != 'Main_main':
@@ -162,31 +200,40 @@ class CILMethod():
             i+=1
         return result +'}\n'
 
-class TempNames:
-    used_id = [False, False,False, False, False, False, False, False, False]
+class InitMethod(CILMethod):
+    def __init__(self, cclass: CoolClass, space):
+        self.body:list[CILExpr] = []  # Lista de CILExpr, representa el cuerpo del método
+        self.set_body(cclass, space)
+        self.cclass = cclass
+        self.name = f'__init_{cclass}__'
 
-    def get_name():
-        for i in range(len(TempNames.used_id)):
-            if not TempNames.used_id[i]:
-                TempNames.used_id[i]= True
-                return f"temp_{i}"
-        else:    
-            TempNames.used_id.append(True)
-            return f"expr_{len(TempNames.used_id)-1}"
-    
-    def free(names:list):
-        for name in names:
-            if name == 'a0': continue
-            id = int(name[5:])
-            TempNames.used_id[id] = False
-    def free_all():
-        TempNames.used_id = [False, False,False, False, False, False, False, False, False]
+    def __str__(self) -> str:
+        result = f'init_{self.cclass}\n'
+        for e in self.body:
+            result += f'\t{e}\n'
+        return result+'\n}\n'        
+            
+    def set_body(self, cclass:CoolClass, space):
+        TempNames.free_all() #esto lleva ahora un control fuerte en la pila, antes de lamar un metodo hay que guardar los temporales
+        scope = {env.self_name: 0}
+        body = Body()
+        body.add_expr(ReserveHeap(space))#Reservar espacio para la instancia
+        body.add_expr(MipsLine('move $a0, $v0')) # Mover la dirección del heap al registro a0
+        # body.add_expr(StoreInDir('$a0',0,'$a0')) #Guarda el puntero de a0 en a0(0)
+        
+        pos = 0 #Esto en 0 dice que el self no va a estar en los atributos de la clase, el self ahora se controla en la pila
 
-class NameTempExpression:
-    id = -1  # Contador para generar identificadores
-    def get_name():
-        NameTempExpression.id+=1
-        return f"expr_{NameTempExpression.id}"
+        for feature in cclass.childs():
+            if isinstance(feature,Feature.CoolAtr):
+                DivExpression(feature, body, scope)
+                temp = body.current_value()
+                body.add_expr(StoreInDir(body.current_value(),pos,'$a0')) #Guarda cada uno de los features en la memoria
+                TempNames.free([temp])
+        
+        body.add_expr(Label(f'__init_{cclass.type}:__'))
+        body.add_expr(CILId('a0'))
+        body.add_expr(CILReturn(body.return_value()))
+        self.body = [e for e in body.expressions]        
 
 class NameLabel():
     label_id:dict[str:int] = {}  # Contador para generar identificadores
@@ -208,6 +255,8 @@ class CILExpr():
 
     def add_tab_lv(self):
         self.tab_lv+=1    
+    def __repr__(self) -> str:
+        return self.__str__()    
 
 class CILVoid(CILExpr):
     def __init__(self) -> None:
@@ -331,9 +380,13 @@ class CILWhile(CILExpr):
         return f"while {self.condition.get_id()} loop {body_str} pool"
 
 class CILCallLocal(CILExpr):
-    def __init__(self, id:CoolID, pos) -> None:
+    def __init__(self, id, pos) -> None:
         super().__init__()
-        self.name = id.id
+        try:
+            self.name = id.id
+        except:
+            self.name = id
+
         self.pos = pos #esta es la posicion relativa en la pila.
 
     def __str__(self) -> str:
@@ -498,6 +551,42 @@ class MipsLine(CILExpr):
     def __init__(self, line) -> None:
         super().__init__()
         self.line = line
+    def __str__(self) -> str:
+        return self.line    
+
+class ReserveHeap(CILExpr):
+    def __init__(self, space) -> None:
+        super().__init__()
+        self.space = space
+            
+    def __str__(self) -> str:
+        return f'ReserveMemory {self.space}'
+    
+    def to_mips(self):
+        return  [f'li $a0, {self.space}',  # Reservar `space` bytes en el heap
+                  'li $v0, 9',             # Código de sistema para sbrk
+                  'syscall']               #Llamar al sistema]
+
+class StoreInDir(CILExpr):
+    def __init__(self, value,pos, dir ='$a0') -> None:
+        super().__init__()
+        self.dest = value
+        self.pos = pos #esta es la posicion relativa en la pila.
+        self.dir = dir
+
+    def __str__(self) -> str:
+        return f'STOREMEMORY {self.dest}({self.pos})'
+    
+    def __repr__(self) -> str:
+        return self.__str__()
+    
+    def to_mips(self):
+        if self.dest[0] == '$':
+            return [f'sw {self.dest}, {self.pos}({self.dir})']
+        else:
+            return [f'sw $t{self.dest[5:]}, {self.pos}({self.dir})']
+        
+
 
 ################################################## PROCESADOR DE COOL ###########################################################
 class Body:
@@ -549,6 +638,7 @@ class IsType:
     def new(e): return isinstance(e, CoolNew)
     def _if(e): return isinstance(e, CoolIf)
     def _while(e): return isinstance(e, CoolWhile)
+    def cool_atr(e): return isinstance(e,Feature.CoolAtr)
 
 class DivExpression:
     def __init__ (self, e:expr, body:Body, scope = {}):
@@ -579,7 +669,17 @@ class DivExpression:
         if IsType.int(e):
             DivExpression.int(e,body, scope)    
         if IsType.callable(e):
-            DivExpression.callable(e,body, scope)    
+            DivExpression.callable(e,body, scope)
+        if IsType.atr(e):
+            DivExpression.atr(e,body,scope)    
+        if IsType.cool_atr(e):
+            DivExpression.cool_atr(e,body,scope)    
+    
+    def cool_atr(a:Feature.CoolAtr, body:Body, scope:dict = {}):
+        DivExpression(a.value,body,scope)
+        temp = body.current_value()
+        body.add_expr(CILAssign(TempNames.get_name(),temp))
+        TempNames.free([temp])
 
     def arithmetic(aritmetic: ArithmeticOP, body:Body, scope:dict = {}):
         # lefth_is_id_and_not_atr = IsType.id(aritmetic.left) and not aritmetic.left.is_atr()
@@ -739,10 +839,7 @@ class DivExpression:
         length = 0
         pos = 0
         for vvar in let.let:
-            if vvar.get_type() == env.string_type_name:
-                length += 32
-            else:
-                length += 4
+            length += 4
 
         for var in scope.keys():
             #esto inicializa cada variable del scope anterior en su posicion anterior, se hace esto para usar el scope recursivo
@@ -905,12 +1002,32 @@ class DivExpression:
         id = callable.id.id
         label_method = f'{context.type}_{id}'
 
+        #Es responsabilidad del invocador coservar los registros temporales, por tanto hay que guardarlos en la pila antes de invocar, asi que se guardan los temporales en la pila. Por ejemplo si tengo algo como temp_0 +call(), tengo que guardar temp_0 en la pila.
+        used_temps = TempNames.used_temps()
+        body.add_expr(ReserveSTACK(len(used_temps)*4)) #Reserva pila para los registros temporales en uso
+        
+        
+        #Cuando se reserva pila hay que mover las posiciones relativas de las variables del scope
+        for key in scope.keys():
+            if isinstance(scope[key], list):
+                scope[key][0] +=len(used_temps)*4
+                scope[key][1] +=len(used_temps)*4
+            else:
+                scope[key] += len(used_temps)*4
+
+        #primero se mueve las posiciones de lo que hay en la pila y luego se agregan los tmporales
+        p = 0
+        for temp in used_temps:
+            scope[temp] = p
+            body.add_expr(StoreLocal(name=temp,pos= p,value=temp))
+            p+=4        
 
         #una vez se llega a este punto todo lo anterior deberia haberse guardado debidamente en la pila, luego no se necesita guardar ningun registro temporal. Todo lo que el programador de cool necesita guardado lo esta.
         #Ahora hay que procesar los parametros y pasarlos al methodo que se llama, los registros a0-a3 estan pensados para ello, pero si los parametros son mas de esto se debe usar la pila.
         
         space =len(arguments)*4 + 4
         
+
         #Cuando se reserva pila hay que mover las posiciones relativas de las variables del scope
         body.add_expr(ReserveSTACK(space))
         for key in scope.keys():
@@ -927,16 +1044,26 @@ class DivExpression:
             body.add_expr(StoreLocal(name=body.current_value(),pos= pos,value=body.current_value()))
             pos +=4
         
-        # Considerar guardar en la pila los valores temprales pa no perderlos.
+        # llama a ua funcion
         body.add_expr(CallMethod(label_method))
 
-        #Cuando se libera la pila hay que mover las posiciones relativas del scoep que se habia modificado
+        #Aqui hay que recuperar el valor de los registros temporales. Para ello hay que liberar la pila de los argumentos con los que se llamo la funcion, luego de ello recueperar la posicion en pila de los temporales restando el desplaziento que se libero
         body.add_expr(FreeStack(space))
+        for temp in used_temps:
+            scope[temp] -= space
+            #ademas asignar a los valores temporales el valor que se guardo en la pila
+            body.add_expr(CILCallLocal(temp, scope.pop(temp))) #esto toma el valor de la pila en la posicion que se encuentra el temp, el .pop elimina el elemento y devuelve el valor. Ya no son necesarios los temporales en la pila
+            
+
+        #Como ya se recuperaron todos los teporales entonces se puede liberar ese espacio en la pila 
+        body.add_expr(FreeStack(len(used_temps)*4))
+        #Cuando se libera la pila hay que mover las posiciones relativas del scoep que se habia modificado
+        #como hubo dos movimientos de pila entonces tiene que recuperar la posicion despues de ambos movimientos len(parametros) + len(temporales guardados)
         for key in scope.keys():
             if isinstance(scope[key], list):
-                scope[key][0] -=space
-                scope[key][1] -=space
+                scope[key][0] -= (space +len(used_temps)*4)
+                scope[key][1] -= (space+len(used_temps)*4)
             else:
-                scope[key] -= space
+                scope[key] -= (space+ len(used_temps)*4)
 
         body.add_expr(FromA0())

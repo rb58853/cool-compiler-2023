@@ -1,4 +1,8 @@
 class Main{
+    q:Int <- 0;
+    w:Int <- 1;
+    e:Int <- 2;
+
     main(): Int { 
         -- let x:Int <- 2 + let x:Int<-1 in x+ let y:Int <- x+2 in y + x, b:Int<-0 in {
         let x:Int <- 4, y:Int<-x+ test(5,2) in {

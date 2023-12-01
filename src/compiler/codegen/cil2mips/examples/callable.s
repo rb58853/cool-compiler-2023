@@ -11,7 +11,7 @@ li $t1 5
 sw $t1, 4($sp)
 li $t2 2
 sw $t2, 8($sp)
-jal Main_test
+jal __Main_test__
 addi $sp, $sp, 12
 add $t3, $t0, $a0
 sw $t3, 0($sp)
@@ -20,7 +20,7 @@ lw $t0, 12($sp)
 sw $t0, 4($sp)
 lw $t3, 16($sp)
 sw $t3, 8($sp)
-jal Main_test
+jal __Main_test__
 addi $sp, $sp, 12
 sw $a0, 4($sp)
 lw $t4, 4($sp)
@@ -31,7 +31,7 @@ li $v0, 1
 syscall
 li $v0, 10
 syscall
-Main_test:
+__Main_test__:
 #Region Let
 addi $sp, $sp, -4
 li $t5 10

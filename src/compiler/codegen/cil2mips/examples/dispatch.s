@@ -46,3 +46,10 @@ addi $sp, $sp, 4
 #End Region Let
 move $a0, $t6
 jr $ra
+move $a0, $v0
+li $t0 0
+li $t0 1
+li $t0 2
+__init_Main:__:
+move $a0, $a0
+jr $ra
