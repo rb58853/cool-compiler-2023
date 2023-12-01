@@ -1,16 +1,18 @@
 class Main{
     main(): Int { 
-    {
-        let x:Int <- 2 + let x:Int<-1 in x+ let y:Int <- x+2 in y + x, b:Int<-0 in {
-        -- let x:Int <- 20 in {
-            x <- 3 + x;
-            while 5 < x loop
-            x <- x-1
-            pool;
+        -- let x:Int <- 2 + let x:Int<-1 in x+ let y:Int <- x+2 in y + x, b:Int<-0 in {
+        let x:Int <- 4, y:Int<-x+ test(5,2) in {
+            x <- test(y,x);
             x;
-        };
-        1;
-    }
-        
+        }
+    };
+
+    test(a:Int, b:Int):Int {
+        {
+            let x:Int<- 10 in {
+               a <- b + a + x;
+            };
+            -- a;
+        }
     };    
 };

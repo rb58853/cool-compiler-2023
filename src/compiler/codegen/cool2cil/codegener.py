@@ -19,7 +19,7 @@ USE_i = True
 DYNAMIC_STACK = True
 
 TYPE_LENGTH= {'Int':4, 'Bool':4, 'String':32,}
-TYPE_ATRS = {}
+TYPES = {}
 
 
 class TempNames:
@@ -35,8 +35,11 @@ class TempNames:
     
     def free(names:list):
         for name in names:
+            if name == 'a0': continue
             id = int(name[5:])
             TempNames.used_id[id] = False
+    def free_all():
+        TempNames.used_id = [False, False,False, False, False, False, False, False, False]
 
 class NameTempExpression:
     id = -1  # Contador para generar identificadores
@@ -146,12 +149,11 @@ class CILProgram():
                     if isinstance(feature,Feature.CoolDef) and feature.ID.id == 'main':
                         self.methods.append(CILMethod(feature, self))
 
-
         for cclass in cool_program.classes:
             if not cclass.type in env.base_classes:
                 for feature in cclass.features:
                     if isinstance(feature,Feature.CoolDef):
-                        if cclass.type != 'Main' and feature.ID.id != 'main':
+                        if not(cclass.type == 'Main' and feature.ID.id == 'main'):
                             self.methods.append(CILMethod(feature, self))
     
 class CILType():
@@ -161,7 +163,7 @@ class CILType():
         self.attributes:list[CILVar] = []  # Lista de CILAttribute
         self.atrs = {}
         self.space = self.get_all_from(cclass)
-        TYPE_ATRS[self.name] = self.atrs
+        TYPES[self.name] = self
 
     def get_all_from(self, cclass:CoolClass):
         self.process_class(cclass)
@@ -184,12 +186,12 @@ class CILType():
             space = 0
             if isinstance(feature,Feature.CoolAtr):
                 self.atrs[feature.ID.id] = space 
-                if feature.get_type == env.string_type_name:
-                    self.attributes.append(CILVar(f'{self.name}_{feature.ID.id}', value=feature.value,space=32))
-                    space += 32
-                else:
-                    self.attributes.append(CILVar(f'{self.name}_{feature.ID.id}', value=feature.value,space=4))
-                    space += 4
+                # if feature.get_type == env.string_type_name:
+                #     self.attributes.append(CILVar(f'{self.name}_{feature.ID.id}', value=feature.value,space=32))
+                #     space += 32
+                # else:
+                self.attributes.append(CILVar(f'{self.name}_{feature.ID.id}', value=feature.value,space=4))
+                space += 4
             else:    
                 self.methods.append(CILId(f'{self.name}_{feature.ID.id}')) #Esto apunta a una dirccion de memoria y su tamanno siempre es 4 bytes
     
@@ -213,19 +215,19 @@ class CILMethod():
         self.set_body(cool_meth)
     
     def set_vars(self, cool_meth:Feature.CoolDef, cil_program:CILProgram):
+        # for atr in cil_program.types[cool_meth.father.type].attributes:
+        #     self.locals.append(atr)
+        #     self.context[atr.id.id] = pos
+        #     pos+=4
+        
+        #el scope del metodo posee los parametros, los parametros estaran en orden en la pila. El contexto define la posicion del parametro en la pila     
+        #queda por parte del invocador guardar los valores que se le pasan por parametros y la instancia en la pila. Esto se hace en el callable
+        self.context[env.self_name] = 0
         pos= 0
-        for atr in cil_program.types[cool_meth.father.type].attributes:
-            self.locals.append(atr)
-            self.context[atr.id.id] = pos
-            pos+=4
-            if atr.get_type() == env.string_type_name:
-                pos+=28
         for param in cool_meth.params.childs():
             self.params.append(param)
-            self.context[param.id] = pos
             pos+=4
-            if param.get_type() == env.string_type_name:
-                pos+=28
+            self.context[param.id] = pos
         
     def set_body(self, cool_meth:Feature.CoolDef):    
         body = Body()
@@ -235,8 +237,12 @@ class CILMethod():
             self.body.insert(0,Label(self.name))
         else:
             self.body.insert(0,Label('main'))
-
-        self.body.append(CILReturn(body.return_value()))
+        
+        if self.name == 'Main_main':
+            self.body.append(CloseProgram(body.return_value()))
+        else:    
+            self.body.append(CILReturn(body.return_value()))
+        
 
     def __str__(self) -> str:
         result = str(self.body[0])
@@ -423,21 +429,70 @@ class FreeStack(CILExpr):
         return self.__str__()
 
 class StoreLocal(CILExpr):
-    def __init__(self, id:CoolID, pos, value, register ='$t', type = env.int_type_name) -> None:
+    def __init__(self, name, pos, value, register ='$t', type = env.int_type_name) -> None:
         super().__init__()
-        self.name = id.id
+        self.name = name
         self.value = value
         self.pos = pos #esta es la posicion relativa en la pila.
         self.dest = value
         self.register = f'{register}{value[5:]}'
         self.type = type
+        if value == 'a0':
+            self.register = '$a0'
 
     def __str__(self) -> str:
         return f'{self.name} => STORELOCAL {self.value}({self.pos})'
     
     def __repr__(self) -> str:
         return self.__str__()
+
+class CallDispatch(CILExpr):
+    def __init__(self,meth:CoolCallable, instance: CoolID,arguments = []) -> None:
+        super().__init__()
+        self.meth = meth
+        self.context:Context = instance.get_class_context()
+        self.type = self.context.type
+        self.arguments = arguments
     
+    def __str__(self) -> str:
+        return f'CALL {isinstance.id}.{self.meth}{self.arguments}'    
+
+class CallMethod(CILExpr):
+    def __init__(self,label) -> None:
+        super().__init__()
+        self.label = label
+    
+    def __str__(self) -> str:
+        return f'GOTO self.{self.label}'    
+
+class ToA0(CILExpr):
+    def __init__(self, value) -> None:
+        super().__init__()
+        self.value = value
+    def __str__(self) -> str:
+        return f'a0 = {self.value}'
+    
+class FromA0(CILExpr):
+    def __init__(self) -> None:
+        super().__init__()
+        self.dest = 'a0'
+        self.use_in_code_line = False
+    def __str__(self) -> str:
+        return f'a0'    
+
+class CloseProgram(CILExpr):
+    def __init__(self, e) -> None:
+        super().__init__()
+        self.use_in_code_line = False
+        self.ret = e
+
+    def __str__(self) -> str:
+        return f'{Fore.RED}CLOSE{Fore.WHITE}'
+
+class MipsLine(CILExpr):
+    def __init__(self, line) -> None:
+        super().__init__()
+        self.line = line
 
 ################################################## PROCESADOR DE COOL ###########################################################
 class Body:
@@ -472,12 +527,12 @@ class Body:
 
 class IsType:
     def simple_type(e): return IsType.simple_id(e) or IsType.int(e) or  IsType.string(e) or IsType.bool(e)
-    def atr(e): return IsType.id(e) and e.is_atr()
+    def atr(e): return IsType.id(e) and e.is_atr(e.id)
     def int(e): return isinstance(e, IntNode)
     def string(e): return isinstance(e, CoolString)
     def bool(e): return isinstance(e, CoolBool)
     def id(e): return isinstance(e, CoolID)
-    def local(e): return isinstance(e, CoolID) and not e.is_atr()
+    def local(e): return isinstance(e, CoolID) and not e.is_atr(e.id)
     def simple_id(e): return IsType.id(e) and not IsType.atr(e)
     def arithmetic(e): return isinstance(e, ArithmeticOP)
     def logical(e): return isinstance(e, Logicar)
@@ -485,6 +540,7 @@ class IsType:
     def block(e): return isinstance(e, CoolBlockScope)
     def assign(e): return isinstance(e, Assign)
     def dispatch(e): return isinstance(e, Dispatch)
+    def callable(e): return isinstance(e, CoolCallable)
     def new(e): return isinstance(e, CoolNew)
     def _if(e): return isinstance(e, CoolIf)
     def _while(e): return isinstance(e, CoolWhile)
@@ -517,6 +573,8 @@ class DivExpression:
             DivExpression._while(e,body, scope)
         if IsType.int(e):
             DivExpression.int(e,body, scope)    
+        if IsType.callable(e):
+            DivExpression.callable(e,body, scope)    
 
     def arithmetic(aritmetic: ArithmeticOP, body:Body, scope:dict = {}):
         # lefth_is_id_and_not_atr = IsType.id(aritmetic.left) and not aritmetic.left.is_atr()
@@ -649,9 +707,9 @@ class DivExpression:
                 DivExpression(vvar.value, body, scope = let_scope)
                 temp = body.current_value()
                 if isinstance(let_scope[vvar.id],list):
-                    body.add_expr(StoreLocal(vvar, value = body.current_value(), pos= let_scope[vvar.id][0]))
+                    body.add_expr(StoreLocal(vvar.id, value = body.current_value(), pos= let_scope[vvar.id][0]))
                 else:
-                    body.add_expr(StoreLocal(vvar, value = body.current_value(), pos= let_scope[vvar.id]))
+                    body.add_expr(StoreLocal(vvar.id, value = body.current_value(), pos= let_scope[vvar.id]))
                 TempNames.free([temp])    
             else:
                 pass #este es el caso de una instancia de clase, hay que analizarlo
@@ -722,9 +780,9 @@ class DivExpression:
                 DivExpression(vvar.value, body, scope = let_scope)
                 temp = body.current_value()
                 if isinstance(let_scope[vvar.id],list):
-                    body.add_expr(StoreLocal(vvar, value = body.current_value(), pos= let_scope[vvar.id][0]))
+                    body.add_expr(StoreLocal(vvar.id, value = body.current_value(), pos= let_scope[vvar.id][0]))
                 else:
-                    body.add_expr(StoreLocal(vvar, value = body.current_value(), pos= let_scope[vvar.id]))
+                    body.add_expr(StoreLocal(vvar.id, value = body.current_value(), pos= let_scope[vvar.id]))
                 TempNames.free([temp])    
             else:
                 pass #este es el caso de una instancia de clase, hay que analizarlo
@@ -744,9 +802,9 @@ class DivExpression:
             DivExpression(assign.right, body, scope)
             temp = body.current_value()
             if isinstance(scope[assign.left.id],list):
-                body.add_expr(StoreLocal(assign.left, value = body.current_value(), pos= scope[assign.left.id][0]))
+                body.add_expr(StoreLocal(assign.left.id, value = body.current_value(), pos= scope[assign.left.id][0]))
             else:
-                body.add_expr(StoreLocal(assign.left, value = body.current_value(), pos= scope[assign.left.id]))
+                body.add_expr(StoreLocal(assign.left.id, value = body.current_value(), pos= scope[assign.left.id]))
             TempNames.free([temp])    
         else:
             if IsType.simple_type(assign.right):
@@ -769,12 +827,6 @@ class DivExpression:
     def new(e:CoolID, body, scope:dict = {}):
         body.add_expr(CILAssign(TempNames.get_name,e))
         
-    def dispatch(dispatch:Dispatch, body:Body, scope:dict = {}):
-        callable:CoolCallable = dispatch.function
-        type = dispatch.type
-        body.add_expr(CILCall(type, callable.id.id,callable.params))
-        pass
-    
     def case(case:CoolCase, scope:dict = {}):
         pass
 
@@ -830,3 +882,51 @@ class DivExpression:
         body.add_expr(CILAssign(result_expr,body.current_value()))
         body.add_expr(Label(label_end))
         body.add_expr(CILId(result_expr))
+
+    def dispatch(dispatch:Dispatch, body:Body, scope:dict = {}):
+        callable:CoolCallable = dispatch.function
+        type = dispatch.type
+        body.add_expr(CILCall(type, callable.id.id,callable.params))
+        pass
+
+    def callable(callable:CoolCallable, body:Body, scope:dict = {}):
+        context:Context = callable.get_class_context()
+        arguments = callable.params
+        id = callable.id.id
+        label_method = f'{context.type}_{id}'
+
+
+        #una vez se llega a este punto todo lo anterior deberia haberse guardado debidamente en la pila, luego no se necesita guardar ningun registro temporal. Todo lo que el programador de cool necesita guardado lo esta.
+        #Ahora hay que procesar los parametros y pasarlos al methodo que se llama, los registros a0-a3 estan pensados para ello, pero si los parametros son mas de esto se debe usar la pila.
+        
+        space =len(arguments)*4 + 4
+        
+        #Cuando se reserva pila hay que mover las posiciones relativas de las variables del scope
+        body.add_expr(ReserveSTACK(space))
+        for key in scope.keys():
+            if isinstance(scope[key], list):
+                scope[key][0] +=space
+                scope[key][1] +=space
+            else:
+                scope[key] += space
+
+        #TODO hay que asignarle el self        
+        pos = 4
+        for arg in arguments:
+            DivExpression(arg,body,scope)
+            body.add_expr(StoreLocal(name=body.current_value(),pos= pos,value=body.current_value()))
+            pos +=4
+        
+        # Considerar guardar en la pila los valores temprales pa no perderlos.
+        body.add_expr(CallMethod(label_method))
+
+        #Cuando se libera la pila hay que mover las posiciones relativas del scoep que se habia modificado
+        body.add_expr(FreeStack(space))
+        for key in scope.keys():
+            if isinstance(scope[key], list):
+                scope[key][0] -=space
+                scope[key][1] -=space
+            else:
+                scope[key] -= space
+
+        body.add_expr(FromA0())

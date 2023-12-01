@@ -30,6 +30,7 @@ main:
     addi $sp, $sp, -4
     li $t0 0
     sw $t0, 0($sp)
+    jal Main_test
     lw $t0, 4($sp)
     addi $t1, $t0, 3
     sw $t1, 4($sp)
@@ -46,3 +47,6 @@ main:
     # Salir del programa
     li $v0, 10
     syscall
+
+Main_test:
+    jr $ra

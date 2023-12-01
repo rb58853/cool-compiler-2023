@@ -159,7 +159,12 @@ class Node(PlotNode):
             return self.context
         else:
             return self.father.get_class_context()  
-        
+
+    def is_atr(self, id):
+        if self.context.cclass != None: return True
+        if self.context.variables.__contains__(id): return False
+        return self.father.is_atr(id)
+            
     def __str__(self) -> str:
         return str(self.value)
 
@@ -228,9 +233,6 @@ class CoolVar(expr):
         self.get_contex_from_father()
         return self.context.is_defined_type(self.type)
     
-    def is_atr(self):
-        #TODO esto hay que camiarlo
-        return self.get_class_context().is_defined_var(self.id)
     
 class BinOp(expr):
     def __init__(self, op, left:expr, right:expr, token_pos):

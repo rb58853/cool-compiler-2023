@@ -1,6 +1,6 @@
 from codegen.cil2mips.utils import to_hex
 import AST.environment as env
-from codegen.cool2cil.codegener import CILExpr, CILArithmeticOp, CILMethod, CILAssign, CILProgram, CILVar, IntNode, CILCommet, USE_i, StoreLocal, CILCallLocal, ReserveSTACK, FreeStack, CILReturn, Label, CILLogicalOP, CILIf, GOTO
+from codegen.cool2cil.codegener import CILExpr, CILArithmeticOp, CILMethod, CILAssign, CILProgram, CILVar, IntNode, CILCommet, USE_i, StoreLocal, CILCallLocal, ReserveSTACK, FreeStack, CILReturn, Label, CILLogicalOP, CILIf, GOTO, CallMethod, FromA0, CloseProgram, MipsLine
 
 def write_in_heap(bytes_dir, space, free_register_0 = '$s0',free_register_1 = '$s1', temp_register = '$t9'):
     lines= [
@@ -33,8 +33,11 @@ class Registers():
                 break
             
     def get_temp(self,expr_id:str):
+        if expr_id == 'a0':
+            return '$a0'
         id = int(expr_id[5:])
-        return f'$t{id-self.base_id["t"]}'
+        return f'$t{id}'
+        # return f'$t{id-self.base_id["t"]}'
      
 class MIPS:
     def __init__(self) -> None:
@@ -93,6 +96,29 @@ class CIL2MIPS():
         if isinstance(cil_expr, GOTO):
             self.jump(cil_expr)
 
+        if isinstance(cil_expr, CallMethod):
+            self.call_meth(cil_expr)
+
+        if isinstance(cil_expr, FromA0):
+            self.mips.add_line(f'a0')
+
+        if isinstance(cil_expr, MipsLine):
+            self.mips.add_line(cil_expr.line)    
+
+        if isinstance(cil_expr, CloseProgram):
+            self.close(cil_expr, register)
+
+    def close(self, close_, register):        
+            result = close_.ret
+            self.mips.add_line(f'move $a0, {register.get_temp(result)}')
+            self.mips.add_line('li $v0, 1')
+            self.mips.add_line('syscall')
+            self.mips.add_line('li $v0, 10')
+            self.mips.add_line('syscall')
+    
+    def call_meth(self, meth:CallMethod):
+        self.mips.add_line(f'jal {meth.label}')
+
     def jump (self, goto:GOTO):
         self.mips.add_line(f'j {goto.label}')
 
@@ -111,8 +137,7 @@ class CIL2MIPS():
     
     def store_stack(self, s_local:StoreLocal, register:Registers):
         pos = s_local.pos
-        if s_local.type == env.int_type_name:
-            self.mips.add_line(f'sw {s_local.register}, {pos}($sp)')
+        self.mips.add_line(f'sw {s_local.register}, {pos}($sp)')
     
     def load_stack(self, c_local:CILCallLocal, register):
         pos = c_local.pos
