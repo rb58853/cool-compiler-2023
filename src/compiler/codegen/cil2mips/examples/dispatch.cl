@@ -1,22 +1,20 @@
-class Main{
-    q:Int <- 0;
-    w:Int <- 1;
-    e:Int <- 2;
+class A{
+    x:Int<-13;
+    y:Int;
+    z:Bool;
 
-    main(): Int { 
-        -- let x:Int <- 2 + let x:Int<-1 in x+ let y:Int <- x+2 in y + x, b:Int<-0 in {
-        let x:Int <- 4, y:Int<-x+ test(5,2) in {
-            x <- test(y,x);
-            x;
-        }
+    f(n:Int):Int
+    {
+        n + x
     };
+};
+class B{
+    a():A{ new A};
 
-    test(a:Int, b:Int):Int {
-        {
-            let x:Int<- 10 in {
-               a <- b + a + x;
-            };
-            -- a;
-        }
-    };    
+};
+
+class Main{
+    main(): Int { 
+        new B.a().f(2)
+    };
 };

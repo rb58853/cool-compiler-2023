@@ -62,28 +62,6 @@ addi $sp, $sp, 4
 #End Region Let
 move $a0, $t1
 jr $ra
-__init_A__:
-li $a0, 16
-li $v0, 9
-syscall
-move $s1, $v0
-li $t0 0
-sw $t0, 4($a0)
-li $t0 0
-sw $t0, 8($a0)
-li $t0 0
-sw $t0, 12($a0)
-move $a0, $s1
-jr $ra
-__init_B__:
-li $a0, 8
-li $v0, 9
-syscall
-move $s1, $v0
-j __init_A__
-sw $t0, 4($a0)
-move $a0, $s1
-jr $ra
 __init_Main__:
 li $a0, 4
 li $v0, 9

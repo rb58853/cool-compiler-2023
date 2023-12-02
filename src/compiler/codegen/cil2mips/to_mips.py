@@ -1,6 +1,6 @@
 from compiler.codegen.cil2mips.utils import to_hex
 import compiler.AST.environment as env
-from compiler.codegen.cool2cil.codegener import CILExpr, CILArithmeticOp, CILMethod, CILAssign, CILProgram, CILVar, IntNode, CILCommet, USE_i, StoreLocal, CILCallLocal, ReserveSTACK, FreeStack, CILReturn, Label, CILLogicalOP, CILIf, GOTO, CallMethod, FromA0, CloseProgram, MipsLine, ReserveHeap, StoreInDir
+from compiler.codegen.cool2cil.codegener import CILExpr, CILArithmeticOp, CILMethod, CILAssign, CILProgram, CILVar, IntNode, CILCommet, USE_i, StoreLocal, CILCallLocal, ReserveSTACK, FreeStack, CILReturn, Label, CILLogicalOP, CILIf, GOTO, CallMethod, FromA0, CloseProgram, MipsLine, ReserveHeap, StoreInDir, LoadFromDir
 
 def write_in_heap(bytes_dir, space, free_register_0 = '$s0',free_register_1 = '$s1', temp_register = '$t9'):
     lines= [
@@ -120,6 +120,11 @@ class CIL2MIPS():
             for line in lines:
                 self.mips.add_line(line)
 
+        if isinstance(cil_expr, LoadFromDir):
+            lines = cil_expr.to_mips()
+            for line in lines:
+                self.mips.add_line(line)
+
     def close(self, close_, register):        
             result = close_.ret
             self.mips.add_line(f'move $a0, {register.get_temp(result)}')
@@ -187,6 +192,9 @@ class CIL2MIPS():
                 lines = self.logicar_op(cil_assign.source,register, cil_assign.dest)
                 for line in lines:
                     self.mips.add_line(line=line)
+            if isinstance(cil_assign.source, str):
+                #esto quiere decir que se le paso un string de pythona la asignacion, lo que implica que es un movmiento de un registro a un temporal
+                self.mips.add_line(f'move {register.get_temp(cil_assign.dest)} {register.get_temp(cil_assign.source)}')
         else:
             #Este es el caso donde se le asigna valor a una variable
             pass        

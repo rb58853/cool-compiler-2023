@@ -32,10 +32,17 @@ class TempNames:
             return f"expr_{len(TempNames.used_id)-1}"
     
     def free(names:list):
-        for name in names:
-            if name == 'a0': continue
-            id = int(name[5:])
-            TempNames.used_id[id] = False
+        if isinstance (names, str):
+            #es uno solo y no una lista
+            if name != 'a0':
+                id = int(name[5:])
+                TempNames.used_id[id] = False
+        else:
+            for name in names:
+                if name == 'a0': continue
+                id = int(name[5:])
+                TempNames.used_id[id] = False
+
     def free_all():
         TempNames.used_id = [False, False,False, False, False, False, False, False, False]
     
@@ -94,7 +101,6 @@ class CILProgram():
                             self.methods.append(CILMethod(feature, self))
 
 class CILType():
-    IN_INIT = False
     def __init__(self, cclass:CoolClass):
         self.name = cclass.type
         self.methods:list[CILId] = []  # Lista de CILMethod
@@ -120,7 +126,7 @@ class CILType():
         if cclass.type != env.object_type_name:
             self.process_class(cclass.inherit_class)
 
-        pos = 0 #en la posicion 0 no esta self
+        pos = 4 #en la posicion 0 hay que poner el SELF_TYPE, esto se consigue usando la direccion de en .data TODO: implementar
         for feature in cclass.features:
             if isinstance(feature,Feature.CoolAtr):
                 self.atrs[feature.ID.id] = pos
@@ -227,7 +233,7 @@ class InitMethod(CILMethod):
             if isinstance(feature,Feature.CoolAtr):
                 DivExpression(feature, body, scope)
                 temp = body.current_value()
-                body.add_expr(StoreInDir(body.current_value(),pos,'$a0')) #Guarda cada uno de los features en la memoria
+                body.add_expr(StoreInDir(body.current_value(),pos)) #Guarda cada uno de los features en la memoria
                 TempNames.free([temp])
                 pos+=4
         
@@ -397,14 +403,22 @@ class CILCallLocal(CILExpr):
         return self.__str__()
 
 class CILCallAtr(CILExpr):
-    def __init__(self, id:CoolID) -> None:
+    def __init__(self, pos_intance_in_memory, id:CoolID, type) -> None:
         super().__init__()
         self.name = id.id
+        #este type sirve para buscar los atrbutos por posicion en un diccionario
+        self.type = type
+        #En get atr la instancia siempre va a ser la correspondiente a self
+        self.pos = pos_intance_in_memory
+
     def __str__(self) -> str:
         return f'GETATTR {self.name}'
     
     def __repr__(self) -> str:
         return self.__str__()
+    
+    def to_mips(self):
+        lines = ['']
     
 class CILCall(CILExpr):
     def __init__(self, instance, method, arguments):
@@ -497,6 +511,9 @@ class StoreLocal(CILExpr):
         self.type = type
         if value == 'a0':
             self.register = '$a0'
+        if value[0] =='$':
+            self.register = value
+
 
     def __str__(self) -> str:
         return f'{self.name} => STORELOCAL {self.value}({self.pos})'
@@ -569,14 +586,14 @@ class ReserveHeap(CILExpr):
                   'syscall']               #Llamar al sistema]
 
 class StoreInDir(CILExpr):
-    def __init__(self, value, pos, dir ='$a0') -> None:
+    def __init__(self, value, pos, dir ='$s1') -> None:
         super().__init__()
         self.dest = value
         self.pos = pos #esta es el desplazamiento desde la posicion `dir`
         self.dir = dir
 
     def __str__(self) -> str:
-        return f'STOREMEMORY {self.dest}({self.pos})'
+        return f'{self.dest}=> STOREMEMORY {self.dir}({self.pos})'
     
     def __repr__(self) -> str:
         return self.__str__()
@@ -587,7 +604,30 @@ class StoreInDir(CILExpr):
         else:
             return [f'sw $t{self.dest[5:]}, {self.pos}({self.dir})']
         
+class LoadFromDir(CILExpr):
+    def __init__(self, dest, pos, dir) -> None:
+        super().__init__()
+        self.dest = dest
+        self.pos = pos
+        self.dir = dir
+        
 
+    
+    def __str__(self) -> str:
+        return f'{self.dest}=> LOADEMEMORY {self.dir}({self.pos})'
+    
+    def __repr__(self) -> str:
+        return self.__str__()
+    
+    def to_mips(self):
+        if self.dir[0] !='$':
+            self.dir = f'$t{self.dir[5:]}'
+
+        if self.dest[0] == '$':
+            return [f'lw {self.dest}, {self.pos}({self.dir})']
+        else:
+            return [f'lw $t{self.dest[5:]}, {self.pos}({self.dir})']
+        
 
 ################################################## PROCESADOR DE COOL ###########################################################
 class Body:
@@ -649,7 +689,8 @@ class DivExpression:
         if IsType.logical(e):
             DivExpression.logical(e, body, scope)
         if IsType.atr(e):
-            DivExpression.atr(e,body, scope) 
+            #Aqui entrara solo en casos que se necesite hacer get
+            DivExpression.get_atr(e,body, scope) 
         # if IsType.id(e):
             # DivExpression.id_value(e,body) 
         if IsType.local(e):
@@ -674,10 +715,9 @@ class DivExpression:
             DivExpression.bool(e,body, scope)    
         if IsType.callable(e):
             DivExpression.callable(e,body, scope)
-        if IsType.atr(e):
-            DivExpression.atr(e,body,scope)    
         if IsType.cool_atr(e):
             DivExpression.cool_atr(e,body,scope)    
+
     
     def cool_atr(a:Feature.CoolAtr, body:Body, scope:dict = {}):
         DivExpression(a.value,body,scope)
@@ -769,16 +809,33 @@ class DivExpression:
         else:    
             body.add_expr(CILAssign(TempNames.get_name(),IntNode(1)))
 
-    def atr(id:CoolID, body:Body, scope:dict = {}):
-        body.add_expr(CILAssign(TempNames.get_name(),CILCallAtr(id)))
-    
-    def atr(id:CoolID, body:Body, scope:dict = {}):
-        body.add_expr(CILAssign(TempNames.get_name(),CILCallLocal(id,scope[id.id])))
+    def get_atr(id:CoolID, body:Body, scope:dict = {}, instance = 'self', dest= None):
+        # body.add_expr(CILCallAtr(scope[instance],id))
+
+        dir_instance_in_stack = scope[instance]
+        #ahora hay que sacar la direccion que tiene la pila en la posicion en pila de self
+        body.add_expr(CILAssign(TempNames.get_name(), CILCallLocal('self',dir_instance_in_stack)))
+        dir_instance = body.current_value()
+        #yo puedo pedir el type dela clase del id directamente, porque el get atr sera sin formato dispatch(gramatica de cool)
+        type = id.get_class_context().type #Este es el type de la clase que tiene el id
+        pos = TYPES[type].atrs[id.id]
+        if dest == None:
+           dest = TempNames.get_name() #si es none guardar en un temporal
+
+        body.add_expr(LoadFromDir(dest=dest,pos=pos,dir=dir_instance))
+        TempNames.free([dir_instance])
+        # TempNames.free([body.current_value()])
+        #Ya esto va a hace get al atr
+
+
+    def set_atr(id:CoolID, body:Body, scope:dict = {}, instance = 'self'):
+        pass    
+
     
     def local_var(vvar, body:Body, scope:dict = {}):
         #Si el scope tiene dos posiciones para ua variable entonces, se ha definido que la variable que se usa para definir a una con su mismo nombre estara en la posicion 1, y la variable nueva creada es la que esta en la posision 0.
         if isinstance(scope[vvar.id], list):
-            body.add_expr(CILAssign(TempNames.get_name(),CILCallLocal(vvar,scope[vvar.id])))
+            body.add_expr(CILAssign(TempNames.get_name(),CILCallLocal(vvar,scope[vvar.id][1])))
         else:
             body.add_expr(CILAssign(TempNames.get_name(),CILCallLocal(vvar,scope[vvar.id])))
     
@@ -923,6 +980,9 @@ class DivExpression:
                 body.add_expr(StoreLocal(assign.left.id, value = body.current_value(), pos= scope[assign.left.id]))
             TempNames.free([temp])    
         else:
+            #si la parte izquierda no esta en el scope(lo que es la pila), entonces es un atributo, TODO implementar el comportamiento 
+            pass #lo de debajo no deberia pinchar, debe estar sobrando
+
             if IsType.simple_type(assign.right):
                 body.add_expr(CILAssign(assign.left.id,assign.right,is_temp=False))
             else:
@@ -941,15 +1001,16 @@ class DivExpression:
         # body.add_expr(CILId(e.id))
 
     def new(e:CoolNew, body:Body, scope:dict = {}):
-        if e.type == env.int_type_name or e.type == env.bool_type_name:
-            body.add_expr(CILAssign(TempNames.get_name,IntNode(0)))
+        if e.type == env.int_type_name:
+            DivExpression.int(IntNode(),body, scope)
+        elif e.type == env.bool_type_name:
+            DivExpression.bool(CoolBool(),body, scope)
         elif e.type == env.string_type_name:
             pass
         else:
-            body.add_expr(GOTO(f'__init_{e.type}__'))
+            DivExpression.goto_init(f'__init_{e.type}__',body,scope)
             body.add_expr(CILAssign(TempNames.get_name(),'a0'))
 
-        
     def case(case:CoolCase, scope:dict = {}):
         pass
 
@@ -1009,16 +1070,40 @@ class DivExpression:
 
     def dispatch(dispatch:Dispatch, body:Body, scope:dict = {}):
         callable:CoolCallable = dispatch.function
-        type = dispatch.type
-        body.add_expr(CILCall(type, callable.id.id,callable.params))
-        pass
+        
+        if dispatch.type is not None:
+            type = dispatch.type
+        else:
+            type = dispatch.expr.get_type()    
 
-    def callable(callable:CoolCallable, body:Body, scope:dict = {}):
-        context:Context = callable.get_class_context()
+        expr_type = dispatch.expr.get_type()
+
+        if  expr_type != env.int_type_name \
+        and expr_type != env.bool_type_name\
+        and expr_type != env.string_type_name:
+            DivExpression(dispatch.expr, body,scope)
+        else:
+            #aqui se pueden usar las funciones basicas de string y las funciones de object
+            pass 
+        instance = body.current_value()#esto va a ser una instancia de clase, dado que es lo que sale de la parte izquierda del dispatch
+        
+        DivExpression.callable(callable,body,scope,instance, type)#se le pasa esa intancia como self   
+
+    def callable(callable:CoolCallable, body:Body, scope:dict = {},_self= None, cclass_type = None):
+        if cclass_type is None:
+            context:Context = callable.get_class_context()
+            type = context.type
+        else:    
+            #Si es llamado desde un dispatch hay que pasarle el tipo
+            type = cclass_type
+
         arguments = callable.params
         id = callable.id.id
-        label_method = f'{context.type}_{id}'
+        label_method = f'{type}_{id}'
 
+        if _self is not None: #En caso que se le pase una instancia se guarda en $s2
+            body.add_expr(CILAssign('$s2',_self))
+        
         #Es responsabilidad del invocador coservar los registros temporales, por tanto hay que guardarlos en la pila antes de invocar, asi que se guardan los temporales en la pila. Por ejemplo si tengo algo como temp_0 +call(), tengo que guardar temp_0 en la pila.
         used_temps = TempNames.used_temps()
         body.add_expr(ReserveSTACK(len(used_temps)*4)) #Reserva pila para los registros temporales en uso
@@ -1058,7 +1143,10 @@ class DivExpression:
             else:
                 scope[key] += space
 
-        #TODO hay que asignarle el self        
+        #TODO hay que asignarle el self
+        if _self is not None:
+            body.add_expr(StoreLocal(name='self',pos= 0,value='$s2'))
+
         pos = 4
         for arg in arguments:
             DivExpression(arg,body,scope)
@@ -1088,3 +1176,46 @@ class DivExpression:
                 scope[key] -= (space+ len(used_temps)*4)
 
         body.add_expr(FromA0())
+
+    def goto_init(label:Label, body:Body, scope:dict = {}):
+        #El caso de inicializar una instancia es un caso particular con comportamiento parecido al callable en mips. Solo que aqui solo se va a guardar en pila los temporales porque no se pasan argumentos
+
+        #Es responsabilidad del invocador coservar los registros temporales, por tanto hay que guardarlos en la pila antes de invocar, asi que se guardan los temporales en la pila.
+        used_temps = TempNames.used_temps()
+        if len(used_temps) == 0:
+            # llama a la funcion
+            body.add_expr(CallMethod(label))
+        else:
+            body.add_expr(ReserveSTACK(len(used_temps)*4)) #Reserva pila para los registros temporales en uso
+
+            for i in range(len(used_temps)):
+                #si hay varios llamados dentro de otro que usa el mismo id de temporal, entonces hay que cambiar el key
+                while used_temps[i] in scope:
+                    used_temps[i] = used_temps[i]+'0'
+
+            #Cuando se reserva pila hay que mover las posiciones relativas de las variables del scope
+            for key in scope.keys():
+                if isinstance(scope[key], list):
+                    scope[key][0] +=len(used_temps)*4
+                    scope[key][1] +=len(used_temps)*4
+                else:
+                    scope[key] += len(used_temps)*4
+
+            #primero se mueve las posiciones de lo que hay en la pila y luego se agregan los tmporales
+            p = 0
+            for temp in used_temps:
+                scope[temp] = p
+                body.add_expr(StoreLocal(name=temp,pos= p,value=temp[:6]))
+                p+=4        
+
+            # llama a la funcion
+            body.add_expr(CallMethod(label))
+
+            #Aqui hay que recuperar el valor de los registros temporales.
+            for temp in used_temps:
+                #asignar a los valores temporales el valor que se guardo en la pila
+                body.add_expr(CILAssign(temp[:6],CILCallLocal(temp[:6], scope.pop(temp)))) #esto toma el valor de la pila en la posicion que se encuentra el temp, el .pop elimina el elemento y devuelve el valor. Ya no son necesarios los temporales en la pila
+
+            #Como ya se recuperaron todos los teporales entonces se puede liberar ese espacio en la pila 
+            body.add_expr(FreeStack(len(used_temps)*4))
+        # body.add_expr(FromA0())
