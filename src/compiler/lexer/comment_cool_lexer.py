@@ -50,6 +50,7 @@ class CommentAnalizer():
         self.comment = '(*'
         self.close = False
         self.index-=1
+        nesting_level = 1  # Nuevo atributo para rastrear anidamiento
         while self.index < len(text)-1: 
             self.index+=1
             self.lexer.index+=1
@@ -67,6 +68,33 @@ class CommentAnalizer():
                 if self.close:
                     break
             
+            if text[i] == '(' and i + 1 < len(text) and text[i + 1] == '*':
+                # Incrementar el nivel de anidamiento
+                nesting_level += 1
+                self.comment += '(*'
+                self.index += 1  # Saltar el siguiente caracter '*'
+                self.lexer.index += 1
+                self.lexer.end = self.lexer.index + 1
+                continue
+
+            if text[i] == '*' and i + 1 < len(text) and text[i + 1] == ')':
+                # Disminuir el nivel de anidamiento
+                nesting_level -= 1
+                if nesting_level == 0:
+                    self.close = True
+                    self.comment += '*)'
+                    self.index += 1  # Saltar el siguiente caracter ')'
+                    self.lexer.index += 1
+                    self.lexer.end = self.lexer.index + 1
+                    break
+                else:
+                    self.comment += '*)'
+                    self.index += 1  # Saltar el siguiente caracter ')'
+                    self.lexer.index += 1
+                    self.lexer.end = self.lexer.index + 1
+                    continue
+
+            
             self.comment += text[i]
             
         # self.lexer.index+=1
@@ -83,3 +111,7 @@ class CommentAnalizer():
             ) 
             error('EOF in comment')
             return error
+        
+        
+        return CommentToken(self.lexer.get_pos(), self.lexer.lineno, self.comment, self.init_index, self.lexer.end)
+        
