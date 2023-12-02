@@ -109,7 +109,7 @@ class CILType():
         return self.set_space()
 
     def set_space(self):
-        result = 0 #Hay que analizar si guardar o no espacio para self
+        result = 4 #En la posicion 0 se pondra el SELF_TYPE
         for atr in self.attributes:
             result += atr.space
         
@@ -218,20 +218,21 @@ class InitMethod(CILMethod):
         scope = {env.self_name: 0}
         body = Body()
         body.add_expr(ReserveHeap(space))#Reservar espacio para la instancia
-        body.add_expr(MipsLine('move $a0, $v0')) # Mover la dirección del heap al registro a0
+        body.add_expr(MipsLine('move $s1, $v0')) # Mover la dirección del heap al registro a0
         # body.add_expr(StoreInDir('$a0',0,'$a0')) #Guarda el puntero de a0 en a0(0)
         
-        pos = 0 #Esto en 0 dice que el self no va a estar en los atributos de la clase, el self ahora se controla en la pila
-
+        pos = 4 #Esto en 0 dice que el self no va a estar en los atributos de la clase, el self ahora se controla en la pila
+        
         for feature in cclass.childs():
             if isinstance(feature,Feature.CoolAtr):
                 DivExpression(feature, body, scope)
                 temp = body.current_value()
                 body.add_expr(StoreInDir(body.current_value(),pos,'$a0')) #Guarda cada uno de los features en la memoria
                 TempNames.free([temp])
+                pos+=4
         
-        body.add_expr(Label(f'__init_{cclass.type}:__'))
-        body.add_expr(CILId('a0'))
+        body.expressions.insert(0,Label(f'__init_{cclass.type}__'))
+        body.add_expr(CILId('$s1'))
         body.add_expr(CILReturn(body.return_value()))
         self.body = [e for e in body.expressions]        
 
@@ -568,10 +569,10 @@ class ReserveHeap(CILExpr):
                   'syscall']               #Llamar al sistema]
 
 class StoreInDir(CILExpr):
-    def __init__(self, value,pos, dir ='$a0') -> None:
+    def __init__(self, value, pos, dir ='$a0') -> None:
         super().__init__()
         self.dest = value
-        self.pos = pos #esta es la posicion relativa en la pila.
+        self.pos = pos #esta es el desplazamiento desde la posicion `dir`
         self.dir = dir
 
     def __str__(self) -> str:
@@ -639,6 +640,7 @@ class IsType:
     def _if(e): return isinstance(e, CoolIf)
     def _while(e): return isinstance(e, CoolWhile)
     def cool_atr(e): return isinstance(e,Feature.CoolAtr)
+    def bool(e): return isinstance(e,CoolBool)
 
 class DivExpression:
     def __init__ (self, e:expr, body:Body, scope = {}):
@@ -668,6 +670,8 @@ class DivExpression:
             DivExpression._while(e,body, scope)
         if IsType.int(e):
             DivExpression.int(e,body, scope)    
+        if IsType.bool(e):
+            DivExpression.bool(e,body, scope)    
         if IsType.callable(e):
             DivExpression.callable(e,body, scope)
         if IsType.atr(e):
@@ -677,9 +681,9 @@ class DivExpression:
     
     def cool_atr(a:Feature.CoolAtr, body:Body, scope:dict = {}):
         DivExpression(a.value,body,scope)
-        temp = body.current_value()
-        body.add_expr(CILAssign(TempNames.get_name(),temp))
-        TempNames.free([temp])
+        # temp = body.current_value()
+        # body.add_expr(CILAssign(TempNames.get_name(),temp))
+        # TempNames.free([temp])
 
     def arithmetic(aritmetic: ArithmeticOP, body:Body, scope:dict = {}):
         # lefth_is_id_and_not_atr = IsType.id(aritmetic.left) and not aritmetic.left.is_atr()
@@ -758,6 +762,12 @@ class DivExpression:
     
     def int(_int:IntNode, body:Body, scope:dict = {}):
         body.add_expr(CILAssign(TempNames.get_name(),_int))
+
+    def bool(_bool:CoolBool, body:Body, scope:dict = {}):
+        if _bool.value == False:
+            body.add_expr(CILAssign(TempNames.get_name(),IntNode()))
+        else:    
+            body.add_expr(CILAssign(TempNames.get_name(),IntNode(1)))
 
     def atr(id:CoolID, body:Body, scope:dict = {}):
         body.add_expr(CILAssign(TempNames.get_name(),CILCallAtr(id)))
@@ -930,8 +940,15 @@ class DivExpression:
         body.add_expr(CILAssign(TempNames.get_name(),e.id))
         # body.add_expr(CILId(e.id))
 
-    def new(e:CoolID, body, scope:dict = {}):
-        body.add_expr(CILAssign(TempNames.get_name,e))
+    def new(e:CoolNew, body:Body, scope:dict = {}):
+        if e.type == env.int_type_name or e.type == env.bool_type_name:
+            body.add_expr(CILAssign(TempNames.get_name,IntNode(0)))
+        elif e.type == env.string_type_name:
+            pass
+        else:
+            body.add_expr(GOTO(f'__init_{e.type}__'))
+            body.add_expr(CILAssign(TempNames.get_name(),'a0'))
+
         
     def case(case:CoolCase, scope:dict = {}):
         pass

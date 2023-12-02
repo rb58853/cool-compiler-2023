@@ -1,6 +1,6 @@
 from compiler.codegen.cil2mips.utils import to_hex
 import compiler.AST.environment as env
-from compiler.codegen.cool2cil.codegener import CILExpr, CILArithmeticOp, CILMethod, CILAssign, CILProgram, CILVar, IntNode, CILCommet, USE_i, StoreLocal, CILCallLocal, ReserveSTACK, FreeStack, CILReturn, Label, CILLogicalOP, CILIf, GOTO, CallMethod, FromA0, CloseProgram, MipsLine
+from compiler.codegen.cool2cil.codegener import CILExpr, CILArithmeticOp, CILMethod, CILAssign, CILProgram, CILVar, IntNode, CILCommet, USE_i, StoreLocal, CILCallLocal, ReserveSTACK, FreeStack, CILReturn, Label, CILLogicalOP, CILIf, GOTO, CallMethod, FromA0, CloseProgram, MipsLine, ReserveHeap, StoreInDir
 
 def write_in_heap(bytes_dir, space, free_register_0 = '$s0',free_register_1 = '$s1', temp_register = '$t9'):
     lines= [
@@ -35,6 +35,8 @@ class Registers():
     def get_temp(self,expr_id:str):
         if expr_id == 'a0':
             return '$a0'
+        if expr_id[0] == '$':
+            return expr_id
         id = int(expr_id[5:])
         return f'$t{id}'
         # return f'$t{id-self.base_id["t"]}'
@@ -107,6 +109,16 @@ class CIL2MIPS():
 
         if isinstance(cil_expr, CloseProgram):
             self.close(cil_expr, register)
+        
+        if isinstance(cil_expr, ReserveHeap):
+            lines = cil_expr.to_mips()
+            for line in lines:
+                self.mips.add_line(line)
+
+        if isinstance(cil_expr, StoreInDir):
+            lines = cil_expr.to_mips()
+            for line in lines:
+                self.mips.add_line(line)
 
     def close(self, close_, register):        
             result = close_.ret

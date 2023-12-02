@@ -943,7 +943,7 @@ class CoolString(CoolConstant):
         super().__init__(value,StringClass.type,token_pos)
 
 class CoolBool(CoolConstant):
-    def __init__(self, value,token_pos= None) -> None:
+    def __init__(self, value = False,token_pos= None) -> None:
         super().__init__(value,BoolClass.type,token_pos)
 #endregion
 
@@ -980,6 +980,14 @@ class Feature():
             self.type = type
             self.value = value
             self.name = 'class_atr'
+            if value is None:
+                if type == env.int_type_name:
+                    self.value = IntNode()
+                if type == env.string_type_name:
+                    self.value = CoolString()
+                if type == env.bool_type_name:
+                    self.value = CoolBool()
+                    
             Node.set_father(self,self.childs())
 
         def childs(self):
