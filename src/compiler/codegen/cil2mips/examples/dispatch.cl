@@ -5,16 +5,20 @@ class A{
 
     f(n:Int):Int
     {
-        n + x
+        {
+            n + x;
+        }
     };
 };
 class B{
+    b():B{ new B};
     a():A{ new A};
-
 };
 
 class Main{
     main(): Int { 
-        new B.a().f(2)
+    {
+        new B.a().f(2);
+    }    
     };
 };

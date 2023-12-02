@@ -22,6 +22,7 @@ TYPE_LENGTH= {'Int':4, 'Bool':4, 'String':32,}
 TYPES = {}
 class TempNames:
     used_id = [False, False,False, False, False, False, False, False, False]
+    s_id = [False,False,False]
     def get_name():
         for i in range(len(TempNames.used_id)):
             if not TempNames.used_id[i]:
@@ -30,6 +31,12 @@ class TempNames:
         else:    
             TempNames.used_id.append(True)
             return f"expr_{len(TempNames.used_id)-1}"
+    
+    def get_s(index):
+        TempNames.s_id[index] = True
+        return f'$s{index}'
+    def free_s(index):
+        TempNames.s_id[index] = False
     
     def free(names:list):
         if isinstance (names, str):
@@ -51,8 +58,12 @@ class TempNames:
         for i in range(len(TempNames.used_id)):
             if TempNames.used_id[i]:
                 result.append(f'temp_{i}')
+        for i in range(len(TempNames.s_id)):
+            if TempNames.s_id[i]:     
+                result.append(f'$s{i}')
+        result.append('$ra')        
         return result        
-
+    
 class NameTempExpression:
     id = -1  # Contador para generar identificadores
     def get_name():
@@ -224,7 +235,7 @@ class InitMethod(CILMethod):
         scope = {env.self_name: 0}
         body = Body()
         body.add_expr(ReserveHeap(space))#Reservar espacio para la instancia
-        body.add_expr(MipsLine('move $s1, $v0')) # Mover la dirección del heap al registro a0
+        body.add_expr(MipsLine(f'move {TempNames.get_s(1)}, $v0')) # Mover la dirección del heap al registro s1
         # body.add_expr(StoreInDir('$a0',0,'$a0')) #Guarda el puntero de a0 en a0(0)
         
         pos = 4 #Esto en 0 dice que el self no va a estar en los atributos de la clase, el self ahora se controla en la pila
@@ -238,8 +249,10 @@ class InitMethod(CILMethod):
                 pos+=4
         
         body.expressions.insert(0,Label(f'__init_{cclass.type}__'))
-        body.add_expr(CILId('$s1'))
-        body.add_expr(CILReturn(body.return_value()))
+        # body.add_expr(CILId('$s1'))
+        # body.add_expr(CILReturn(body.return_value()))
+        body.add_expr(CILReturn('$s1'))
+        TempNames.free_s(1)
         self.body = [e for e in body.expressions]        
 
 class NameLabel():
@@ -1103,10 +1116,12 @@ class DivExpression:
 
         if _self is not None: #En caso que se le pase una instancia se guarda en $s2
             body.add_expr(CILAssign('$s2',_self))
+            TempNames.free([_self])
         
         #Es responsabilidad del invocador coservar los registros temporales, por tanto hay que guardarlos en la pila antes de invocar, asi que se guardan los temporales en la pila. Por ejemplo si tengo algo como temp_0 +call(), tengo que guardar temp_0 en la pila.
         used_temps = TempNames.used_temps()
-        body.add_expr(ReserveSTACK(len(used_temps)*4)) #Reserva pila para los registros temporales en uso
+        if len(used_temps)>0:
+            body.add_expr(ReserveSTACK(len(used_temps)*4)) #Reserva pila para los registros temporales en uso
         
         for i in range(len(used_temps)):
             #si hay varios llamados dentro de otro que usa el mismo id de temporal, entonces hay que cambiar el key
@@ -1150,7 +1165,9 @@ class DivExpression:
         pos = 4
         for arg in arguments:
             DivExpression(arg,body,scope)
+            temp = body.current_value()
             body.add_expr(StoreLocal(name=body.current_value(),pos= pos,value=body.current_value()))
+            TempNames.free([temp])#libera el temporal que se uso para almacenar en los argumentos
             pos +=4
         
         # llama a ua funcion
@@ -1165,7 +1182,8 @@ class DivExpression:
             
 
         #Como ya se recuperaron todos los teporales entonces se puede liberar ese espacio en la pila 
-        body.add_expr(FreeStack(len(used_temps)*4))
+        if len(used_temps) >0:
+            body.add_expr(FreeStack(len(used_temps)*4))
         #Cuando se libera la pila hay que mover las posiciones relativas del scoep que se habia modificado
         #como hubo dos movimientos de pila entonces tiene que recuperar la posicion despues de ambos movimientos len(parametros) + len(temporales guardados)
         for key in scope.keys():

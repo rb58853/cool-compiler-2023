@@ -26,11 +26,12 @@ def load_from_heap(heap_dir, register, space):
 
 class Registers():
     def __init__(self, cil_method:CILMethod) -> None:
-        self.base_id = {'t':0}
-        for line in cil_method.body:
-            if isinstance(line, CILAssign) and not isinstance(line.dest, CILVar):
-                self.base_id['t'] = int(line.dest[5:])
-                break
+        pass
+        # self.base_id = {'t':0}
+        # for line in cil_method.body:
+        #     if isinstance(line, CILAssign) and not isinstance(line.dest, CILVar):
+        #         self.base_id['t'] = int(line.dest[5:])
+        #         break
             
     def get_temp(self,expr_id:str):
         if expr_id == 'a0':
@@ -45,8 +46,13 @@ class MIPS:
     def __init__(self) -> None:
         self.body:list[str] = []
     
-    def add_line(self, line):
-        self.body.append(line)
+    def add_line(self, line, tab =True):
+        #move $xy, $xy
+        if not(line[:4] == 'move' and line[6:8] == line[11:13]):
+            if tab:
+                self.body.append(f'\t{line}')
+            else:
+                self.body.append(line)
     
     def code(self) -> str:
         result = ''
@@ -61,7 +67,7 @@ class CIL2MIPS():
         self.generate_code(cil)
 
     def generate_code(self,cil:CILProgram):
-        self.mips.add_line('.globl main')
+        self.mips.add_line('.globl main',False)
         for method in cil.methods:
             self.generate_from_method(method)
 
@@ -90,7 +96,7 @@ class CIL2MIPS():
             self.mips.add_line(str(cil_expr))
 
         if isinstance(cil_expr, Label):
-            self.mips.add_line(str(cil_expr))    
+            self.mips.add_line(str(cil_expr),False)    
         
         if isinstance(cil_expr, CILIf):
             self._if(cil_expr, register)
@@ -194,7 +200,7 @@ class CIL2MIPS():
                     self.mips.add_line(line=line)
             if isinstance(cil_assign.source, str):
                 #esto quiere decir que se le paso un string de pythona la asignacion, lo que implica que es un movmiento de un registro a un temporal
-                self.mips.add_line(f'move {register.get_temp(cil_assign.dest)} {register.get_temp(cil_assign.source)}')
+                self.mips.add_line(f'move {register.get_temp(cil_assign.dest)}, {register.get_temp(cil_assign.source)}')
         else:
             #Este es el caso donde se le asigna valor a una variable
             pass        
