@@ -843,7 +843,6 @@ class DivExpression:
 
     def set_atr(id:CoolID, body:Body, scope:dict = {}, instance = 'self'):
         pass    
-
     
     def local_var(vvar, body:Body, scope:dict = {}):
         #Si el scope tiene dos posiciones para ua variable entonces, se ha definido que la variable que se usa para definir a una con su mismo nombre estara en la posicion 1, y la variable nueva creada es la que esta en la posision 0.
@@ -852,64 +851,6 @@ class DivExpression:
         else:
             body.add_expr(CILAssign(TempNames.get_name(),CILCallLocal(vvar,scope[vvar.id])))
     
-    def full_space_let(let, body:Body, scope:dict = {}):
-        color = get_color()
-        body.add_expr(CILCommet(f'#Region Let'))
-        # body.add_expr(CILCommet(f'{color}#Region Let'))
-        
-        let_scope:dict= {}
-        length = 0
-        pos = 0
-        
-        for vvar in let.let:
-            if vvar.get_type() == env.string_type_name:
-                length += 32
-            else:
-                length += 4
-        
-        
-        for var in scope.keys():
-            #esto toma el scope superior y en caso de tener que sobreescrbir variables se hace debajo. Como se vuelve a reservar pila, la posicion de las variables de scpe anteriro con respecto al puntero de pila deben deben aumentar.
-            let_scope[var] = scope[var] + length 
-        #Reservar espacio en la pila para un tamanno = length
-        body.add_expr(ReserveSTACK(length))
-        
-        for vvar in let.let:
-            if not scope.__contains__(vvar.id):
-                let_scope[vvar.id] = pos 
-            else:
-                if not isinstance(scope[vvar.id], list):
-                    let_scope[vvar.id] = [pos, scope[vvar.id]]
-                else:
-                    let_scope[vvar.id] = [pos, scope[vvar.id][1]]
-
-            move = 4 
-            if vvar.get_type() == env.string_type_name:
-                move = 32
-            
-            pos += move
-            
-            if vvar.value is not None:
-                DivExpression(vvar.value, body, scope = let_scope)
-                temp = body.current_value()
-                if isinstance(let_scope[vvar.id],list):
-                    body.add_expr(StoreLocal(vvar.id, value = body.current_value(), pos= let_scope[vvar.id][0]))
-                else:
-                    body.add_expr(StoreLocal(vvar.id, value = body.current_value(), pos= let_scope[vvar.id]))
-                TempNames.free([temp])    
-            else:
-                pass #este es el caso de una instancia de clase, hay que analizarlo
-            
-            #Cuando la variable ya salga de su definicion, del cuerpo del let, hay que eliminar la tupla y dejarlo solo en el valor como entero
-            if isinstance(let_scope[vvar.id], list):
-                let_scope[vvar.id] = let_scope[vvar.id][0]
-        
-        DivExpression(let.in_scope, body, scope = let_scope)
-        #Liberar espacio de la pila una vez se sale del let, el scope anterior al del let debe salir igual que antes por recursividad
-        body.add_expr(FreeStack(length))        
-        body.add_expr(CILCommet(f'#End Region Let'))
-        # body.add_expr(CILCommet(f'{color}#End Region Let'))
-
     def let(let:CoolLet, body:Body, scope:dict = {}):
         color = get_color()
         # body.add_expr(CILCommet(f'{color}#Region Let'))
@@ -1007,11 +948,7 @@ class DivExpression:
             DivExpression(e,body, scope)
 
     def id_value(e:CoolID,body, scope:dict = {}):
-        # if in_params(e):
-            #tratarlo como parametro
-            # pass
         body.add_expr(CILAssign(TempNames.get_name(),e.id))
-        # body.add_expr(CILId(e.id))
 
     def new(e:CoolNew, body:Body, scope:dict = {}):
         if e.type == env.int_type_name:

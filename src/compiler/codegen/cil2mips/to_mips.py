@@ -233,9 +233,12 @@ class CIL2MIPS():
         if cil_add.operation == '-':
             operation = 'sub'
         
-        if cil_add.operation == '*' or cil_add.operation == '/':   
-            if cil_add.operation == '*':
-                operation = 'mul'    
+        if cil_add.operation == '*':
+            operation = 'mul'
+        
+        if  cil_add.operation == '/':# or cil_add.operation == '*':   
+            # if cil_add.operation == '*':
+            #     operation = 'mul'    
             if cil_add.operation == '/':
                 operation = 'div'
 

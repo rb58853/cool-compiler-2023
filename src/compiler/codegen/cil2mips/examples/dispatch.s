@@ -31,11 +31,12 @@ main:
 	li $v0, 10
 	syscall
 A_f:
+	lw $t0, 0($sp)
+	lw $t1, 4($t0)
 	lw $t0, 4($sp)
-	lw $t1, 0($sp)
-	lw $t2, 4($t1)
-	add $t1, $t0, $t2
-	move $a0, $t1
+	div $t1, $t0
+	mflo $t2
+	move $a0, $t2
 	jr $ra
 B_b:
 	addi $sp, $sp, -4

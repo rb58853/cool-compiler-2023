@@ -6,7 +6,7 @@ class A{
     f(n:Int):Int
     {
         {
-            n + x;
+            x + n;
         }
     };
 };
