@@ -14,10 +14,13 @@ def run_test(file_path):
 
 def main():
     test_files_directory = 'tests'  
+<<<<<<< HEAD
     passed_tests = 0
     failed_tests = 0
     total_tests = 0
 
+=======
+>>>>>>> d7da49e524f206c610267deb4bb6c56b1050365d
     for test_file in find_test_files(test_files_directory):
         total_tests += 1
         returncode, stdout, stderr = run_test(test_file)
