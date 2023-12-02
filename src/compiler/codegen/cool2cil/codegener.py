@@ -46,7 +46,7 @@ class TempNames:
                 TempNames.used_id[id] = False
         else:
             for name in names:
-                if name == 'a0': continue
+                if name == 'a0' or name[0]=='$': continue
                 id = int(name[5:])
                 TempNames.used_id[id] = False
 
@@ -612,7 +612,10 @@ class StoreInDir(CILExpr):
         return self.__str__()
     
     def to_mips(self):
-        if self.dest[0] == '$':
+        if self.dir[0] !='$':
+            self.dir = f'$t{self.dir[5:]}'
+        
+        if self.dest[0] == '$' :
             return [f'sw {self.dest}, {self.pos}({self.dir})']
         else:
             return [f'sw $t{self.dest[5:]}, {self.pos}({self.dir})']
@@ -623,8 +626,6 @@ class LoadFromDir(CILExpr):
         self.dest = dest
         self.pos = pos
         self.dir = dir
-        
-
     
     def __str__(self) -> str:
         return f'{self.dest}=> LOADEMEMORY {self.dir}({self.pos})'
@@ -640,7 +641,9 @@ class LoadFromDir(CILExpr):
             return [f'lw {self.dest}, {self.pos}({self.dir})']
         else:
             return [f'lw $t{self.dest[5:]}, {self.pos}({self.dir})']
-        
+
+class EmptyType(CILExpr):
+    pass        
 
 ################################################## PROCESADOR DE COOL ###########################################################
 class Body:
@@ -731,6 +734,29 @@ class DivExpression:
         if IsType.cool_atr(e):
             DivExpression.cool_atr(e,body,scope)    
 
+    def assing(assign: Assign, body:Body, scope:dict = {}):
+        if assign.left.id in scope:
+            #estamos tratando con una variable local, luego hay que guardar su valor en la pila
+            DivExpression(assign.right, body, scope)
+            temp = body.current_value()
+            if isinstance(scope[assign.left.id],list):
+                body.add_expr(StoreLocal(assign.left.id, value = body.current_value(), pos= scope[assign.left.id][0]))
+            else:
+                body.add_expr(StoreLocal(assign.left.id, value = body.current_value(), pos= scope[assign.left.id]))
+            TempNames.free([temp])    
+        else:
+            #si la parte izquierda no esta en el scope(lo que es la pila o lo declarado en algun let), entonces es un atributo, TODO implementar el comportamiento
+            DivExpression(assign.right, body, scope)
+            assigned_value = body.current_value()
+            DivExpression.set_atr(assign.left,body,scope,value=assigned_value)
+            TempNames.free([assigned_value])
+
+            #lo de debajo no deberia pinchar, debe estar sobrando
+            # if IsType.simple_type(assign.right):
+            #     body.add_expr(CILAssign(assign.left.id,assign.right,is_temp=False))
+            # else:
+            #     DivExpression(assign.right, body, scope)
+            #     body.add_expr(CILAssign(assign.left.id,body.current_value(),is_temp=False))
     
     def cool_atr(a:Feature.CoolAtr, body:Body, scope:dict = {}):
         DivExpression(a.value,body,scope)
@@ -838,11 +864,17 @@ class DivExpression:
         body.add_expr(LoadFromDir(dest=dest,pos=pos,dir=dir_instance))
         TempNames.free([dir_instance])
         # TempNames.free([body.current_value()])
-        #Ya esto va a hace get al atr
 
-
-    def set_atr(id:CoolID, body:Body, scope:dict = {}, instance = 'self'):
-        pass    
+    def set_atr(id:CoolID, body:Body, scope:dict = {}, instance = 'self', value = None):
+        dir_instance_in_stack = scope[instance]
+        #ahora hay que sacar la direccion que tiene la pila en la posicion en pila de self
+        body.add_expr(CILAssign(TempNames.get_name(), CILCallLocal('self',dir_instance_in_stack)))
+        dir_instance = body.current_value()
+        #yo puedo pedir el type dela clase del id directamente, porque el get atr sera sin formato dispatch(gramatica de cool)
+        type = id.get_class_context().type #Este es el type de la clase que tiene el id
+        pos = TYPES[type].atrs[id.id]
+        body.add_expr(StoreInDir(value=value,pos=pos, dir=dir_instance))
+        TempNames.free([dir_instance])
     
     def local_var(vvar, body:Body, scope:dict = {}):
         #Si el scope tiene dos posiciones para ua variable entonces, se ha definido que la variable que se usa para definir a una con su mismo nombre estara en la posicion 1, y la variable nueva creada es la que esta en la posision 0.
@@ -901,8 +933,8 @@ class DivExpression:
                     let_scope[var] += move
                 
             
-            # if vvar.value is not None:
-            if vvar.get_type() == env.int_type_name:
+            # if vvar.get_type() == env.int_type_name:
+            if vvar.value is not None:
                 DivExpression(vvar.value, body, scope = let_scope)
                 temp = body.current_value()
                 if isinstance(let_scope[vvar.id],list):
@@ -911,6 +943,7 @@ class DivExpression:
                     body.add_expr(StoreLocal(vvar.id, value = body.current_value(), pos= let_scope[vvar.id]))
                 TempNames.free([temp])    
             else:
+                
                 pass #este es el caso de una instancia de clase, hay que analizarlo
             
             #Cuando la variable ya salga de su definicion, del cuerpo del let, hay que eliminar la tupla y dejarlo solo en el valor como entero
@@ -923,26 +956,6 @@ class DivExpression:
         # body.add_expr(CILCommet(f'{color}#End Region Let'))
         body.add_expr(CILCommet(f'#End Region Let'))
 
-    def assing(assign: Assign, body:Body, scope:dict = {}):
-        if assign.left.id in scope:
-            #estamos tratando con una variable local, luego hay que guardar su valor en la pila
-            DivExpression(assign.right, body, scope)
-            temp = body.current_value()
-            if isinstance(scope[assign.left.id],list):
-                body.add_expr(StoreLocal(assign.left.id, value = body.current_value(), pos= scope[assign.left.id][0]))
-            else:
-                body.add_expr(StoreLocal(assign.left.id, value = body.current_value(), pos= scope[assign.left.id]))
-            TempNames.free([temp])    
-        else:
-            #si la parte izquierda no esta en el scope(lo que es la pila), entonces es un atributo, TODO implementar el comportamiento 
-            pass #lo de debajo no deberia pinchar, debe estar sobrando
-
-            if IsType.simple_type(assign.right):
-                body.add_expr(CILAssign(assign.left.id,assign.right,is_temp=False))
-            else:
-                DivExpression(assign.right, body, scope)
-                body.add_expr(CILAssign(assign.left.id,body.current_value(),is_temp=False))
-    
     def block(block:CoolBlockScope, body:Body, scope:dict = {}):
         for e in block.exprs:
             DivExpression(e,body, scope)
@@ -1173,4 +1186,12 @@ class DivExpression:
 
             #Como ya se recuperaron todos los teporales entonces se puede liberar ese espacio en la pila 
             body.add_expr(FreeStack(len(used_temps)*4))
+            
+            #Cuando se libera la pila hay que correr las posiciones del scope a las oficiales
+            for key in scope.keys():
+                if isinstance(scope[key], list):
+                    scope[key][0] -= (len(used_temps)*4)
+                    scope[key][1] -= (len(used_temps)*4)
+                else:
+                    scope[key] -= (len(used_temps)*4)
         # body.add_expr(FromA0())
