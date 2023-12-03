@@ -130,6 +130,9 @@ class CIL2MIPS():
             lines = cil_expr.to_mips()
             for line in lines:
                 self.mips.add_line(line)
+        # if isinstance(cil_expr, CILCallLocal):
+
+                
 
     def close(self, close_, register):        
             result = close_.ret

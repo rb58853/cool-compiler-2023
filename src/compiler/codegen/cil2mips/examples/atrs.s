@@ -63,7 +63,24 @@ A_f:
 	lw $t0, 0($sp)
 	lw $t1, 8($t0)
 	add $t0, $t2, $t1
-	move $a0, $t0
+	sw $t0, 4($sp)
+	lw $t0, 0($sp)
+	move $s2, $t0
+	addi $sp, $sp, -4
+	sw $ra, 0($sp)
+	addi $sp, $sp, -8
+	sw $s2, 0($sp)
+	li $t0 10
+	sw $t0, 4($sp)
+	jal A_set_y
+	addi $sp, $sp, 8
+	lw $ra, 0($sp)
+	addi $sp, $sp, 4
+	lw $t0, 4($sp)
+	lw $t1, 0($sp)
+	lw $t2, 8($t1)
+	add $t1, $t0, $t2
+	move $a0, $t1
 	jr $ra
 A_set_y:
 	lw $t0, 4($sp)

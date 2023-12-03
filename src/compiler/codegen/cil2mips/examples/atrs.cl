@@ -6,7 +6,9 @@ class A{
     f(n:Int):Int
     {
         {
-            x + n + y;
+            n <- x + n + y;
+            set_y(10);
+            n+y;
         }
     };
     set_y(n:Int):Int{
@@ -22,10 +24,10 @@ class Main{
     main(): Int { 
     {
         let a:A <- new A in {
-            -- new B.a().f(2); #esto pincha bien
             a <- new B.a();
             a.set_y(5);
             a.f(2);
+            -- a.set_y(2);
         };
     }    
     };

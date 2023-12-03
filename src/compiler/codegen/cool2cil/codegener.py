@@ -730,7 +730,7 @@ class DivExpression:
         if IsType.bool(e):
             DivExpression.bool(e,body, scope)    
         if IsType.callable(e):
-            DivExpression.callable(e,body, scope)
+            DivExpression.call_meth(e,body, scope)
         if IsType.cool_atr(e):
             DivExpression.cool_atr(e,body,scope)    
 
@@ -1034,13 +1034,24 @@ class DivExpression:
     def dispatch(dispatch:Dispatch, body:Body, scope:dict = {}):
         callable:CoolCallable = dispatch.function
         
+        if isinstance( dispatch.expr, CoolID) and dispatch.expr.id == env.self_name:
+            #Si la parte izquierda es self, entonces se llama el callable con el self que tiene el scope 
+            instance = TempNames.get_name()
+            body.add_expr(CILAssign(instance,CILCallLocal('self',scope[env.self_name])))
+            #Se guardo en instance la direccion de la instancia que hay en la pila en la posicion indicada por self
+            #El tipo de self es el tipo de la clase que contiene a self
+            type = dispatch.expr.get_class_context().type
+            DivExpression.callable(callable,body,scope,instance, type)
+            TempNames.free([instance])
+            return
+        
         if dispatch.type is not None:
             type = dispatch.type
         else:
             type = dispatch.expr.get_type()    
 
         expr_type = dispatch.expr.get_type()
-
+        
         if  expr_type != env.int_type_name \
         and expr_type != env.bool_type_name\
         and expr_type != env.string_type_name:
@@ -1051,6 +1062,17 @@ class DivExpression:
         instance = body.current_value()#esto va a ser una instancia de clase, dado que es lo que sale de la parte izquierda del dispatch
         
         DivExpression.callable(callable,body,scope,instance, type)#se le pasa esa intancia como self   
+    
+    def call_meth(meth:CoolCallable, body:Body, scope:dict = {}):
+        #esto es lo que se llama cuando se llama al metodo sin nada deante en formato dispatch
+        #Si la parte izquierda es vacia es lo mismo que self, entonces se llama el callable con el self que tiene el scope 
+        instance = TempNames.get_name()
+        body.add_expr(CILAssign(instance,CILCallLocal('self',scope[env.self_name])))
+        #Se guardo en instance la direccion de la instancia que hay en la pila en la posicion indicada por self
+        #El tipo de self es el tipo de la clase que contiene a self
+        type = meth.get_class_context().type
+        DivExpression.callable(meth,body,scope,instance, type)
+        TempNames.free([instance])
 
     def callable(callable:CoolCallable, body:Body, scope:dict = {},_self= None, cclass_type = None):
         if cclass_type is None:
@@ -1186,7 +1208,7 @@ class DivExpression:
 
             #Como ya se recuperaron todos los teporales entonces se puede liberar ese espacio en la pila 
             body.add_expr(FreeStack(len(used_temps)*4))
-            
+
             #Cuando se libera la pila hay que correr las posiciones del scope a las oficiales
             for key in scope.keys():
                 if isinstance(scope[key], list):
