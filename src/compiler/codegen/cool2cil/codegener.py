@@ -307,6 +307,7 @@ class Label(CILExpr):
     def __init__(self, name_label) -> None:
         super().__init__()
         self.name = name_label + ':'
+        self.use_as_current = False
 
     def __str__(self) -> str:
         # return f"{Fore.MAGENTA}{self.name}{Fore.WHITE}"
@@ -703,8 +704,6 @@ class StoreString(CILExpr):
         return lines
         
 
-                
-
 ################################################## PROCESADOR DE COOL ###########################################################
 class Body:
     def __init__(self) -> None:
@@ -880,10 +879,6 @@ class DivExpression:
             pass
             
     def logicar_not_eq(logicar:Logicar, body:Body, scope:dict = {}):
-        lefth_is_id_and_not_atr = IsType.id(logicar.left) and not logicar.left.is_atr()
-        right_is_id_and_not_atr = IsType.id(logicar.right) and not logicar.right.is_atr()
-
-        # if (IsType.int(logicar.left) or lefth_is_id_and_not_atr)  and (IsType.int(logicar.right) or right_is_id_and_not_atr ):
         if (IsType.int(logicar.left)) and (IsType.int(logicar.right)):
             body.add_expr(CILAssign(TempNames.get_name(),logicar.left))
             left_value = body.current_value()
@@ -892,7 +887,7 @@ class DivExpression:
             body.add_expr(CILAssign(TempNames.get_name(),CILLogicalOP(left_value,rigth_value, logicar.op)))
             TempNames.free([left_value,rigth_value])
 
-        elif isinstance(logicar.left, IntNode) or lefth_is_id_and_not_atr:
+        elif isinstance(logicar.left, IntNode):
             body.add_expr(CILAssign(TempNames.get_name(),logicar.left))
             left_value = body.current_value()
             DivExpression(logicar.right,body,scope)
@@ -900,7 +895,7 @@ class DivExpression:
             body.add_expr(CILAssign(TempNames.get_name(),CILLogicalOP(left_value,rigth_value,logicar.op)))
             TempNames.free([left_value,rigth_value])
         
-        elif isinstance(logicar.right, IntNode) or right_is_id_and_not_atr:
+        elif isinstance(logicar.right, IntNode):
             body.add_expr(CILAssign(TempNames.get_name(),logicar.right))
             rigth_value = body.current_value()
             DivExpression(logicar.left,body,scope)
@@ -944,7 +939,6 @@ class DivExpression:
             # TempNames.free([body.current_value()])
             
         #Si no entra al if el ultimo valor(curent value) sera exactamente dir_instance que es self
-                
 
     def set_atr(id:CoolID, body:Body, scope:dict = {}, instance = 'self', value = None):
         dir_instance_in_stack = scope[instance]
@@ -1091,7 +1085,7 @@ class DivExpression:
         else_s = _if.else_scope
         label = NameLabel('else').get()
         label_end = NameLabel('endif').get()
-        result_expr = TempNames.get_name()
+        result_expr = "$a0"#el resultado se mete en $a0, en caso de ser el if la ultima expresion de un metodo entonces devuelve el resultado
 
         if IsType.bool(condition):
             if condition:
@@ -1110,7 +1104,6 @@ class DivExpression:
         DivExpression(else_s,body,scope)
         body.add_expr(CILAssign(result_expr,body.current_value()))
         body.add_expr(Label(label_end))
-        body.add_expr(CILId(result_expr))
 
     def dispatch(dispatch:Dispatch, body:Body, scope:dict = {}):
         callable:CoolCallable = dispatch.function
@@ -1196,7 +1189,10 @@ class DivExpression:
         p = 0
         for temp in used_temps:
             scope[temp] = p
-            body.add_expr(StoreLocal(name=temp,pos= p,value=temp[:6]))
+            if temp[0]!='$':
+                body.add_expr(StoreLocal(name=temp,pos= p,value=temp[:6]))
+            else:
+                body.add_expr(StoreLocal(name=temp,pos= p,value=temp[:3]))
             p+=4        
 
         #una vez se llega a este punto todo lo anterior deberia haberse guardado debidamente en la pila, luego no se necesita guardar ningun registro temporal. Todo lo que el programador de cool necesita guardado lo esta.
@@ -1233,9 +1229,12 @@ class DivExpression:
         body.add_expr(FreeStack(space))
         for temp in used_temps:
             scope[temp] -= space
-            #ademas asignar a los valores temporales el valor que se guardo en la pila
-            body.add_expr(CILAssign(temp[:6],CILCallLocal(temp[:6], scope.pop(temp)))) #esto toma el valor de la pila en la posicion que se encuentra el temp, el .pop elimina el elemento y devuelve el valor. Ya no son necesarios los temporales en la pila
-            
+            #ademas asignar a los valores temporales el valor que se guardo en la pila:
+            if temp[0] != '$':
+                body.add_expr(CILAssign(temp[:6],CILCallLocal(temp[:6], scope.pop(temp)))) #esto toma el valor de la pila en la posicion que se encuentra el temp, el .pop elimina el elemento y devuelve el valor. Ya no son necesarios los temporales en la pila
+            else:
+                body.add_expr(CILAssign(temp[:3],CILCallLocal(temp[:3], scope.pop(temp)))) 
+
 
         #Como ya se recuperaron todos los teporales entonces se puede liberar ese espacio en la pila 
         if len(used_temps) >0:
@@ -1279,7 +1278,10 @@ class DivExpression:
             p = 0
             for temp in used_temps:
                 scope[temp] = p
-                body.add_expr(StoreLocal(name=temp,pos= p,value=temp[:6]))
+                if temp[0] != '$':
+                    body.add_expr(StoreLocal(name=temp,pos= p,value=temp[:6]))
+                else:
+                    body.add_expr(StoreLocal(name=temp,pos= p,value=temp[:3]))
                 p+=4        
 
             # llama a la funcion
@@ -1288,7 +1290,10 @@ class DivExpression:
             #Aqui hay que recuperar el valor de los registros temporales.
             for temp in used_temps:
                 #asignar a los valores temporales el valor que se guardo en la pila
-                body.add_expr(CILAssign(temp[:6],CILCallLocal(temp[:6], scope.pop(temp)))) #esto toma el valor de la pila en la posicion que se encuentra el temp, el .pop elimina el elemento y devuelve el valor. Ya no son necesarios los temporales en la pila
+                if temp[0] != '$':
+                    body.add_expr(CILAssign(temp[:6],CILCallLocal(temp[:6], scope.pop(temp)))) #esto toma el valor de la pila en la posicion que se encuentra el temp, el .pop elimina el elemento y devuelve el valor. Ya no son necesarios los temporales en la pila
+                else:    
+                    body.add_expr(CILAssign(temp[:3],CILCallLocal(temp[:3], scope.pop(temp))))
 
             #Como ya se recuperaron todos los teporales entonces se puede liberar ese espacio en la pila 
             body.add_expr(FreeStack(len(used_temps)*4))
