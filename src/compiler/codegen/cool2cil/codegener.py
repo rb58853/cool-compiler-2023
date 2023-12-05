@@ -17,6 +17,7 @@ def get_color():
 1. El registro $s3 se usa para cargar direcciones de data, si va a usar este registro en otro lugar usted debe guardar su valor en la pila para poder recuperarlo.
 2. El registro $s2 se usa para guardar la instancia desde la cual se llamara un metodo, por ejemplo x.f(), se guarda la instancia de x en $s2, escribir en $s2 implica tener que guardar su valor escrito en pila xq si se hace un dispatch el valor de $s2 cambia
 3. El registro $s1 hay que controlarlo en pila, se usa para guardar las direcciones de las instancias nuevas creadas, si usted usa $s1 tendra que guardar su valor en pila, xq en caso de crear una instancia de clase el valor de $s1 sera modificado.
+4. El registro $s4 se usa en operaciones para guardar strings, no debera usarlo en otro ambito dado que cuando se guarda un string este registro sera manipulado
 '''
 #esto es para usar operaciones con valores inmediatos, por ejemplo addi $s0, $1, 5 . Las constantes solo admiten 16 bytes. Valor default = False
 USE_i = True
@@ -660,7 +661,7 @@ class LoadFromDir(CILExpr):
             return [f'lw $t{self.dest[5:]}, {self.pos}({self.dir})']
 
 class StoreString(CILExpr):
-    def __init__(self,data_name,temp,dir = '$s3', dest ='$s1') -> None:
+    def __init__(self,data_name,temp,dir = '$s3', dest ='$s4') -> None:
         super().__init__()
         self.dir = dir #lugar donde voy a guardar temporalmente la direccion en memoria de la data
         self.dest = dest #direccion en memoria donde voy a guardar el string
@@ -794,10 +795,10 @@ class DivExpression:
 
         space = len(s.value) -2 +1 # el string es de tamanno len-2 y se le suma 1 para el caracter nulo
         body.add_expr(ReserveHeap(space))#Reservar espacio para el tamanno del string
-        body.add_expr(MipsLine(f'move $s1, $v0')) # Mover la dirección del heap al registro $s1
+        body.add_expr(MipsLine(f'move $s4, $v0')) # Mover la dirección del heap al registro $s1
 
         temp = TempNames.get_name()
-        body.add_expr(StoreString(s.data_name,temp=temp,dest= '$s1',dir = '$s3')) #Guarda byte a byte el string en la direccion del heap
+        body.add_expr(StoreString(s.data_name,temp=temp,dest= '$s4',dir = '$s3')) #Guarda byte a byte el string en la direccion del heap
         body.add_expr(CILAssign(temp,'$v0')) #Guarda en un temporal la direccion de memoria donde se escribio el string
         #TODO considerar liberar el temporal desde aqui
 
