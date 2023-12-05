@@ -80,13 +80,64 @@ A_f:
 	lw $t1, 0($sp)
 	lw $t2, 8($t1)
 	add $t1, $t0, $t2
-	move $a0, $t1
+	lw $t0, 0($sp)
+	sw $t1, 12($t0)
+	lw $t0, 0($sp)
+	move $s2, $t0
+	addi $sp, $sp, -4
+	sw $ra, 0($sp)
+	addi $sp, $sp, -8
+	sw $s2, 0($sp)
+	li $t0 2
+	sw $t0, 4($sp)
+	jal A_test1
+	addi $sp, $sp, 8
+	lw $ra, 0($sp)
+	addi $sp, $sp, 4
 	jr $ra
 A_set_y:
 	lw $t0, 4($sp)
 	lw $t1, 0($sp)
 	sw $t0, 8($t1)
 	move $a0, $t0
+	jr $ra
+A_test1:
+	lw $t0, 4($sp)
+	lw $t1, 0($sp)
+	lw $t2, 12($t1)
+	mul $t1, $t0, $t2
+	sw $t1, 4($sp)
+	lw $t0, 0($sp)
+	move $s2, $t0
+	addi $sp, $sp, -4
+	sw $ra, 0($sp)
+	addi $sp, $sp, -8
+	sw $s2, 0($sp)
+	li $t0 10
+	sw $t0, 4($sp)
+	jal A_set_y
+	addi $sp, $sp, 8
+	lw $ra, 0($sp)
+	addi $sp, $sp, 4
+	lw $t0, 0($sp)
+	move $s2, $t0
+	addi $sp, $sp, -4
+	sw $ra, 0($sp)
+	addi $sp, $sp, -8
+	sw $s2, 0($sp)
+	lw $t0, 16($sp)
+	sw $t0, 4($sp)
+	jal A_test2
+	addi $sp, $sp, 8
+	lw $ra, 0($sp)
+	addi $sp, $sp, 4
+	jr $ra
+A_test2:
+	lw $t0, 0($sp)
+	lw $t1, 8($t0)
+	lw $t0, 4($sp)
+	add $t2, $t1, $t0
+	move $a0, $t2
 	jr $ra
 B_b:
 	addi $sp, $sp, -4

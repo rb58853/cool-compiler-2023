@@ -1,5 +1,6 @@
 import compiler.AST.environment as env
 from compiler.AST.ast import CoolProgram, CoolClass, Feature, expr, IntNode, CoolBool, CoolString, CoolLet, ArithmeticOP,Logicar,Assign, CoolID, Context, Dispatch, CoolCase, CoolWhile, CoolIf, CoolBlockScope, CoolCallable, CoolNew
+from compiler.codegen.cil2mips.utils import string_to_hex
 
 import colorama
 from colorama import Fore
@@ -12,14 +13,18 @@ def get_color():
     count_colors= (1+count_colors)%6
     return colors[count_colors]
 
+'''
+1. El registro $s3 se usa para cargar direcciones de data, si va a usar este registro en otro lugar usted debe guardar su valor en la pila para poder recuperarlo.
+2. El registro $s2 se usa para guardar la instancia desde la cual se llamara un metodo, por ejemplo x.f(), se guarda la instancia de x en $s2, escribir en $s2 implica tener que guardar su valor escrito en pila xq si se hace un dispatch el valor de $s2 cambia
+3. El registro $s1 hay que controlarlo en pila, se usa para guardar las direcciones de las instancias nuevas creadas, si usted usa $s1 tendra que guardar su valor en pila, xq en caso de crear una instancia de clase el valor de $s1 sera modificado.
+'''
 #esto es para usar operaciones con valores inmediatos, por ejemplo addi $s0, $1, 5 . Las constantes solo admiten 16 bytes. Valor default = False
 USE_i = True
 
-#Esto hace que se reserve pila de forma dinamica y no total. Por ejemplo en let x:int<-1, a:int <- (let <expr>), b:int.... En este caso se reserva memoria para x, luego se reserva para a y luego para b, dado que en el llamado del le que se le asigna a `a` no nos interesa la variable b, pero si la variable x, por lo tanto no se reserva memoria que no se usara en ese llamado. La forma standar sera reservar toda la memoria necesaria para cada varaible del let, DEFAULT = False
-DYNAMIC_STACK = True
-
-TYPE_LENGTH= {'Int':4, 'Bool':4, 'String':32,}
+TYPE_LENGTH= {'Int':4, 'Bool':4, 'String':4,}
 TYPES = {}
+
+
 class TempNames:
     used_id = [False, False,False, False, False, False, False, False, False]
     s_id = [False,False,False]
@@ -70,9 +75,18 @@ class NameTempExpression:
         NameTempExpression.id+=1
         return f"expr_{NameTempExpression.id}"
 
+class Data:
+    body = []
+    def add(data):
+        Data.body.append(data)
+    
+    def free():
+        Data.body = []
+
 class CILProgram():
     def __init__(self, program:CoolProgram):
         super().__init__()
+        Data.free()
         self.types:dict[str,CILType] = {}  # Lista de CILType
         self.methods:list[CILMethod] = []
         self.set_types(program)
@@ -89,6 +103,9 @@ class CILProgram():
                 self.types[cclass.type]=CILType(cclass)
 
     def __str__(self) -> str:
+        result = ".DATA\n\n"
+        for line in Data.body:
+            result+= f'{line}\n'
         result = ".TYPES\n\n"
         for type in self.types.values():
             result+= str(type)
@@ -253,7 +270,7 @@ class InitMethod(CILMethod):
         # body.add_expr(CILReturn(body.return_value()))
         body.add_expr(CILReturn('$s1'))
         TempNames.free_s(1)
-        self.body = [e for e in body.expressions]        
+        self.body = [e for e in body.expressions]          
 
 class NameLabel():
     label_id:dict[str:int] = {}  # Contador para generar identificadores
@@ -642,6 +659,42 @@ class LoadFromDir(CILExpr):
         else:
             return [f'lw $t{self.dest[5:]}, {self.pos}({self.dir})']
 
+class StoreString(CILExpr):
+    def __init__(self,data_name,temp,dir = '$s3', dest ='$s1') -> None:
+        super().__init__()
+        self.dir = dir #lugar donde voy a guardar temporalmente la direccion en memoria de la data
+        self.dest = dest #direccion en memoria donde voy a guardar el string
+        self.label = NameLabel('copy').get() #cargar un label para el loop del copiado de string
+        self.data_name = data_name #identificador en la seccion de data
+        self.temp = temp #temporal que voy a utilizar para mover bits
+
+    def __str__(self) -> str:
+        return f'{self.dest}=> STORESTRING {self.dir}(0)'
+    
+    def __repr__(self) -> str:
+        return self.__str__()
+    
+    def to_mips(self):
+        if self.dir[0] !='$':
+            self.dir = f'$t{self.dir[5:]}'
+        
+        if self.dest[0] !='$':
+            self.dest = f'$t{self.dest[5:]}'
+        
+        if self.temp[0] != '$' :
+            self.temp = f'$t{self.temp[5:]}'
+
+        lines = [
+            f'la {self.dir}, {self.data_name}',      # Cargar la dirección del string en el registro dir
+            f'{self.label}:',
+            f'lb {self.temp}, 0({self.dir})',         # Cargar el caracter actual en temporal
+            f'sb {self.temp}, 0({self.dest})',        # Almacenar el caracter en la memoria direccion dest
+            f'addiu {self.dir}, {self.dir}, 1',       # Avanzar al siguiente caracter en el string
+            f'addiu {self.dest}, {self.dest}, 1',     # Avanzar a la siguiente posición en la memoria
+            f'bnez {self.temp}, {self.label}',    # Si el caracter no era el terminador de string (NULL), repetir el bucle'
+        ]    
+        return lines
+        
 class EmptyType(CILExpr):
     pass        
 
@@ -733,6 +786,20 @@ class DivExpression:
             DivExpression.call_meth(e,body, scope)
         if IsType.cool_atr(e):
             DivExpression.cool_atr(e,body,scope)    
+        if IsType.string(e):
+            DivExpression.save_str(e,body,scope)
+
+    def save_str(s: CoolString, body:Body, scope:dict = {}):
+        Data.add(f'{s.data_name}: .asciiz "{s.value[1:-1]}"')
+
+        space = len(s.value) -2 +1 # el string es de tamanno len-2 y se le suma 1 para el caracter nulo
+        body.add_expr(ReserveHeap(space))#Reservar espacio para el tamanno del string
+        body.add_expr(MipsLine(f'move $s1, $v0')) # Mover la dirección del heap al registro $s1
+
+        temp = TempNames.get_name()
+        body.add_expr(StoreString(s.data_name,temp=temp,dest= '$s1',dir = '$s3')) #Guarda byte a byte el string en la direccion del heap
+        body.add_expr(CILAssign(temp,'$v0')) #Guarda en un temporal la direccion de memoria donde se escribio el string
+        #TODO considerar liberar el temporal desde aqui
 
     def assing(assign: Assign, body:Body, scope:dict = {}):
         if assign.left.id in scope:

@@ -17,5 +17,6 @@ def to_hex(x):
     return result+hex_num
 
 def string_to_hex(s):
-    pass    
-
+    s = s.encode("utf-8")
+    hexadecimal = s.hex()
+    return hexadecimal

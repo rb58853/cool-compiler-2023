@@ -939,8 +939,11 @@ class IntNode(CoolConstant):
         super().__init__(value,IntClass.type,token_pos)
 
 class CoolString(CoolConstant):
+    data_id = 0
     def __init__(self, value = "", token_pos = None) -> None:
         super().__init__(value,StringClass.type,token_pos)
+        CoolString.data_id+=1
+        self.data_name = f'str{CoolString.data_id}'
 
 class CoolBool(CoolConstant):
     def __init__(self, value = False,token_pos= None) -> None:
