@@ -1,28 +1,7 @@
 from compiler.codegen.cil2mips.utils import to_hex
 import compiler.AST.environment as env
+from compiler.codegen.cil2mips.templates import methods as templates
 from compiler.codegen.cool2cil.codegener import CILExpr, CILArithmeticOp, CILMethod, CILAssign, CILProgram, CILVar, IntNode, CILCommet, USE_i, StoreLocal, CILCallLocal, ReserveSTACK, FreeStack, CILReturn, Label, CILLogicalOP, CILIf, GOTO, CallMethod, FromA0, CloseProgram, MipsLine, ReserveHeap, StoreInDir, LoadFromDir, Data, StoreString
-
-def write_in_heap(bytes_dir, space, free_register_0 = '$s0',free_register_1 = '$s1', temp_register = '$t9'):
-    lines= [
-        f'li $a0, {space}', # Número de bytes para asignar
-        f'li $v0, 9', # Código de la llamada al sistema para sbrk
-        f'syscall', # Asignar memoria en el heap
-        f'move {free_register_0}, $v0', # Guardar la dirección de la memoria asignada en un registro, desde aqui se empieza a escribir en el heap 
-        f'la {free_register_0}, {bytes_dir}', # Cargar en un registro la dirección de los bytes que se quieren escribir 
-        'copy:',
-        f'lb {temp_register},({free_register_0})', # Leer un byte desde la dirección de origen
-        f'sb {temp_register},({free_register_1})', # Almacenarlo en la dirección de destino
-        f'addiu {free_register_0},{free_register_0},1',
-        f'addiu {free_register_1},{free_register_1},1',
-        f'bne {temp_register},$zero,copy' # Repetir hasta que el terminador NUL haya sido copiado'
-    ]
-    return lines
-
-def load_from_heap(heap_dir, register, space):
-    lines = [
-
-    ]
-    return lines
 
 class Registers():
     def __init__(self, cil_method:CILMethod) -> None:
@@ -62,6 +41,10 @@ class MIPS:
         result += '.text\n'
         for line in self.body:
             result+= f'{line}\n'        
+
+        for meth in templates:
+            for line in meth.code():
+                result+= f'{line}\n'
         return result
     
 class CIL2MIPS():
@@ -141,10 +124,10 @@ class CIL2MIPS():
                 self.mips.add_line(line)
 
     def close(self, close_, register):        
-            result = close_.ret
-            self.mips.add_line(f'move $a0, {register.get_temp(result)}')
-            self.mips.add_line('li $v0, 1')
-            self.mips.add_line('syscall')
+            # result = close_.ret
+            # self.mips.add_line(f'move $a0, {register.get_temp(result)}')
+            # self.mips.add_line('li $v0, 1')
+            # self.mips.add_line('syscall')
             self.mips.add_line('li $v0, 10')
             self.mips.add_line('syscall')
     

@@ -93,11 +93,11 @@ class CILProgram():
         self.set_types(program)
         self.generate_methods(program)
         self.generate_init_types()
-
+        
     def generate_init_types(self):
         for type in self.types.values():
             self.methods.append(type.init_meth())
-            
+    
     def set_types(self, program:CoolProgram):
         for cclass in program.classes:
             if not cclass.type in env.base_classes:
@@ -134,7 +134,7 @@ class CILType():
         self.name = cclass.type
         self.methods:list[CILId] = []  # Lista de CILMethod
         self.attributes:list[CILVar] = []  # Lista de CILAttribute
-        self.atrs = {}
+        self.atrs = {env.self_type_name: 0}
         self.space = self.get_all_from(cclass)
         TYPES[self.name] = self
         self.cclass = cclass
@@ -290,6 +290,7 @@ class CILExpr():
         self.use_in_code_line = True
         self.tab_lv = 0
         self.return_void = False
+        self.use_as_current = True
 
     def add_tab_lv(self):
         self.tab_lv+=1    
@@ -494,6 +495,8 @@ class CILCommet(CILExpr):
     def __init__(self, text = '#comment') -> None:
         super().__init__()
         self.text = text
+        self.use_as_current = False
+        
 
     def __str__(self) -> str:
         result = self.text
@@ -517,6 +520,7 @@ class ReserveSTACK(CILExpr):
     def __init__(self, space ) -> None:
         super().__init__()
         self.space = space
+        self.use_as_current = False
     def __str__(self) -> str:
         return f"Reserve Stack {self.space}"    
     def __repr__(self) -> str:
@@ -526,6 +530,8 @@ class FreeStack(CILExpr):
     def __init__(self, space) -> None:
         super().__init__()
         self.space = space
+        self.use_as_current = False
+
     def __str__(self) -> str:
         return f"Free Stack {self.space}"    
     def __repr__(self) -> str:
@@ -696,8 +702,8 @@ class StoreString(CILExpr):
         ]    
         return lines
         
-class EmptyType(CILExpr):
-    pass        
+
+                
 
 ################################################## PROCESADOR DE COOL ###########################################################
 class Body:
@@ -710,9 +716,10 @@ class Body:
     def current(self):
         index = 1
         for i in range(len(self.expressions)-1, -1,-1):
-            if isinstance(self.expressions[i], CILCommet)\
-                or isinstance(self.expressions[i], FreeStack)\
-                or isinstance(self.expressions[i], ReserveSTACK):
+            # if isinstance(self.expressions[i], CILCommet)\
+            #     or isinstance(self.expressions[i], FreeStack)\
+            #     or isinstance(self.expressions[i], ReserveSTACK):
+            if not self.expressions[i].use_as_current:
                 index+=1
             else:
                 break
@@ -751,6 +758,7 @@ class IsType:
     def _while(e): return isinstance(e, CoolWhile)
     def cool_atr(e): return isinstance(e,Feature.CoolAtr)
     def bool(e): return isinstance(e,CoolBool)
+    # def out_string(e): return isinstance(e.callable) and 
 
 class DivExpression:
     def __init__ (self, e:expr, body:Body, scope = {}):
@@ -925,13 +933,18 @@ class DivExpression:
         dir_instance = body.current_value()
         #yo puedo pedir el type dela clase del id directamente, porque el get atr sera sin formato dispatch(gramatica de cool)
         type = id.get_class_context().type #Este es el type de la clase que tiene el id
-        pos = TYPES[type].atrs[id.id]
-        if dest == None:
-           dest = TempNames.get_name() #si es none guardar en un temporal
+        
+        if id.id != env.self_name:
+            pos = TYPES[type].atrs[id.id]
+            if dest == None:
+               dest = TempNames.get_name() #si es none guardar en un temporal
 
-        body.add_expr(LoadFromDir(dest=dest,pos=pos,dir=dir_instance))
-        TempNames.free([dir_instance])
-        # TempNames.free([body.current_value()])
+            body.add_expr(LoadFromDir(dest=dest,pos=pos,dir=dir_instance))
+            TempNames.free([dir_instance])
+            # TempNames.free([body.current_value()])
+            
+        #Si no entra al if el ultimo valor(curent value) sera exactamente dir_instance que es self
+                
 
     def set_atr(id:CoolID, body:Body, scope:dict = {}, instance = 'self', value = None):
         dir_instance_in_stack = scope[instance]
@@ -1152,7 +1165,10 @@ class DivExpression:
 
         arguments = callable.params
         id = callable.id.id
-        label_method = f'{type}_{id}'
+        if id not in env.base_methods:
+            label_method = f'{type}_{id}'
+        else:
+            label_method = f'{id}' #Se asume que las funciones de las clases base no se pueden redefinir.
 
         if _self is not None: #En caso que se le pase una instancia se guarda en $s2
             body.add_expr(CILAssign('$s2',_self))
