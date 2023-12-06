@@ -1,6 +1,5 @@
 import compiler.AST.environment as env
-from compiler.AST.ast import CoolProgram, CoolClass, Feature, expr, IntNode, CoolBool, CoolString, CoolLet, ArithmeticOP,Logicar,Assign, CoolID, Context, Dispatch, CoolCase, CoolWhile, CoolIf, CoolBlockScope, CoolCallable, CoolNew
-from compiler.codegen.cil2mips.utils import string_to_hex
+from compiler.AST.ast import CoolProgram, CoolClass, Feature, expr, IntNode, CoolBool, CoolString, CoolLet, ArithmeticOP,Logicar,Assign, CoolID, Context, Dispatch, CoolCase, CoolWhile, CoolIf, CoolBlockScope, CoolCallable, CoolNew, CoolNot, CoolUminus
 
 import colorama
 from colorama import Fore
@@ -47,8 +46,8 @@ class TempNames:
     def free(names:list):
         if isinstance (names, str):
             #es uno solo y no una lista
-            if name != 'a0':
-                id = int(name[5:])
+            if names != 'a0':
+                id = int(names[5:])
                 TempNames.used_id[id] = False
         else:
             for name in names:
@@ -702,7 +701,37 @@ class StoreString(CILExpr):
             f'bnez {self.temp}, {self.label}',    # Si el caracter no era el terminador de string (NULL), repetir el bucle'
         ]    
         return lines
-        
+
+class CILNot(CILExpr):
+    def __init__(self, dest) -> None:
+        super().__init__()
+        self.dest = dest
+    def __str__(self) -> str:
+        return f'{self.dest} = not {self.dest}'
+
+    def to_mips(self):
+        dest = self.dest
+        if dest[0] != '$':
+            dest = f'$t{dest[5:]}'
+        return [
+            f'addi {dest} {dest} -1',
+            f'subu {dest} $zero {dest}'
+            ]    
+class CILUminus(CILExpr):
+    def __init__(self, dest) -> None:
+        super().__init__()
+        self.dest = dest
+    def __str__(self) -> str:
+        return f'{self.dest} = ~{self.dest}'
+
+    def to_mips(self):
+        dest = self.dest
+        if dest[0] != '$':
+            dest = f'$t{dest[5:]}'
+        return [
+            f'addi {dest} {dest} -1',
+            f'subu {dest} $zero {dest}'
+            ]    
 
 ################################################## PROCESADOR DE COOL ###########################################################
 class Body:
@@ -757,6 +786,8 @@ class IsType:
     def _while(e): return isinstance(e, CoolWhile)
     def cool_atr(e): return isinstance(e,Feature.CoolAtr)
     def bool(e): return isinstance(e,CoolBool)
+    def _not(e): return isinstance(e,CoolNot)
+    def uminus(e): return isinstance(e,CILUminus)
     # def out_string(e): return isinstance(e.callable) and 
 
 class DivExpression:
@@ -796,6 +827,23 @@ class DivExpression:
             DivExpression.cool_atr(e,body,scope)    
         if IsType.string(e):
             DivExpression.save_str(e,body,scope)
+        if IsType._not(e):
+            DivExpression._not(e,body,scope)
+        if IsType.uminus(e):
+            DivExpression.uminus(e,body,scope)    
+
+    def _not(e: CoolNot, body:Body, scope:dict = {}):
+        DivExpression(e.value, body, scope)
+        temp = body.current_value()
+        body.add_expr(CILNot(temp))
+        TempNames.free([temp]) #Como no existe and\or se puede liberar el temporal, debe usarse de inmediato o guardarse en una variable
+    
+    def uminus(e: CoolUminus, body:Body, scope:dict = {}):
+        DivExpression(e.value, body, scope)
+        temp = body.current_value()
+        body.add_expr(CILUminus(temp))
+        TempNames.free([temp]) #
+
 
     def save_str(s: CoolString, body:Body, scope:dict = {}):
         Data.add(f'{s.data_name}: .asciiz "{s.value[1:-1]}"')

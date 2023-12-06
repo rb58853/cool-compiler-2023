@@ -43,6 +43,12 @@ IF__test:
 	lw $t0, 4($sp)
 	lw $t1, 8($sp)
 	slt $t2, $t0, $t1
+	addi $t2 $t2 -1
+	subu $t2 $zero $t2
+	addi $t2 $t2 -1
+	subu $t2 $zero $t2
+	addi $t2 $t2 -1
+	subu $t2 $zero $t2
 	beq $t2, $zero, else_0
 	li $t0 1
 	move $a0, $t0

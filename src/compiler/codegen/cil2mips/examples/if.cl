@@ -39,7 +39,7 @@
 class IF_{
     test(x:Int, y:Int): Int
     {
-        if x < y then 1 else 0 fi
+        if not not not x < y then 1 else 0 fi
     };
     -- str(s:String):String{
     --     s
