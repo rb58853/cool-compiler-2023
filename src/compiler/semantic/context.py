@@ -278,6 +278,7 @@ class FunctionContext(TypeContext):
         return self.is_defined_type(param.type)
 
     def is_defined_func(self, id):
+        '''Recive un string id'''
         #Una funcion solo puede ser defina dentro de una clase, luego el contexto que abarca es o bien la clase en la cual es definida, o bien una clase desde la cal se hereda. Notese que pueden existir funciones de igual nombre en clases distintas y no abra conflctos mientras no haya herencia entre estas, en cuyo caso hay que analizar si es valido el override
         if self.functions.__contains__(id): return True
         if self.father is None: return False

@@ -26,14 +26,27 @@ class OutInt:
     def code():
         return [
         'out_int:',     #etiqueta nombre del metodo
-        f'\tlw $a0, 4($sp)', #mueve a $a0 el valor que se encuentra en la posicion 4 de la pila
+        '\tlw $a0, 4($sp)', #mueve a $a0 el valor que se encuentra en la posicion 4 de la pila
 	    '\tli $v0, 1',      #El 1 es para imprimir int
 	    '\tsyscall',        #llamanda al sistema
         '\tlw $a0, 0($sp)',  #retorna el valor en la posision 0 de la pila, corresponde a self
         '\tjr $ra'           #regresa a la posicion desde dond fue llamado        
-        ]    
+        ]
     
-methods = [IO,OutString, OutInt]
+class TypeName:
+    '''Imprime texto con el nombre del tipo de una instancia dada'''
+    def code():
+        return [
+        'type_name:',
+        '\tlw $t0, 0($sp)', #en la posicion 0 de la pila esta self
+        '\tlw $t1, 0($t0)', #en la posicion 0 de self esta la direcion de SELF_TYPE que contiene un string
+        '\tmove $a0, $t1', #mover self type para la salida 
+        '\tjr $ra'
+        ]
+    def __repr__() -> str:
+        return 'TypeName'
+    
+methods = [IO,OutString,TypeName, OutInt]
 
 
 class StartMethod:

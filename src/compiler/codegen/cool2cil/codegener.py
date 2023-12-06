@@ -22,8 +22,11 @@ def get_color():
 #esto es para usar operaciones con valores inmediatos, por ejemplo addi $s0, $1, 5 . Las constantes solo admiten 16 bytes. Valor default = False
 USE_i = True
 
+ATRS_INIT_INDEX = 4
+
 TYPE_LENGTH= {'Int':4, 'Bool':4, 'String':4,}
 TYPES = {}
+#Lo siguiente sirve para saber si se redefinio algun metodo basico como copy(), en caso se hacerse entonces se usa el mismo
 
 
 class TempNames:
@@ -116,29 +119,48 @@ class CILProgram():
         return result
     
     def generate_methods(self, cool_program:CoolProgram):
-        # for cclass in cool_program.classes:
-        #     if cclass.type == 'Main':
-        #         for feature in cclass.features:
-        #             if isinstance(feature,Feature.CoolDef) and feature.ID.id == 'main':
-        #                 self.methods.append(CILMethod(feature, self))
-
         for cclass in cool_program.classes:
             if not cclass.type in env.base_classes:
-                for feature in cclass.features:
-                    if isinstance(feature,Feature.CoolDef):
-                        # if not(cclass.type == 'Main' and feature.ID.id == 'main'):
-                            self.methods.append(CILMethod(feature, self))
+                self.add_methods(cclass, cclass)
 
+    def add_methods(self, cclass: CoolClass, cclass_origin:CoolClass):
+        if cclass.inherit is not None:
+            self.add_methods(cclass.inherit_class, cclass_origin)
+
+        #No se pueden redefinir los metodos de estas clases
+        if cclass.type not in env.unredefine_classes: 
+            for feature in cclass.features:
+                if isinstance(feature,Feature.CoolDef):
+                    #La proxima linea es para los metodos redefinidos no se repitan
+                    if cclass == cclass_origin or not cclass_origin.context.is_defined_func(feature.ID.id):
+                        self.methods.append(CILMethod(feature, self,cclass_origin.type))
+    
 class CILType():
     def __init__(self, cclass:CoolClass):
         self.name = cclass.type
         self.methods:list[CILId] = []  # Lista de CILMethod
         self.attributes:list[CILVar] = []  # Lista de CILAttribute
         self.atrs = {env.self_type_name: 0}
+        self.redefined_base_methods = []
         self.space = self.get_all_from(cclass)
         TYPES[self.name] = self
         Data.add(f'{self.name}: .asciiz "{self.name}"')
+        self.add_methods_redefined_base(cclass, cclass)
         self.cclass = cclass
+
+    def add_methods_redefined_base(self, cclass: CoolClass, cclass_origin:CoolClass):
+        '''Agrega los metodos base redefinidos para el caso que sea necsario llamar la redefinicion o no'''
+        if cclass.inherit is not None:
+            self.add_methods_redefined_base(cclass.inherit_class, cclass_origin)
+
+        #No se pueden redefinir los metodos de estas clases
+        if cclass.type not in env.unredefine_classes: 
+            for feature in cclass.features:
+                if isinstance(feature,Feature.CoolDef):
+                    #La proxima linea es para los metodos redefinidos no se repitan
+                    if cclass == cclass_origin or cclass_origin.context.is_defined_func(feature.ID.id):
+                        if feature.ID.id in env.base_methods:
+                            self.redefined_base_methods.append(feature.ID.id)
 
     def get_all_from(self, cclass:CoolClass):
         self.process_class(cclass)
@@ -178,9 +200,9 @@ class CILType():
         return result +'}\n'
 
 class CILMethod():
-    def __init__(self, cool_meth: Feature.CoolDef, cil_program: CILProgram):
+    def __init__(self, cool_meth: Feature.CoolDef, cil_program: CILProgram, Type):
         super().__init__()
-        self.name = f'{cool_meth.father.type}_{cool_meth.ID.id}'
+        self.name = f'{Type}_{cool_meth.ID.id}'
         self.body:list[CILExpr] = []  # Lista de CILExpr, representa el cuerpo del método
         self.params:list[CILId] = []
         self.locals:list[CILVar] = []
@@ -1082,6 +1104,15 @@ class DivExpression:
         body.add_expr(CILAssign(TempNames.get_name(), CILCallLocal('self',dir_instance_in_stack)))
         dir_instance = body.current_value()
         #yo puedo pedir el type dela clase del id directamente, porque el get atr sera sin formato dispatch(gramatica de cool)
+        if id.id == env.self_type_name:
+            pos = 0 #El SELF_TYPE esta en la posicion  de cada TYPE
+            if dest == None:
+               dest = TempNames.get_name() #si es none guardar en un temporal
+
+            body.add_expr(LoadFromDir(dest=dest,pos=pos,dir=dir_instance))
+            TempNames.free([dir_instance])
+            return
+        
         type = id.get_class_context().type #Este es el type de la clase que tiene el id
         
         if id.id != env.self_name:
@@ -1313,10 +1344,12 @@ class DivExpression:
 
         arguments = callable.params
         id = callable.id.id
-        if id not in env.base_methods:
-            label_method = f'{type}_{id}'
+
+        #Si la funcion no es base y no esta redefinida, ya que se pueden redefinir metodos de object
+        if id in env.base_methods and id not in TYPES[cclass_type].redefined_base_methods:
+            label_method = f'{id}' 
         else:
-            label_method = f'{id}' #Se asume que las funciones de las clases base no se pueden redefinir.
+            label_method = f'{type}_{id}'
 
         if _self is not None: #En caso que se le pase una instancia se guarda en $s2
             body.add_expr(CILAssign('$s2',_self))

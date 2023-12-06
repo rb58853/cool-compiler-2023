@@ -57,20 +57,20 @@ class Main inherits IO{
             a.print();
         };
 
-        if 3 = 3 then new IO.out_string("3 = 3 true\n") else new IO.out_string("3 = 3 false\n") fi;   
-        if 3 <= 3 then new IO.out_string("3 <= 3 true\n") else new IO.out_string("3 <= 3 false\n") fi;
-        if 3 < 3 then new IO.out_string("3 < 3 true\n") else new IO.out_string("3 < 3 false\n") fi;
-        if 3 < 4 then new IO.out_string("3 < 4 true\n") else new IO.out_string("3 < 4 false\n") fi;
+        if 3 = 3 then out_string("3 = 3 true\n") else out_string("3 = 3 false\n") fi;   
+        if 3 <= 3 then out_string("3 <= 3 true\n") else out_string("3 <= 3 false\n") fi;
+        if 3 < 3 then out_string("3 < 3 true\n") else out_string("3 < 3 false\n") fi;
+        if 3 < 4 then out_string("3 < 4 true\n") else out_string("3 < 4 false\n") fi;
         
-        if "asd" = "asd" then new IO.out_string("'asd' = 'asd' true\n") else new IO.out_string("'asd' = 'asd' false\n") fi;
-        if "asda" = "asd" then new IO.out_string("'asda' = 'asd' true\n") else new IO.out_string("'asda' = 'asd' false\n") fi;
-        if "assa" = "asd" then new IO.out_string("'assa' = 'asd' true\n") else new IO.out_string("'assa' = 'asd' false\n") fi;
+        if "asd" = "asd" then out_string("'asd' = 'asd' true\n") else out_string("'asd' = 'asd' false\n") fi;
+        if "asda" = "asd" then out_string("'asda' = 'asd' true\n") else out_string("'asda' = 'asd' false\n") fi;
+        if "assa" = "asd" then out_string("'assa' = 'asd' true\n") else out_string("'assa' = 'asd' false\n") fi;
 
         let a:A <- new A, a0: A <- a in{
-            if a = a0 then new IO.out_string("a = a0 true\n") else new IO.out_string("a = a0 false\n") fi;
+            if a = a0 then out_string("a = a0 true\n") else out_string("a = a0 false\n") fi;
             a <- new A;
-            new IO.out_string("a = new A\n");
-            if a = a0 then new IO.out_string("a(new) = a0 true\n") else new IO.out_string("a(new) = a0 false\n") fi;
+            out_string("a = new A\n");
+            if a = a0 then out_string("a(new) = a0 true\n") else out_string("a(new) = a0 false\n") fi;
 
         };
     }    

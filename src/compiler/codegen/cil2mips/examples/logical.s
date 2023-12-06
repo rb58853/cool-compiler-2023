@@ -351,14 +351,7 @@ Main_main:
 	addi $t0, $zero, 1
 	end_compare_3:
 	beq $t0, $zero, else_1
-	addi $sp, $sp, -8
-	sw $t0, 0($sp)
-	sw $ra, 4($sp)
-	jal __init_IO__
-	lw $t0, 0($sp)
-	lw $ra, 4($sp)
-	addi $sp, $sp, 8
-	move $t1, $a0
+	lw $t1, 0($sp)
 	move $s2, $t1
 	addi $sp, $sp, -8
 	sw $t0, 0($sp)
@@ -385,14 +378,7 @@ Main_main:
 	addi $sp, $sp, 8
 	j endif_1
 else_1:
-	addi $sp, $sp, -8
-	sw $t0, 0($sp)
-	sw $ra, 4($sp)
-	jal __init_IO__
-	lw $t0, 0($sp)
-	lw $ra, 4($sp)
-	addi $sp, $sp, 8
-	move $t1, $a0
+	lw $t1, 0($sp)
 	move $s2, $t1
 	addi $sp, $sp, -8
 	sw $t0, 0($sp)
@@ -424,16 +410,7 @@ endif_1:
 	li $t2, 1
 	slt $t3, $t3, $t2
 	beq $t3, $zero, else_2
-	addi $sp, $sp, -12
-	sw $t0, 0($sp)
-	sw $t3, 4($sp)
-	sw $ra, 8($sp)
-	jal __init_IO__
-	lw $t0, 0($sp)
-	lw $t3, 4($sp)
-	lw $ra, 8($sp)
-	addi $sp, $sp, 12
-	move $t1, $a0
+	lw $t1, 0($sp)
 	move $s2, $t1
 	addi $sp, $sp, -12
 	sw $t0, 0($sp)
@@ -462,16 +439,7 @@ endif_1:
 	addi $sp, $sp, 12
 	j endif_2
 else_2:
-	addi $sp, $sp, -12
-	sw $t0, 0($sp)
-	sw $t3, 4($sp)
-	sw $ra, 8($sp)
-	jal __init_IO__
-	lw $t0, 0($sp)
-	lw $t3, 4($sp)
-	lw $ra, 8($sp)
-	addi $sp, $sp, 12
-	move $t1, $a0
+	lw $t1, 0($sp)
 	move $s2, $t1
 	addi $sp, $sp, -12
 	sw $t0, 0($sp)
@@ -503,18 +471,7 @@ endif_2:
 	li $t2 3
 	slt $t4, $t1, $t2
 	beq $t4, $zero, else_3
-	addi $sp, $sp, -16
-	sw $t0, 0($sp)
-	sw $t3, 4($sp)
-	sw $t4, 8($sp)
-	sw $ra, 12($sp)
-	jal __init_IO__
-	lw $t0, 0($sp)
-	lw $t3, 4($sp)
-	lw $t4, 8($sp)
-	lw $ra, 12($sp)
-	addi $sp, $sp, 16
-	move $t1, $a0
+	lw $t1, 0($sp)
 	move $s2, $t1
 	addi $sp, $sp, -16
 	sw $t0, 0($sp)
@@ -545,18 +502,7 @@ endif_2:
 	addi $sp, $sp, 16
 	j endif_3
 else_3:
-	addi $sp, $sp, -16
-	sw $t0, 0($sp)
-	sw $t3, 4($sp)
-	sw $t4, 8($sp)
-	sw $ra, 12($sp)
-	jal __init_IO__
-	lw $t0, 0($sp)
-	lw $t3, 4($sp)
-	lw $t4, 8($sp)
-	lw $ra, 12($sp)
-	addi $sp, $sp, 16
-	move $t1, $a0
+	lw $t1, 0($sp)
 	move $s2, $t1
 	addi $sp, $sp, -16
 	sw $t0, 0($sp)
@@ -590,20 +536,7 @@ endif_3:
 	li $t2 4
 	slt $t5, $t1, $t2
 	beq $t5, $zero, else_4
-	addi $sp, $sp, -20
-	sw $t0, 0($sp)
-	sw $t3, 4($sp)
-	sw $t4, 8($sp)
-	sw $t5, 12($sp)
-	sw $ra, 16($sp)
-	jal __init_IO__
-	lw $t0, 0($sp)
-	lw $t3, 4($sp)
-	lw $t4, 8($sp)
-	lw $t5, 12($sp)
-	lw $ra, 16($sp)
-	addi $sp, $sp, 20
-	move $t1, $a0
+	lw $t1, 0($sp)
 	move $s2, $t1
 	addi $sp, $sp, -20
 	sw $t0, 0($sp)
@@ -636,20 +569,7 @@ endif_3:
 	addi $sp, $sp, 20
 	j endif_4
 else_4:
-	addi $sp, $sp, -20
-	sw $t0, 0($sp)
-	sw $t3, 4($sp)
-	sw $t4, 8($sp)
-	sw $t5, 12($sp)
-	sw $ra, 16($sp)
-	jal __init_IO__
-	lw $t0, 0($sp)
-	lw $t3, 4($sp)
-	lw $t4, 8($sp)
-	lw $t5, 12($sp)
-	lw $ra, 16($sp)
-	addi $sp, $sp, 20
-	move $t1, $a0
+	lw $t1, 0($sp)
 	move $s2, $t1
 	addi $sp, $sp, -20
 	sw $t0, 0($sp)
@@ -696,20 +616,7 @@ endif_4:
 	li $t1, 0
 	end_compare_0:
 	beq $t1, $zero, else_5
-	addi $sp, $sp, -20
-	sw $t0, 0($sp)
-	sw $t3, 4($sp)
-	sw $t4, 8($sp)
-	sw $t5, 12($sp)
-	sw $ra, 16($sp)
-	jal __init_IO__
-	lw $t0, 0($sp)
-	lw $t3, 4($sp)
-	lw $t4, 8($sp)
-	lw $t5, 12($sp)
-	lw $ra, 16($sp)
-	addi $sp, $sp, 20
-	move $t1, $a0
+	lw $t1, 0($sp)
 	move $s2, $t1
 	addi $sp, $sp, -20
 	sw $t0, 0($sp)
@@ -742,20 +649,7 @@ endif_4:
 	addi $sp, $sp, 20
 	j endif_5
 else_5:
-	addi $sp, $sp, -20
-	sw $t0, 0($sp)
-	sw $t3, 4($sp)
-	sw $t4, 8($sp)
-	sw $t5, 12($sp)
-	sw $ra, 16($sp)
-	jal __init_IO__
-	lw $t0, 0($sp)
-	lw $t3, 4($sp)
-	lw $t4, 8($sp)
-	lw $t5, 12($sp)
-	lw $ra, 16($sp)
-	addi $sp, $sp, 20
-	move $t1, $a0
+	lw $t1, 0($sp)
 	move $s2, $t1
 	addi $sp, $sp, -20
 	sw $t0, 0($sp)
@@ -802,20 +696,7 @@ endif_5:
 	li $t1, 0
 	end_compare_1:
 	beq $t1, $zero, else_6
-	addi $sp, $sp, -20
-	sw $t0, 0($sp)
-	sw $t3, 4($sp)
-	sw $t4, 8($sp)
-	sw $t5, 12($sp)
-	sw $ra, 16($sp)
-	jal __init_IO__
-	lw $t0, 0($sp)
-	lw $t3, 4($sp)
-	lw $t4, 8($sp)
-	lw $t5, 12($sp)
-	lw $ra, 16($sp)
-	addi $sp, $sp, 20
-	move $t1, $a0
+	lw $t1, 0($sp)
 	move $s2, $t1
 	addi $sp, $sp, -20
 	sw $t0, 0($sp)
@@ -848,20 +729,7 @@ endif_5:
 	addi $sp, $sp, 20
 	j endif_6
 else_6:
-	addi $sp, $sp, -20
-	sw $t0, 0($sp)
-	sw $t3, 4($sp)
-	sw $t4, 8($sp)
-	sw $t5, 12($sp)
-	sw $ra, 16($sp)
-	jal __init_IO__
-	lw $t0, 0($sp)
-	lw $t3, 4($sp)
-	lw $t4, 8($sp)
-	lw $t5, 12($sp)
-	lw $ra, 16($sp)
-	addi $sp, $sp, 20
-	move $t1, $a0
+	lw $t1, 0($sp)
 	move $s2, $t1
 	addi $sp, $sp, -20
 	sw $t0, 0($sp)
@@ -908,20 +776,7 @@ endif_6:
 	li $t1, 0
 	end_compare_2:
 	beq $t1, $zero, else_7
-	addi $sp, $sp, -20
-	sw $t0, 0($sp)
-	sw $t3, 4($sp)
-	sw $t4, 8($sp)
-	sw $t5, 12($sp)
-	sw $ra, 16($sp)
-	jal __init_IO__
-	lw $t0, 0($sp)
-	lw $t3, 4($sp)
-	lw $t4, 8($sp)
-	lw $t5, 12($sp)
-	lw $ra, 16($sp)
-	addi $sp, $sp, 20
-	move $t1, $a0
+	lw $t1, 0($sp)
 	move $s2, $t1
 	addi $sp, $sp, -20
 	sw $t0, 0($sp)
@@ -954,20 +809,7 @@ endif_6:
 	addi $sp, $sp, 20
 	j endif_7
 else_7:
-	addi $sp, $sp, -20
-	sw $t0, 0($sp)
-	sw $t3, 4($sp)
-	sw $t4, 8($sp)
-	sw $t5, 12($sp)
-	sw $ra, 16($sp)
-	jal __init_IO__
-	lw $t0, 0($sp)
-	lw $t3, 4($sp)
-	lw $t4, 8($sp)
-	lw $t5, 12($sp)
-	lw $ra, 16($sp)
-	addi $sp, $sp, 20
-	move $t1, $a0
+	lw $t1, 0($sp)
 	move $s2, $t1
 	addi $sp, $sp, -20
 	sw $t0, 0($sp)
@@ -1028,22 +870,7 @@ endif_7:
 	addi $t1, $zero, 1
 	end_compare_4:
 	beq $t1, $zero, else_8
-	addi $sp, $sp, -24
-	sw $t0, 0($sp)
-	sw $t1, 4($sp)
-	sw $t3, 8($sp)
-	sw $t4, 12($sp)
-	sw $t5, 16($sp)
-	sw $ra, 20($sp)
-	jal __init_IO__
-	lw $t0, 0($sp)
-	lw $t1, 4($sp)
-	lw $t3, 8($sp)
-	lw $t4, 12($sp)
-	lw $t5, 16($sp)
-	lw $ra, 20($sp)
-	addi $sp, $sp, 24
-	move $t2, $a0
+	lw $t2, 8($sp)
 	move $s2, $t2
 	addi $sp, $sp, -24
 	sw $t0, 0($sp)
@@ -1078,22 +905,7 @@ endif_7:
 	addi $sp, $sp, 24
 	j endif_8
 else_8:
-	addi $sp, $sp, -24
-	sw $t0, 0($sp)
-	sw $t1, 4($sp)
-	sw $t3, 8($sp)
-	sw $t4, 12($sp)
-	sw $t5, 16($sp)
-	sw $ra, 20($sp)
-	jal __init_IO__
-	lw $t0, 0($sp)
-	lw $t1, 4($sp)
-	lw $t3, 8($sp)
-	lw $t4, 12($sp)
-	lw $t5, 16($sp)
-	lw $ra, 20($sp)
-	addi $sp, $sp, 24
-	move $t2, $a0
+	lw $t2, 8($sp)
 	move $s2, $t2
 	addi $sp, $sp, -24
 	sw $t0, 0($sp)
@@ -1144,22 +956,7 @@ endif_8:
 	addi $sp, $sp, 24
 	move $t2, $a0
 	sw $t2, 4($sp)
-	addi $sp, $sp, -24
-	sw $t0, 0($sp)
-	sw $t1, 4($sp)
-	sw $t3, 8($sp)
-	sw $t4, 12($sp)
-	sw $t5, 16($sp)
-	sw $ra, 20($sp)
-	jal __init_IO__
-	lw $t0, 0($sp)
-	lw $t1, 4($sp)
-	lw $t3, 8($sp)
-	lw $t4, 12($sp)
-	lw $t5, 16($sp)
-	lw $ra, 20($sp)
-	addi $sp, $sp, 24
-	move $t2, $a0
+	lw $t2, 8($sp)
 	move $s2, $t2
 	addi $sp, $sp, -24
 	sw $t0, 0($sp)
@@ -1201,24 +998,7 @@ endif_8:
 	addi $t2, $zero, 1
 	end_compare_5:
 	beq $t2, $zero, else_9
-	addi $sp, $sp, -28
-	sw $t0, 0($sp)
-	sw $t1, 4($sp)
-	sw $t2, 8($sp)
-	sw $t3, 12($sp)
-	sw $t4, 16($sp)
-	sw $t5, 20($sp)
-	sw $ra, 24($sp)
-	jal __init_IO__
-	lw $t0, 0($sp)
-	lw $t1, 4($sp)
-	lw $t2, 8($sp)
-	lw $t3, 12($sp)
-	lw $t4, 16($sp)
-	lw $t5, 20($sp)
-	lw $ra, 24($sp)
-	addi $sp, $sp, 28
-	move $t6, $a0
+	lw $t6, 8($sp)
 	move $s2, $t6
 	addi $sp, $sp, -28
 	sw $t0, 0($sp)
@@ -1255,24 +1035,7 @@ endif_8:
 	addi $sp, $sp, 28
 	j endif_9
 else_9:
-	addi $sp, $sp, -28
-	sw $t0, 0($sp)
-	sw $t1, 4($sp)
-	sw $t2, 8($sp)
-	sw $t3, 12($sp)
-	sw $t4, 16($sp)
-	sw $t5, 20($sp)
-	sw $ra, 24($sp)
-	jal __init_IO__
-	lw $t0, 0($sp)
-	lw $t1, 4($sp)
-	lw $t2, 8($sp)
-	lw $t3, 12($sp)
-	lw $t4, 16($sp)
-	lw $t5, 20($sp)
-	lw $ra, 24($sp)
-	addi $sp, $sp, 28
-	move $t6, $a0
+	lw $t6, 8($sp)
 	move $s2, $t6
 	addi $sp, $sp, -28
 	sw $t0, 0($sp)
