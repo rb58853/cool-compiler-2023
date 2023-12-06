@@ -34,3 +34,18 @@ class OutInt:
         ]    
     
 methods = [IO,OutString, OutInt]
+
+
+class StartMethod:
+    '''Primer metodo del programar en mips, llama una instancia del metodo main'''
+    def code():
+        return[
+            '.globl main', #glbalizar main
+            'main:', #nombre del primer metodo main
+            '\tjal __init_Main__', #inicializa la clase Main
+            '\taddi $sp, $sp, -4', #reserva 4 de pila para guardar el self y pasarlo al Main.main()
+            '\tsw $a0, 0($sp)', # la instancia devuelta en a0 por el metodo init_main la gaurda en la posicion cero de la pila
+            '\tjal Main_main', #salta al metodo Main.main
+            '\tli $v0, 10', #codigo para cerrar el programa
+            '\tsyscall' #llamada al sistema
+        ]

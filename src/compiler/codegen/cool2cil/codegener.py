@@ -116,17 +116,17 @@ class CILProgram():
         return result
     
     def generate_methods(self, cool_program:CoolProgram):
-        for cclass in cool_program.classes:
-            if cclass.type == 'Main':
-                for feature in cclass.features:
-                    if isinstance(feature,Feature.CoolDef) and feature.ID.id == 'main':
-                        self.methods.append(CILMethod(feature, self))
+        # for cclass in cool_program.classes:
+        #     if cclass.type == 'Main':
+        #         for feature in cclass.features:
+        #             if isinstance(feature,Feature.CoolDef) and feature.ID.id == 'main':
+        #                 self.methods.append(CILMethod(feature, self))
 
         for cclass in cool_program.classes:
             if not cclass.type in env.base_classes:
                 for feature in cclass.features:
                     if isinstance(feature,Feature.CoolDef):
-                        if not(cclass.type == 'Main' and feature.ID.id == 'main'):
+                        # if not(cclass.type == 'Main' and feature.ID.id == 'main'):
                             self.methods.append(CILMethod(feature, self))
 
 class CILType():
@@ -208,15 +208,18 @@ class CILMethod():
         TempNames.free_all() #Cuando se va a definir un nuevo metodo se liberan los temporales
         DivExpression(cool_meth.scope, body, self.context)
         self.body = [e for e in body.expressions if e.use_in_code_line]
-        if self.name != 'Main_main':
-            self.body.insert(0,Label(self.name))
-        else:
-            self.body.insert(0,Label('main'))
         
-        if self.name == 'Main_main':
-            self.body.append(CloseProgram(body.return_value()))
-        else:    
-            self.body.append(CILReturn(body.return_value()))
+        # if self.name != 'Main_main':
+            # self.body.insert(0,Label(self.name))
+        # else:
+        #     self.body.insert(0,Label('main'))
+        self.body.insert(0,Label(self.name))
+        
+        # if self.name == 'Main_main':
+        #     self.body.append(CloseProgram(body.return_value()))
+        # else:    
+        #     self.body.append(CILReturn(body.return_value()))
+        self.body.append(CILReturn(body.return_value()))
         
 
     def __str__(self) -> str:
@@ -277,6 +280,10 @@ class InitMethod(CILMethod):
         body.add_expr(CILReturn('$s1'))
         TempNames.free_s(1)
         self.body = [e for e in body.expressions]          
+
+class StartMetodh(CILMethod):
+    def __init__(self):
+        pass
 
 class NameLabel():
     label_id:dict[str:int] = {}  # Contador para generar identificadores

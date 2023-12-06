@@ -1,6 +1,7 @@
 from compiler.codegen.cil2mips.utils import to_hex
 import compiler.AST.environment as env
 from compiler.codegen.cil2mips.templates import methods as templates
+from compiler.codegen.cil2mips.templates import StartMethod
 from compiler.codegen.cool2cil.codegener import CILExpr, CILArithmeticOp, CILMethod, CILAssign, CILProgram, CILVar, IntNode, CILCommet, USE_i, StoreLocal, CILCallLocal, ReserveSTACK, FreeStack, CILReturn, Label, CILLogicalOP, CILIf, GOTO, CallMethod, FromA0, CloseProgram, MipsLine, ReserveHeap, StoreInDir, LoadFromDir, Data, StoreString, CILUminus, CILNot, LoadString, NameLabel, CILogicalString
 
 class Registers():
@@ -54,7 +55,9 @@ class CIL2MIPS():
         self.generate_code(cil)
 
     def generate_code(self,cil:CILProgram):
-        self.mips.add_line('.globl main',False)
+        for line in StartMethod.code():
+            self.mips.add_line(line, False)
+
         for method in cil.methods:
             self.generate_from_method(method)
 
