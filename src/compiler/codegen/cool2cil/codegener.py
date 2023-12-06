@@ -17,6 +17,7 @@ def get_color():
 2. El registro $s2 se usa para guardar la instancia desde la cual se llamara un metodo, por ejemplo x.f(), se guarda la instancia de x en $s2, escribir en $s2 implica tener que guardar su valor escrito en pila xq si se hace un dispatch el valor de $s2 cambia
 3. El registro $s1 hay que controlarlo en pila, se usa para guardar las direcciones de las instancias nuevas creadas, si usted usa $s1 tendra que guardar su valor en pila, xq en caso de crear una instancia de clase el valor de $s1 sera modificado.
 4. El registro $s4 se usa en operaciones para guardar strings, no debera usarlo en otro ambito dado que cuando se guarda un string este registro sera manipulado
+5. El registro $s5 y $s6 se usan para comparacion de strings, si usted usa este registro debe tratarlo cuidadosamente xq una exprsion `=` los sobreescribe
 '''
 #esto es para usar operaciones con valores inmediatos, por ejemplo addi $s0, $1, 5 . Las constantes solo admiten 16 bytes. Valor default = False
 USE_i = True
@@ -136,6 +137,7 @@ class CILType():
         self.atrs = {env.self_type_name: 0}
         self.space = self.get_all_from(cclass)
         TYPES[self.name] = self
+        Data.add(f'{self.name}: .asciiz "{self.name}"')
         self.cclass = cclass
 
     def get_all_from(self, cclass:CoolClass):
@@ -252,10 +254,14 @@ class InitMethod(CILMethod):
         scope = {env.self_name: 0}
         body = Body()
         body.add_expr(ReserveHeap(space))#Reservar espacio para la instancia
-        body.add_expr(MipsLine(f'move {TempNames.get_s(1)}, $v0')) # Mover la dirección del heap al registro s1
+        body.add_expr(MipsLine(f'move {TempNames.get_s(1)}, $v0')) # Mover la dirección del heap al registro $s1
         # body.add_expr(StoreInDir('$a0',0,'$a0')) #Guarda el puntero de a0 en a0(0)
+        temp = TempNames.get_name()
+        body.add_expr(MipsLine(f'la $t{temp[5:]}, {cclass.type}')) # Carga la direccion del tipo en Data
+        body.add_expr(StoreInDir(temp,0)) #Guarda cada uno de los features en la memoria
+        TempNames.free([temp])
         
-        pos = 4 #Esto en 0 dice que el self no va a estar en los atributos de la clase, el self ahora se controla en la pila
+        pos = 4 #que comience en 4 dice que 
         
         for feature in cclass.childs():
             if isinstance(feature,Feature.CoolAtr):
@@ -392,6 +398,50 @@ class CILLogicalOP(CILExpr):
         return f"{self.left} {self.operation} {self.right}"
     def __repr__(self) -> str:
         return self.__str__()
+
+class CILogicalString(CILLogicalOP):
+    def __init__(self, left, right, operation, temp1 = '$s5', temp2 = '$s6'):
+        ''' Recibe el string izquierdo, el string derecho, y dos temporales para cargar valores, los temporales por defecto son $s5 y $s6, el resultado final lo guarda en uno de los dos registros que se le pasaron para comparar'''
+        super().__init__(left, right, operation)
+        self.temp1 = temp1 #regitro temporal para cargar bytes del string izquierdo
+        self.temp2 = temp2 #regitro temporal para cargar bytes del string derecho
+        self.dir1 = left #registro con el valor igual a la posicion en memoria del string 1
+        self.dir2 = right #registro con el valor igual a la posicion en memoria del string 2
+        self.label_loop = NameLabel('loop_compare').get() #cargar un label para el loop del copiado de string
+        self.label_end = NameLabel('end_compare').get() #etiqueta para salir del ciclo
+        self.label_not_equals = NameLabel('end_not_equals').get() #
+        self.dest = left #va a guardar el resultado de la comparacion en el mismo registro que se uso en la misma
+
+    def __str__(self):
+        return f'{self.dir1} == {self.dir2}'
+    
+    def to_mips(self):
+        temp1 = self.temp1
+        temp2 = self.temp2
+        dir1 = self.dir1
+        dir2 = self.dir2
+        if temp1[0] != '$': temp1 = f'$t{temp1[5:]}'
+        if temp2[0] != '$': temp2 = f'$t{temp2[5:]}'
+        if dir1[0] != '$': dir1 = f'$t{dir1[5:]}'
+        if dir2[0] != '$': dir2 = f'$t{dir2[5:]}'
+        dest = dir1
+
+        lines = [
+            f'{self.label_loop}:',
+            f'lb {temp1}, 0({dir1})',         # Cargar el caracter actual en temporal
+            f'lb {temp2}, 0({dir2})',         # Cargar el caracter actual en temporal
+            f'addiu {dir1}, {dir1}, 1',       # Avanzar a la siguiente posición en la memoria
+            f'addiu {dir2}, {dir2}, 1',       # Avanzar a la siguiente posición en la memoria
+            f'bne {temp1}, {temp2}, {self.label_not_equals}', #si son distintos ir a la etiqueta de `no son iguales`, en otro caso sigue.
+            f'bnez {temp1}, {self.label_loop}',    # Si llega a aqui entonces ambos temporales tienen igual vaor xq no aslto arriba, luego basta comparar uno con zero, si es distinto de cero, repite el ciclo, en caso de ser cero, se llego al caracter final con todos iguales, por lo tanto son iguales los string
+            f'li {dest}, 1', #Si llega a aqui xq el ciclo termino sin desigualdad entonces son iguales, se le asigna 1 al valor de salida
+            f'j {self.label_end}', #salta hasta el final sin asignar 0
+            f'{self.label_not_equals}:',
+            f'li {dest}, 0', #asigna 0 al resultado final
+            f'{self.label_end}:', #etiqueta final
+        ]    
+        return lines
+
 
 class CILIf(CILExpr):
     def __init__(self, condition, else_label, _while = False):
@@ -702,6 +752,19 @@ class StoreString(CILExpr):
         ]    
         return lines
 
+class LoadString(CILExpr):
+    '''Recibe un coolstring y un temporal, carga la direccion de coolstring de data en el temporal '''
+    def __init__(self, string:CoolString, temp) -> None:
+        super().__init__()
+        self.string = string
+        self.dest = temp
+
+    def __str__(self) -> str:
+        return f"LOADSTRING {self.string} in {self.dest}"
+    
+    def to_mips(self):
+        return [f'la $t{self.dest[5:]}, {self.string.data_name}'] # carga la direccion del string en el registro temporal
+
 class CILNot(CILExpr):
     def __init__(self, dest) -> None:
         super().__init__()
@@ -717,6 +780,7 @@ class CILNot(CILExpr):
             f'addi {dest} {dest} -1',
             f'subu {dest} $zero {dest}'
             ]    
+
 class CILUminus(CILExpr):
     def __init__(self, dest) -> None:
         super().__init__()
@@ -844,7 +908,6 @@ class DivExpression:
         body.add_expr(CILUminus(temp))
         TempNames.free([temp]) #
 
-
     def save_str(s: CoolString, body:Body, scope:dict = {}):
         Data.add(f'{s.data_name}: .asciiz "{s.value[1:-1]}"')
 
@@ -857,6 +920,14 @@ class DivExpression:
         body.add_expr(CILAssign(temp,'$v0')) #Guarda en un temporal la direccion de memoria donde se escribio el string
         #TODO considerar liberar el temporal desde aqui
 
+    def load_string(s: CoolString, body:Body, scope:dict = {}):
+        #esto carga el string en un resgitro pero no lo guarda en memoria
+        Data.add(f'{s.data_name}: .asciiz "{s.value[1:-1]}"') #se guarda el string en la seccion data
+        temp = TempNames.get_name() #se crea una variable temporal para guardar el string
+        body.add_expr(LoadString(s,temp)) # carga la direccion del string en el registro temporal
+        #TODO valorar liberar el temporal desde aqui
+        return temp #Devuelve el registro con el string, al devolverlo se tiene mas contro para despues hacer free
+        
     def assing(assign: Assign, body:Body, scope:dict = {}):
         if assign.left.id in scope:
             #estamos tratando con una variable local, luego hay que guardar su valor en la pila
@@ -924,8 +995,37 @@ class DivExpression:
         if logicar.op != '=':
             DivExpression.logicar_not_eq(logicar, body, scope)
         else:
-            pass
+            DivExpression.logicar_eq(logicar, body, scope)
+
+    def logicar_eq(logicar:Logicar, body:Body, scope:dict = {}):
+        if logicar.left.get_type() != env.string_type_name:
+            DivExpression(logicar.left,body,scope)
+            left_value = body.current_value()
+            DivExpression(logicar.right,body,scope)
+            rigth_value = body.current_value()
+            TempNames.free([left_value,rigth_value])
+            body.add_expr(CILAssign(TempNames.get_name(),CILLogicalOP(left_value,rigth_value,logicar.op)))
+        else:
+            #En caso de ser string hay que usar el comparador de strings
+            if isinstance(logicar.left, CoolString):
+                #en caso de ser un string constante solo hace falta cargarlo
+                left_value = DivExpression.load_string(logicar.left,body, scope)
+            else:    
+                #en caso contrario hay que dividir la expresion
+                DivExpression(logicar.left,body,scope)
+                left_value = body.current_value()
             
+            if isinstance(logicar.right, CoolString):
+                #en caso de ser un string constante solo hace falta cargarlo
+                rigth_value = DivExpression.load_string(logicar.right,body, scope)
+            else:    
+                #en caso contrario hay que dividir la expresion
+                DivExpression(logicar.left,body,scope)
+                rigth_value = body.current_value()
+
+            body.add_expr(CILogicalString(left_value,rigth_value,'='))
+            TempNames.free([left_value,rigth_value])
+
     def logicar_not_eq(logicar:Logicar, body:Body, scope:dict = {}):
         if (IsType.int(logicar.left)) and (IsType.int(logicar.right)):
             body.add_expr(CILAssign(TempNames.get_name(),logicar.left))

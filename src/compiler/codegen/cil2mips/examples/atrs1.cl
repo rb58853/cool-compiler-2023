@@ -13,7 +13,7 @@ class A{
     
     set_s(k:String):String{
         {
-            self.set_x(18);
+            self@A.set_x(18);
             s <- k;
         }
     };

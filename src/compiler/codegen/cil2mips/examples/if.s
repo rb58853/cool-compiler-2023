@@ -1,4 +1,6 @@
 .data
+IF_: .asciiz "IF_"
+Main: .asciiz "Main"
 .text
 .globl main
 main:
@@ -63,6 +65,8 @@ __init_IF___:
 	li $v0, 9
 	syscall
 	move $s1, $v0
+	la $t0, IF_
+	sw $t0, 0($s1)
 	move $a0, $s1
 	jr $ra
 __init_Main__:
@@ -70,6 +74,8 @@ __init_Main__:
 	li $v0, 9
 	syscall
 	move $s1, $v0
+	la $t0, Main
+	sw $t0, 0($s1)
 	move $a0, $s1
 	jr $ra
 __init_IO__:

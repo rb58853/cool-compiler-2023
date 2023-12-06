@@ -1,4 +1,7 @@
 .data
+A: .asciiz "A"
+B: .asciiz "B"
+Main: .asciiz "Main"
 str3: .asciiz "test_string "
 str4: .asciiz " another string"
 str1: .asciiz ""
@@ -197,6 +200,8 @@ __init_A__:
 	li $v0, 9
 	syscall
 	move $s1, $v0
+	la $t0, A
+	sw $t0, 0($s1)
 	li $a0, 1
 	li $v0, 9
 	syscall
@@ -232,6 +237,8 @@ __init_B__:
 	li $v0, 9
 	syscall
 	move $s1, $v0
+	la $t0, B
+	sw $t0, 0($s1)
 	move $a0, $s1
 	jr $ra
 __init_Main__:
@@ -239,6 +246,8 @@ __init_Main__:
 	li $v0, 9
 	syscall
 	move $s1, $v0
+	la $t0, Main
+	sw $t0, 0($s1)
 	move $a0, $s1
 	jr $ra
 __init_IO__:

@@ -1,3 +1,8 @@
+.data
+A: .asciiz "A"
+B: .asciiz "B"
+Main: .asciiz "Main"
+.text
 .globl main
 main:
 	#Region Let
@@ -51,8 +56,6 @@ main:
 	addi $sp, $sp, 4
 	addi $sp, $sp, 4
 	#End Region Let
-	li $v0, 1
-	syscall
 	li $v0, 10
 	syscall
 A_f:
@@ -162,6 +165,8 @@ __init_A__:
 	li $v0, 9
 	syscall
 	move $s1, $v0
+	la $t0, A
+	sw $t0, 0($s1)
 	li $t0 13
 	sw $t0, 4($s1)
 	li $t0 0
@@ -175,6 +180,8 @@ __init_B__:
 	li $v0, 9
 	syscall
 	move $s1, $v0
+	la $t0, B
+	sw $t0, 0($s1)
 	move $a0, $s1
 	jr $ra
 __init_Main__:
@@ -182,5 +189,25 @@ __init_Main__:
 	li $v0, 9
 	syscall
 	move $s1, $v0
+	la $t0, Main
+	sw $t0, 0($s1)
 	move $a0, $s1
+	jr $ra
+__init_IO__:
+	li $a0, 4
+	li $v0, 9
+	syscall
+	move $a0, $v0
+	jr $ra
+out_string:
+	lw $a0, 4($sp)
+	li $v0, 4
+	syscall
+	lw $a0, 0($sp)
+	jr $ra
+out_int:
+	lw $a0, 4($sp)
+	li $v0, 1
+	syscall
+	lw $a0, 0($sp)
 	jr $ra
