@@ -1,8 +1,8 @@
 from compiler.codegen.cil2mips.utils import to_hex
 import compiler.AST.environment as env
 from compiler.codegen.cil2mips.templates import methods as templates
-from compiler.codegen.cil2mips.templates import StartMethod
-from compiler.codegen.cool2cil.codegener import CILExpr, CILArithmeticOp, CILMethod, CILAssign, CILProgram, CILVar, IntNode, CILCommet, USE_i, StoreLocal, CILCallLocal, ReserveSTACK, FreeStack, CILReturn, Label, CILLogicalOP, CILIf, GOTO, CallMethod, FromA0, CloseProgram, MipsLine, ReserveHeap, StoreInDir, LoadFromDir, Data, StoreString, CILUminus, CILNot, LoadString, NameLabel, CILogicalString
+from compiler.codegen.cil2mips.templates import init_bases, StartMethod
+from compiler.codegen.cool2cil.codegener import CILExpr, CILArithmeticOp, CILMethod, CILAssign, CILProgram, CILVar, IntNode, CILCommet, USE_i, StoreLocal, CILCallLocal, ReserveSTACK, FreeStack, CILReturn, Label, CILLogicalOP, CILIf, GOTO, CallMethod, FromA0, CloseProgram, MipsLine, ReserveHeap, StoreInDir, LoadFromDir, Data, StoreString, CILUminus, CILNot, LoadString, NameLabel, CILogicalString, CallFromDir, TYPES
 
 class Registers():
     def __init__(self, cil_method:CILMethod) -> None:
@@ -43,9 +43,17 @@ class MIPS:
         for line in self.body:
             result+= f'{line}\n'        
 
-        for meth in templates:
-            for line in meth.code():
-                result+= f'{line}\n'
+        for type in TYPES.keys():
+            for meth in templates:
+                if meth.name not in TYPES[type].redefined_base_methods and meth.name in TYPES[type].methods:
+                    result +=f'{type}_'
+                    for line in meth.code():
+                        result+= f'{line}\n'
+        
+        for base in init_bases:
+            for line in base.code():
+                result+= f'{line}\n'                
+
         return result
     
 class CIL2MIPS():
@@ -144,7 +152,11 @@ class CIL2MIPS():
             lines = cil_expr.to_mips()
             for line in lines:
                 self.mips.add_line(line) 
-                       
+                        
+        if isinstance(cil_expr, CallFromDir):
+            lines = cil_expr.to_mips()
+            for line in lines:
+                self.mips.add_line(line)
 
     def close(self, close_, register):        
             self.mips.add_line('li $v0, 10')

@@ -887,6 +887,7 @@ class Dispatch(expr): #Dispatch
         self.name = 'dispatch'
         self.expr:expr = exp 
         self.type = type
+        self.statictype = type
         self.return_type = None
         self.function:CoolCallable = function
         self.check_type = False

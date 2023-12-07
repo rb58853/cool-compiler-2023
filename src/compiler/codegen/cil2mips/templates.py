@@ -1,16 +1,6 @@
-class IO:
-    '''Crea una instancia de la clase IO, la guarda en memoria y devuelve su putero'''
-    def code():
-        return [
-            '__init_IO__:', 
-            '\tli $a0, 4',
-            '\tli $v0, 9', 
-            '\tsyscall', #reserva memoria para una instancia de la clase, solo tendra el self_type
-            '\tmove $a0, $v0', #guarda en a la direccion del puntero para devolverlo
-            '\tjr $ra'
-        ]
 class OutString:
     '''Imprime en consola el primer argumento (distinto de self), devuelve una instancia de si mismo'''
+    name = 'out_string'
     def code():
         return [
         'out_string:',     #etiqueta nombre del metodo
@@ -23,6 +13,7 @@ class OutString:
         
 class OutInt:
     '''Imprime en consola el primer argumento (distinto de self), devuelve una instancia de si mismo'''
+    name = 'out_int'
     def code():
         return [
         'out_int:',     #etiqueta nombre del metodo
@@ -32,9 +23,25 @@ class OutInt:
         '\tlw $a0, 0($sp)',  #retorna el valor en la posision 0 de la pila, corresponde a self
         '\tjr $ra'           #regresa a la posicion desde dond fue llamado        
         ]
+
+class InInt:
+    name = 'in_int'
+    def code():
+        return [
+        'in_int:',     
+        '\tjr $ra'              
+        ]
+class InString:
+    name = 'in_string'
+    def code():
+        return [
+        'in_string:',     
+        '\tjr $ra'              
+        ]
     
 class TypeName:
     '''Imprime texto con el nombre del tipo de una instancia dada'''
+    name = 'type_name'
     def code():
         return [
         'type_name:',
@@ -46,8 +53,38 @@ class TypeName:
     def __repr__() -> str:
         return 'TypeName'
     
-methods = [IO,OutString,TypeName, OutInt]
+class Abort:
+    name = 'abort'
+    def code():
+        return [
+        'abort:',
+        '\tjr $ra'
+        ]
+    
+class Copy:
+    name = 'copy'
+    def code():
+        return [
+        'copy:',
+        '\tjr $ra'
+        ]        
+    
+methods = [OutString,OutInt,InInt, InString, TypeName,Copy, Abort]
 
+class IO:
+    '''Crea una instancia de la clase IO, la guarda en memoria y devuelve su putero'''
+    def code():
+        return [
+            '__init_IO__:', 
+            '\tli $a0, 8',
+            '\tli $v0, 9',
+            '\tsyscall', #reserva memoria para una instancia de la clase, solo tendra el self_type
+            '\tla $t0, StaticIO',
+            '\tsw $t0, 4($v0) ',
+            '\tmove $a0, $v0', #guarda en a la direccion del puntero para devolverlo
+            '\tjr $ra'
+        ]
+init_bases = [IO]
 
 class StartMethod:
     '''Primer metodo del programar en mips, llama una instancia del metodo main'''

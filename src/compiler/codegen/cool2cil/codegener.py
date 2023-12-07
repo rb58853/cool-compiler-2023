@@ -22,7 +22,9 @@ def get_color():
 #esto es para usar operaciones con valores inmediatos, por ejemplo addi $s0, $1, 5 . Las constantes solo admiten 16 bytes. Valor default = False
 USE_i = True
 
-ATRS_INIT_INDEX = 4
+ATRS_INIT_INDEX = 8
+METHODS_INIT_INDEX = 4
+WORD = 4
 
 TYPE_LENGTH= {'Int':4, 'Bool':4, 'String':4,}
 TYPES = {}
@@ -82,7 +84,8 @@ class NameTempExpression:
 class Data:
     body = []
     def add(data):
-        Data.body.append(data)
+        if data not in Data.body:
+            Data.body.append(data)
     
     def free():
         Data.body = []
@@ -96,7 +99,22 @@ class CILProgram():
         self.set_types(program)
         self.generate_methods(program)
         self.generate_init_types()
-        
+        self.full_data()
+    
+    def full_data(self):
+        Data.add(f'StaticVoid: .asciiz "Void"\n')
+
+        for key, value in zip(TYPES.keys(), TYPES.values()):
+            temp = f'Static{key}: .word Static{value.inherit}, '
+            i = 0
+            for meth in value.methods:
+                if i>0:
+                    temp += f'{key}_{meth}, '
+                i+=1
+
+            Data.add(f'{temp[:-2]}\n')
+
+
     def generate_init_types(self):
         for type in self.types.values():
             self.methods.append(type.init_meth())
@@ -132,21 +150,26 @@ class CILProgram():
             for feature in cclass.features:
                 if isinstance(feature,Feature.CoolDef):
                     #La proxima linea es para los metodos redefinidos no se repitan
-                    if cclass == cclass_origin or not cclass_origin.context.is_defined_func(feature.ID.id):
+                    if cclass == cclass_origin or not cclass_origin.context.functions.__contains__(feature.ID.id):
                         self.methods.append(CILMethod(feature, self,cclass_origin.type))
     
 class CILType():
     def __init__(self, cclass:CoolClass):
         self.name = cclass.type
-        self.methods:list[CILId] = []  # Lista de CILMethod
+        self.methods:dict[str:int] = {}  # Esto es cada metodo con su posicion en memoria donde se asigne
+        self.methods['inherit'] = 0
+        self.inherit = cclass.inherit
         self.attributes:list[CILVar] = []  # Lista de CILAttribute
         self.atrs = {env.self_type_name: 0}
         self.redefined_base_methods = []
+        self.method_pos = METHODS_INIT_INDEX
+        self.atr_pos = ATRS_INIT_INDEX #En la posicion 0 va SELF_TYPE, en la posicion 4 va la parte estatica
         self.space = self.get_all_from(cclass)
         TYPES[self.name] = self
         Data.add(f'{self.name}: .asciiz "{self.name}"')
         self.add_methods_redefined_base(cclass, cclass)
         self.cclass = cclass
+        
 
     def add_methods_redefined_base(self, cclass: CoolClass, cclass_origin:CoolClass):
         '''Agrega los metodos base redefinidos para el caso que sea necsario llamar la redefinicion o no'''
@@ -167,7 +190,7 @@ class CILType():
         return self.set_space()
 
     def set_space(self):
-        result = 4 #En la posicion 0 se pondra el SELF_TYPE
+        result = ATRS_INIT_INDEX #En la posicion 0 se pondra el SELF_TYPE, en la posicion 4 la parte estatica
         for atr in self.attributes:
             result += atr.space
         
@@ -178,14 +201,16 @@ class CILType():
         if cclass.type != env.object_type_name:
             self.process_class(cclass.inherit_class)
 
-        pos = 4 #en la posicion 0 hay que poner el SELF_TYPE, esto se consigue usando la direccion de en .data TODO: implementar
         for feature in cclass.features:
             if isinstance(feature,Feature.CoolAtr):
-                self.atrs[feature.ID.id] = pos
+                self.atrs[feature.ID.id] = self.atr_pos
                 self.attributes.append(CILVar(f'{self.name}_{feature.ID.id}', value=feature.value,space=4))
-                pos += 4
+                self.atr_pos += WORD
             else:    
-                self.methods.append(CILId(f'{self.name}_{feature.ID.id}')) #Esto apunta a una dirccion de memoria y su tamanno siempre es 4 bytes
+                #Si el id ya esta en los metodos entonces se agrego en una clase desde la cual hereda, no hay que agregarlo entoces, es una redefinicion
+                if feature.ID.id not in self.methods: 
+                    self.methods[feature.ID.id] = self.method_pos
+                    self.method_pos += WORD
     
     def init_meth(self):
         result = InitMethod(self.cclass, self.space)
@@ -199,6 +224,27 @@ class CILType():
             result+= f'\tmethod {met};\n'
         return result +'}\n'
 
+class BaseType(CILType):
+    def __init__(self, Type):
+        self.redefined_base_methods = []
+        self.methods = {'inherit':0,'type_name':4, 'abort':8, 'copy':12}
+        self.name = Type
+        self.inherit = 'Object' 
+        self.full()
+    
+    def full(self):
+        if self.name == 'IO':
+            self.methods['out_string'] = 16
+            self.methods['out_int'] = 20
+            self.methods['in_string'] = 24
+            self.methods['in_int'] = 28
+
+        if self.name == 'Object':
+            self.inherit = 'Void'
+        
+TYPES ['IO'] = BaseType('IO')
+TYPES ['Object'] = BaseType('Object')
+        
 class CILMethod():
     def __init__(self, cool_meth: Feature.CoolDef, cil_program: CILProgram, Type):
         super().__init__()
@@ -211,18 +257,13 @@ class CILMethod():
         self.set_body(cool_meth)
     
     def set_vars(self, cool_meth:Feature.CoolDef, cil_program:CILProgram):
-        # for atr in cil_program.types[cool_meth.father.type].attributes:
-        #     self.locals.append(atr)
-        #     self.context[atr.id.id] = pos
-        #     pos+=4
-        
         #el scope del metodo posee los parametros, los parametros estaran en orden en la pila. El contexto define la posicion del parametro en la pila     
-        #queda por parte del invocador guardar los valores que se le pasan por parametros y la instancia en la pila. Esto se hace en el callable
+        #queda por parte del invocador guardar los valores que se le pasan por parametros y la instancia en la pila. Esto se hace en el callable, en la posicion 0 va self, en el resto van los parametros
         self.context[env.self_name] = 0
         pos= 0
         for param in cool_meth.params.childs():
             self.params.append(param)
-            pos+=4
+            pos+=WORD
             self.context[param.id] = pos
         
     def set_body(self, cool_meth:Feature.CoolDef):    
@@ -231,16 +272,7 @@ class CILMethod():
         DivExpression(cool_meth.scope, body, self.context)
         self.body = [e for e in body.expressions if e.use_in_code_line]
         
-        # if self.name != 'Main_main':
-            # self.body.insert(0,Label(self.name))
-        # else:
-        #     self.body.insert(0,Label('main'))
         self.body.insert(0,Label(self.name))
-        
-        # if self.name == 'Main_main':
-        #     self.body.append(CloseProgram(body.return_value()))
-        # else:    
-        #     self.body.append(CILReturn(body.return_value()))
         self.body.append(CILReturn(body.return_value()))
         
 
@@ -283,10 +315,15 @@ class InitMethod(CILMethod):
         # body.add_expr(StoreInDir('$a0',0,'$a0')) #Guarda el puntero de a0 en a0(0)
         temp = TempNames.get_name()
         body.add_expr(MipsLine(f'la $t{temp[5:]}, {cclass.type}')) # Carga la direccion del tipo en Data
-        body.add_expr(StoreInDir(temp,0)) #Guarda cada uno de los features en la memoria
+        body.add_expr(StoreInDir(temp,0)) #Guarda el tipo en la posicion 0
         TempNames.free([temp])
         
-        pos = 4 #que comience en 4 dice que 
+        temp = TempNames.get_name()
+        body.add_expr(MipsLine(f'la $t{temp[5:]}, Static{cclass.type}')) # Carga la direccion de la parte estatica en data
+        body.add_expr(StoreInDir(temp,4)) #Guarda la parte estatica en 4
+        TempNames.free([temp])
+        
+        pos = ATRS_INIT_INDEX #Aqui comienzan a guardarse los atributos 
         
         for feature in cclass.childs():
             if isinstance(feature,Feature.CoolAtr):
@@ -294,7 +331,7 @@ class InitMethod(CILMethod):
                 temp = body.current_value()
                 body.add_expr(StoreInDir(body.current_value(),pos)) #Guarda cada uno de los features en la memoria
                 TempNames.free([temp])
-                pos+=4
+                pos+=WORD
         
         body.expressions.insert(0,Label(f'__init_{cclass.type}__'))
         # body.add_expr(CILId('$s1'))
@@ -302,10 +339,6 @@ class InitMethod(CILMethod):
         body.add_expr(CILReturn('$s1'))
         TempNames.free_s(1)
         self.body = [e for e in body.expressions]          
-
-class StartMetodh(CILMethod):
-    def __init__(self):
-        pass
 
 class NameLabel():
     label_id:dict[str:int] = {}  # Contador para generar identificadores
@@ -654,7 +687,27 @@ class CallMethod(CILExpr):
         self.label = label
     
     def __str__(self) -> str:
-        return f'GOTO self.{self.label}'    
+        return f'GOTO self.{self.label}'
+       
+class CallFromDir(CILExpr):
+    def __init__(self,dir, pos) -> None:
+        '''Toma en dir el valor de la instancia, carga en dir el la posicion 4 (que es la parte estatica), luego de esa posicion carga la posicion `pos`, la cual es la posicion del metodo deseado en la parte estatica'''
+        super().__init__()
+        self.dir = dir
+        self.pos = pos
+    
+    def __str__(self) -> str:
+        return f'GOTO {self.pos}({self.dir})'     
+    
+    def to_mips(self):
+        if self.dir[0] != '$':
+            self.dir = f'$t{self.dir[5:]}'
+        
+        return[
+            f'lw {self.dir}, 4({self.dir})',  # Carga en dir el valor de su posicion en 4 (es la parte direccion a la parte estatica)
+            f'lw {self.dir}, {self.pos}({self.dir})',  # Carga en dir el valor de la posicion pos, que debe ser la direccion del metodo que se quiere llamar
+            f'jal {self.dir}'
+            ]     
 
 class ToA0(CILExpr):
     def __init__(self, value) -> None:
@@ -1153,7 +1206,7 @@ class DivExpression:
         length = 0
         pos = 0
         for vvar in let.let:
-            length += 4
+            length += WORD
 
         for var in scope.keys():
             #esto inicializa cada variable del scope anterior en su posicion anterior, se hace esto para usar el scope recursivo
@@ -1172,26 +1225,22 @@ class DivExpression:
                     #si entra aqui quiere decir que no ha salido de la definicion de la variable, y esta tratando de definir otra con el mimo nombre, por ejemplo en el caso de let x<- let x<-<expr que usa `x`> y la variable `x`` existe en el scope anterior, entonces si va a usar `x` dentro de lainicializacion del segundo let al cual le llega el scope del primer let, a ese let le llegara un scope con `scope[x] = (p1,p2)`, donde p2 es la posicion de la primera de las x, la que en ese momento esta defnida, luego esa sera la x que nos interesa llamar en la expresion donde se inicializara la `x` del segundo let. Por tanto para buscar el valor de `x` en la pila se buscara la posicion 1, scope[1]. Cuando se termina de defnir una variable la x que esta en la pila se sobreescribe por la nueva.(Ultima linea del For).
                     let_scope[vvar.id] = [0, scope[vvar.id][1]]
 
-            move = 4 
-            # if vvar.get_type() == env.string_type_name:
-            #     move = 32
-            
-            pos += move
-            body.add_expr(ReserveSTACK(move))
+            pos += WORD
+            body.add_expr(ReserveSTACK(WORD))
             
             for var in scope.keys():
                 #Esto mueve los datos de contextos superiores de forma dinamica, en caso que la variable del scope anterior tenga igual nombre que una nueva no se hace este movimiento
                 if vvar.id != var:
-                    let_scope[var] += move
+                    let_scope[var] += WORD
                 else:
                     #si en el scope anterior hay una variable con el mismo nombre, esta tendra dos posiciones, se mueve la posicion 1
-                    let_scope[var][1] += move
+                    let_scope[var][1] += WORD
                     pass
             
             for var in let_scope.keys():
                 #las variales que no son de scope anterior hay que moverlas tambien, ya que se crea espacio uno a uno
                 if var not in scope and var != vvar.id:
-                    let_scope[var] += move
+                    let_scope[var] += WORD
                 
             
             # if vvar.get_type() == env.int_type_name:
@@ -1300,16 +1349,15 @@ class DivExpression:
             body.add_expr(CILAssign(instance,CILCallLocal('self',scope[env.self_name])))
             #Se guardo en instance la direccion de la instancia que hay en la pila en la posicion indicada por self
             #El tipo de self es el tipo de la clase que contiene a self
-            type = dispatch.expr.get_class_context().type
+            type = dispatch.statictype
+            if dispatch.statictype is None:
+                type = dispatch.expr.get_class_context().type
             DivExpression.callable(callable,body,scope,instance, type)
             TempNames.free([instance])
             return
         
-        if dispatch.type is not None:
-            type = dispatch.type
-        else:
-            type = dispatch.expr.get_type()    
-
+        type = dispatch.statictype#si este type no es none entonces hay que llamar por el typo estatico
+        dinamyc_type = dispatch.expr.get_type()
         expr_type = dispatch.expr.get_type()
         
         if  expr_type != env.int_type_name \
@@ -1321,7 +1369,7 @@ class DivExpression:
             pass 
         instance = body.current_value()#esto va a ser una instancia de clase, dado que es lo que sale de la parte izquierda del dispatch
         
-        DivExpression.callable(callable,body,scope,instance, type)#se le pasa esa intancia como self   
+        DivExpression.callable(callable,body,scope,instance, type, dinamyc_type)#se le pasa esa intancia como self   
     
     def call_meth(meth:CoolCallable, body:Body, scope:dict = {}):
         #esto es lo que se llama cuando se llama al metodo sin nada deante en formato dispatch
@@ -1334,26 +1382,29 @@ class DivExpression:
         DivExpression.callable(meth,body,scope,instance, type)
         TempNames.free([instance])
 
-    def callable(callable:CoolCallable, body:Body, scope:dict = {},_self= None, cclass_type = None):
-        if cclass_type is None:
-            context:Context = callable.get_class_context()
-            type = context.type
-        else:    
-            #Si es llamado desde un dispatch hay que pasarle el tipo
-            type = cclass_type
+    def callable(callable:CoolCallable, body:Body, scope:dict = {},instance= None, cclass_type = None, dinamyc_type= None):
+        #Instance es la instancia desde la cual se va a llamar al metodo, a esta instancia hay que pedirle la direccion de su metodo.
+        type = cclass_type
+        # if cclass_type is None:
+        #     context:Context = callable.get_class_context()
+        #     type = context.type
+        # else:    
+        #     #Si es llamado desde un dispatch hay que pasarle el tipo
+        #     type = cclass_type
 
         arguments = callable.params
         id = callable.id.id
 
         #Si la funcion no es base y no esta redefinida, ya que se pueden redefinir metodos de object
-        if id in env.base_methods and id not in TYPES[cclass_type].redefined_base_methods:
-            label_method = f'{id}' 
-        else:
-            label_method = f'{type}_{id}'
+        # if id in env.base_methods:
+        #     label_method = f'{id}'
+        #     type ='' #con esto se logra que type deje de ser none y salte al metodo base ya que es el mismo en caso que no haya una redefinicion 
+        # else:
+        label_method = f'{type}_{id}'
 
-        if _self is not None: #En caso que se le pase una instancia se guarda en $s2
-            body.add_expr(CILAssign('$s2',_self))
-            TempNames.free([_self])
+        if instance is not None: #En caso que se le pase una instancia se guarda en $s2
+            body.add_expr(CILAssign('$s2',instance))
+            TempNames.free([instance])
         
         #Es responsabilidad del invocador coservar los registros temporales, por tanto hay que guardarlos en la pila antes de invocar, asi que se guardan los temporales en la pila. Por ejemplo si tengo algo como temp_0 +call(), tengo que guardar temp_0 en la pila.
         used_temps = TempNames.used_temps()
@@ -1399,7 +1450,7 @@ class DivExpression:
                 scope[key] += space
 
         #TODO hay que asignarle el self
-        if _self is not None:
+        if instance is not None:
             body.add_expr(StoreLocal(name='self',pos= 0,value='$s2'))
 
         pos = 4
@@ -1408,10 +1459,17 @@ class DivExpression:
             temp = body.current_value()
             body.add_expr(StoreLocal(name=body.current_value(),pos= pos,value=body.current_value()))
             TempNames.free([temp])#libera el temporal que se uso para almacenar en los argumentos
-            pos +=4
+            pos += WORD
         
-        # llama a ua funcion
-        body.add_expr(CallMethod(label_method))
+        if type is not None:
+            # llama a la funcion si el type no es none con salto normal xq es estatico
+            body.add_expr(CallMethod(label_method))
+        else:
+            #el tipo no esta definido por tanto hay que pedir la direccion del metodo de la instancia
+            pos = TYPES[dinamyc_type].methods[callable.id.id] #esta es la posicion del metodo en la parte estatica
+            dir = TempNames.get_name()
+            body.add_expr(CILAssign(dir,'$s2'))#la instancia esta en el registro $s2, guarda su valor en dir
+            body.add_expr(CallFromDir(dir,pos))    
 
         #Aqui hay que recuperar el valor de los registros temporales. Para ello hay que liberar la pila de los argumentos con los que se llamo la funcion, luego de ello recueperar la posicion en pila de los temporales restando el desplaziento que se libero
         body.add_expr(FreeStack(space))
