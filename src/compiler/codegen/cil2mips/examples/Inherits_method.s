@@ -1,7 +1,9 @@
 .data
 A: .asciiz "A"
+B: .asciiz "B"
 Main: .asciiz "Main"
 str1: .asciiz "Clase A\n"
+str2: .asciiz "Clase B\n"
 StaticVoid: .asciiz "Void"
 
 StaticIO: .word StaticObject, IO_type_name, IO_abort, IO_copy, IO_out_string, IO_out_int, IO_in_string, IO_in_int
@@ -9,6 +11,8 @@ StaticIO: .word StaticObject, IO_type_name, IO_abort, IO_copy, IO_out_string, IO
 StaticObject: .word StaticVoid, Object_type_name, Object_abort, Object_copy
 
 StaticA: .word StaticObject, A_type_name, A_abort, A_copy, A_print
+
+StaticB: .word StaticA, B_type_name, B_abort, B_copy, B_print
 
 StaticMain: .word StaticIO, Main_type_name, Main_abort, Main_copy, Main_out_string, Main_out_int, Main_in_string, Main_in_int, Main_main
 
@@ -36,19 +40,45 @@ A_print:
 	move $t0, $v0
 	move $a0, $t0
 	jr $ra
+B_print:
+	li $a0, 10
+	li $v0, 9
+	syscall
+	move $s4, $v0
+	la $s3, str2
+	copy_1:
+	lb $t0, 0($s3)
+	sb $t0, 0($s4)
+	addiu $s3, $s3, 1
+	addiu $s4, $s4, 1
+	bnez $t0, copy_1
+	move $t0, $v0
+	move $a0, $t0
+	jr $ra
 Main_main:
-	lw $t0, 0($sp)
-	move $s2, $t0
+	#Region Let
 	addi $sp, $sp, -4
-	sw $ra, 0($sp)
-	addi $sp, $sp, -8
-	sw $s2, 0($sp)
 	addi $sp, $sp, -4
 	sw $ra, 0($sp)
 	jal __init_A__
 	lw $ra, 0($sp)
 	addi $sp, $sp, 4
 	move $t0, $a0
+	sw $t0, 0($sp)
+	addi $sp, $sp, -4
+	sw $ra, 0($sp)
+	jal __init_B__
+	lw $ra, 0($sp)
+	addi $sp, $sp, 4
+	move $t0, $a0
+	sw $t0, 0($sp)
+	lw $t0, 4($sp)
+	move $s2, $t0
+	addi $sp, $sp, -4
+	sw $ra, 0($sp)
+	addi $sp, $sp, -8
+	sw $s2, 0($sp)
+	lw $t0, 12($sp)
 	move $s2, $t0
 	addi $sp, $sp, -4
 	sw $ra, 0($sp)
@@ -66,6 +96,8 @@ Main_main:
 	addi $sp, $sp, 8
 	lw $ra, 0($sp)
 	addi $sp, $sp, 4
+	addi $sp, $sp, 4
+	#End Region Let
 	jr $ra
 __init_A__:
 	li $a0, 12
@@ -78,6 +110,17 @@ __init_A__:
 	sw $t0, 4($s1)
 	li $t0 0
 	sw $t0, 8($s1)
+	move $a0, $s1
+	jr $ra
+__init_B__:
+	li $a0, 12
+	li $v0, 9
+	syscall
+	move $s1, $v0
+	la $t0, B
+	sw $t0, 0($s1)
+	la $t0, StaticB
+	sw $t0, 4($s1)
 	move $a0, $s1
 	jr $ra
 __init_Main__:
@@ -133,6 +176,15 @@ A_type_name:
 A_copy:
 	jr $ra
 A_abort:
+	jr $ra
+B_type_name:
+	lw $t0, 0($sp)
+	lw $t1, 0($t0)
+	move $a0, $t1
+	jr $ra
+B_copy:
+	jr $ra
+B_abort:
 	jr $ra
 Main_out_string:
 	lw $a0, 4($sp)
