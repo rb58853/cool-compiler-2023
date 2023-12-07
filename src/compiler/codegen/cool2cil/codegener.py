@@ -325,13 +325,20 @@ class InitMethod(CILMethod):
         
         pos = ATRS_INIT_INDEX #Aqui comienzan a guardarse los atributos 
         
-        for feature in cclass.childs():
-            if isinstance(feature,Feature.CoolAtr):
-                DivExpression(feature, body, scope)
-                temp = body.current_value()
-                body.add_expr(StoreInDir(body.current_value(),pos)) #Guarda cada uno de los features en la memoria
-                TempNames.free([temp])
-                pos+=WORD
+        cclasses = []
+        temp_class = cclass
+        while temp_class != None:
+            cclasses.insert(0,temp_class)
+            temp_class = temp_class.inherit_class
+            
+        for cclass in cclasses:
+            for feature in cclass.childs():
+                if isinstance(feature,Feature.CoolAtr):
+                    DivExpression(feature, body, scope)
+                    temp = body.current_value()
+                    body.add_expr(StoreInDir(body.current_value(),pos)) #Guarda cada uno de los features en la memoria
+                    TempNames.free([temp])
+                    pos+=WORD
         
         body.expressions.insert(0,Label(f'__init_{cclass.type}__'))
         # body.add_expr(CILId('$s1'))
@@ -503,7 +510,6 @@ class CILogicalString(CILLogicalOP):
             f'{self.label_end}:', #etiqueta final
         ]    
         return lines
-
 
 class CILIf(CILExpr):
     def __init__(self, condition, else_label, _while = False):
