@@ -1,4 +1,5 @@
 .data
+abort: .asciiz "error abort from "
 A: .asciiz "A"
 B: .asciiz "B"
 C: .asciiz "C"
@@ -8,17 +9,17 @@ str2: .asciiz "Clase B\n"
 str3: .asciiz "Clase C\n"
 StaticVoid: .asciiz "Void"
 
-StaticIO: .word StaticObject, IO_type_name, IO_abort, IO_copy, IO_out_string, IO_out_int, IO_in_string, IO_in_int
+StaticIO: .word StaticObject, 8, IO_type_name, IO_abort, IO_copy, IO_out_string, IO_out_int, IO_in_string, IO_in_int
 
-StaticObject: .word StaticVoid, Object_type_name, Object_abort, Object_copy
+StaticObject: .word StaticVoid, 8, Object_type_name, Object_abort, Object_copy
 
-StaticA: .word StaticObject, A_type_name, A_abort, A_copy, A_print
+StaticA: .word StaticObject, 16, A_type_name, A_abort, A_copy, A_print
 
-StaticB: .word StaticA, B_type_name, B_abort, B_copy, B_print
+StaticB: .word StaticA, 16, B_type_name, B_abort, B_copy, B_print
 
-StaticC: .word StaticB, C_type_name, C_abort, C_copy, C_print, C_set_x
+StaticC: .word StaticB, 16, C_type_name, C_abort, C_copy, C_print, C_set_x
 
-StaticMain: .word StaticIO, Main_type_name, Main_abort, Main_copy, Main_out_string, Main_out_int, Main_in_string, Main_in_int, Main_main
+StaticMain: .word StaticIO, 8, Main_type_name, Main_abort, Main_copy, Main_out_string, Main_out_int, Main_in_string, Main_in_int, Main_main
 
 .text
 .globl main
@@ -45,6 +46,16 @@ A_print:
 	move $a0, $t0
 	jr $ra
 B_print:
+	lw $t0, 0($sp)
+	move $s2, $t0
+	addi $sp, $sp, -4
+	sw $ra, 0($sp)
+	addi $sp, $sp, -4
+	sw $s2, 0($sp)
+	jal B_abort
+	addi $sp, $sp, 4
+	lw $ra, 0($sp)
+	addi $sp, $sp, 4
 	li $a0, 10
 	li $v0, 9
 	syscall
@@ -121,7 +132,31 @@ Main_main:
 	sw $s2, 0($sp)
 	move $t0, $s2
 	lw $t0, 4($t0)
-	lw $t0, 16($t0)
+	lw $t0, 20($t0)
+	jal $t0
+	addi $sp, $sp, 4
+	lw $ra, 0($sp)
+	addi $sp, $sp, 4
+	sw $a0, 4($sp)
+	jal Main_out_string
+	addi $sp, $sp, 8
+	lw $ra, 0($sp)
+	addi $sp, $sp, 4
+	lw $t0, 8($sp)
+	move $s2, $t0
+	addi $sp, $sp, -4
+	sw $ra, 0($sp)
+	addi $sp, $sp, -8
+	sw $s2, 0($sp)
+	lw $t0, 16($sp)
+	move $s2, $t0
+	addi $sp, $sp, -4
+	sw $ra, 0($sp)
+	addi $sp, $sp, -4
+	sw $s2, 0($sp)
+	move $t0, $s2
+	lw $t0, 4($t0)
+	lw $t0, 8($t0)
 	jal $t0
 	addi $sp, $sp, 4
 	lw $ra, 0($sp)
@@ -156,6 +191,16 @@ Main_main:
 	move $s2, $t0
 	addi $sp, $sp, -4
 	sw $ra, 0($sp)
+	addi $sp, $sp, -4
+	sw $s2, 0($sp)
+	jal Main_abort
+	addi $sp, $sp, 4
+	lw $ra, 0($sp)
+	addi $sp, $sp, 4
+	lw $t0, 8($sp)
+	move $s2, $t0
+	addi $sp, $sp, -4
+	sw $ra, 0($sp)
 	addi $sp, $sp, -8
 	sw $s2, 0($sp)
 	lw $t0, 12($sp)
@@ -168,7 +213,7 @@ Main_main:
 	sw $t0, 4($sp)
 	move $t0, $s2
 	lw $t0, 4($t0)
-	lw $t0, 20($t0)
+	lw $t0, 24($t0)
 	jal $t0
 	addi $sp, $sp, 8
 	lw $ra, 0($sp)
@@ -261,7 +306,15 @@ IO_type_name:
 IO_copy:
 	jr $ra
 IO_abort:
-	jr $ra
+	la $a0, abort
+	li $v0, 4
+	syscall
+	lw $t0, 0($sp)
+	lw $a0, 0($t0)
+	li $v0, 4
+	syscall
+	li $v0, 10
+	syscall
 Object_type_name:
 	lw $t0, 0($sp)
 	lw $t1, 0($t0)
@@ -270,7 +323,15 @@ Object_type_name:
 Object_copy:
 	jr $ra
 Object_abort:
-	jr $ra
+	la $a0, abort
+	li $v0, 4
+	syscall
+	lw $t0, 0($sp)
+	lw $a0, 0($t0)
+	li $v0, 4
+	syscall
+	li $v0, 10
+	syscall
 A_type_name:
 	lw $t0, 0($sp)
 	lw $t1, 0($t0)
@@ -279,7 +340,15 @@ A_type_name:
 A_copy:
 	jr $ra
 A_abort:
-	jr $ra
+	la $a0, abort
+	li $v0, 4
+	syscall
+	lw $t0, 0($sp)
+	lw $a0, 0($t0)
+	li $v0, 4
+	syscall
+	li $v0, 10
+	syscall
 B_type_name:
 	lw $t0, 0($sp)
 	lw $t1, 0($t0)
@@ -288,7 +357,15 @@ B_type_name:
 B_copy:
 	jr $ra
 B_abort:
-	jr $ra
+	la $a0, abort
+	li $v0, 4
+	syscall
+	lw $t0, 0($sp)
+	lw $a0, 0($t0)
+	li $v0, 4
+	syscall
+	li $v0, 10
+	syscall
 C_type_name:
 	lw $t0, 0($sp)
 	lw $t1, 0($t0)
@@ -297,7 +374,15 @@ C_type_name:
 C_copy:
 	jr $ra
 C_abort:
-	jr $ra
+	la $a0, abort
+	li $v0, 4
+	syscall
+	lw $t0, 0($sp)
+	lw $a0, 0($t0)
+	li $v0, 4
+	syscall
+	li $v0, 10
+	syscall
 Main_out_string:
 	lw $a0, 4($sp)
 	li $v0, 4
@@ -322,7 +407,15 @@ Main_type_name:
 Main_copy:
 	jr $ra
 Main_abort:
-	jr $ra
+	la $a0, abort
+	li $v0, 4
+	syscall
+	lw $t0, 0($sp)
+	lw $a0, 0($t0)
+	li $v0, 4
+	syscall
+	li $v0, 10
+	syscall
 __init_IO__:
 	li $a0, 8
 	li $v0, 9

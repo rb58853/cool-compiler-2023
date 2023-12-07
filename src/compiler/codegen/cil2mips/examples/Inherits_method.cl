@@ -8,7 +8,11 @@ class A {
 class B inherits A{
   --B debe tener tambien un metodo llamado print y un atributo x con valor 0
   print():String{
-    "Clase B\n"
+    {
+      abort();
+      "Clase B\n";
+    }
+
   };
 };
 
@@ -29,7 +33,9 @@ class Main inherits IO{
         let a:A<- new A, c:C<-new C in {
         a <- New C;
         out_string(a.print());
+        out_string(a.type_name());
         out_string(c@B.print());
+        abort();
         out_int(c.set_x(11));
         }
         -- {

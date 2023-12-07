@@ -15,8 +15,3 @@ def to_hex(x):
     for i in range (8-len(hex_num)):
         result +='0'
     return result+hex_num
-
-def string_to_hex(s):
-    s = s.encode("utf-8")
-    hexadecimal = s.hex()
-    return hexadecimal

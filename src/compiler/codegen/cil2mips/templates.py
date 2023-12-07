@@ -4,7 +4,7 @@ class OutString:
     def code():
         return [
         'out_string:',     #etiqueta nombre del metodo
-        f'\tlw $a0, 4($sp)', #mueve a $a0 el valor que se encuentra en la posicion 4 de la pila
+        '\tlw $a0, 4($sp)', #mueve a $a0 el valor que se encuentra en la posicion 4 de la pila
 	    '\tli $v0, 4',      #El 4 es para imprimir string
 	    '\tsyscall',        #llamanda al sistema
         '\tlw $a0, 0($sp)',  #retorna el valor en la posision 0 de la pila, corresponde a self
@@ -58,7 +58,15 @@ class Abort:
     def code():
         return [
         'abort:',
-        '\tjr $ra'
+        '\tla $a0, abort',  #texto del abort en la seccion de data
+        '\tli $v0, 4',      #El 4 es para imprimir string
+	    '\tsyscall',        #llamanda al sistema
+        '\tlw $t0, 0($sp)', #en la posicion 0 de la pila esta self
+        '\tlw $a0, 0($t0)', #en la posicion 0 de self esta la direcion de SELF_TYPE que contiene un string
+        '\tli $v0, 4',      #El 4 es para imprimir string
+	    '\tsyscall',        #llamanda al sistema
+        '\tli $v0, 10',     #Codigo para cerrar el programa
+        '\tsyscall'
         ]
     
 class Copy:

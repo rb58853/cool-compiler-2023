@@ -1,17 +1,6 @@
 import compiler.AST.environment as env
 from compiler.AST.ast import CoolProgram, CoolClass, Feature, expr, IntNode, CoolBool, CoolString, CoolLet, ArithmeticOP,Logicar,Assign, CoolID, Context, Dispatch, CoolCase, CoolWhile, CoolIf, CoolBlockScope, CoolCallable, CoolNew, CoolNot, CoolUminus
 
-import colorama
-from colorama import Fore
-colorama.init()
-colors = [Fore.RED, Fore.GREEN, Fore.YELLOW, Fore.BLUE, Fore.MAGENTA, Fore.CYAN]
-count_colors = 0
-def get_color():
-    global colors
-    global count_colors
-    count_colors= (1+count_colors)%6
-    return colors[count_colors]
-
 '''
 1. El registro $s3 se usa para cargar direcciones de data, si va a usar este registro en otro lugar usted debe guardar su valor en la pila para poder recuperarlo.
 2. El registro $s2 se usa para guardar la instancia desde la cual se llamara un metodo, por ejemplo x.f(), se guarda la instancia de x en $s2, escribir en $s2 implica tener que guardar su valor escrito en pila xq si se hace un dispatch el valor de $s2 cambia
@@ -22,14 +11,13 @@ def get_color():
 #esto es para usar operaciones con valores inmediatos, por ejemplo addi $s0, $1, 5 . Las constantes solo admiten 16 bytes. Valor default = False
 USE_i = True
 
-ATRS_INIT_INDEX = 8
-METHODS_INIT_INDEX = 4
+ATRS_INIT_INDEX = 8 #en la posicion cero va TYPE_SELF, en la posicion 4 va parte estatica
+METHODS_INIT_INDEX = 8 #en la posicion 0 va la clase desde la que hereda, en la posicion 4 va el espacio de atributos
 WORD = 4
 
 TYPE_LENGTH= {'Int':4, 'Bool':4, 'String':4,}
 TYPES = {}
 #Lo siguiente sirve para saber si se redefinio algun metodo basico como copy(), en caso se hacerse entonces se usa el mismo
-
 
 class TempNames:
     used_id = [False, False,False, False, False, False, False, False, False]
@@ -88,7 +76,7 @@ class Data:
             Data.body.append(data)
     
     def free():
-        Data.body = []
+        Data.body = ['abort: .asciiz "error abort from "']
 
 class CILProgram():
     def __init__(self, program:CoolProgram):
@@ -105,10 +93,10 @@ class CILProgram():
         Data.add(f'StaticVoid: .asciiz "Void"\n')
 
         for key, value in zip(TYPES.keys(), TYPES.values()):
-            temp = f'Static{key}: .word Static{value.inherit}, '
+            temp = f'Static{key}: .word Static{value.inherit}, {value.space}, '
             i = 0
             for meth in value.methods:
-                if i>0:
+                if i>1:
                     temp += f'{key}_{meth}, '
                 i+=1
 
@@ -156,8 +144,7 @@ class CILProgram():
 class CILType():
     def __init__(self, cclass:CoolClass):
         self.name = cclass.type
-        self.methods:dict[str:int] = {}  # Esto es cada metodo con su posicion en memoria donde se asigne
-        self.methods['inherit'] = 0
+        self.methods:dict[str:int] = {'inherit':0,'space':4 }  # Esto es cada metodo con su posicion en memoria donde se asigne
         self.inherit = cclass.inherit
         self.attributes:list[CILVar] = []  # Lista de CILAttribute
         self.atrs = {env.self_type_name: 0}
@@ -227,17 +214,18 @@ class CILType():
 class BaseType(CILType):
     def __init__(self, Type):
         self.redefined_base_methods = []
-        self.methods = {'inherit':0,'type_name':4, 'abort':8, 'copy':12}
+        self.methods = {'inherit':0,'space':4, 'type_name':8, 'abort':12, 'copy':16}
         self.name = Type
         self.inherit = 'Object' 
+        self.space = 8 #4 para el self_type y 4 para la parte estitica
         self.full()
     
     def full(self):
         if self.name == 'IO':
-            self.methods['out_string'] = 16
-            self.methods['out_int'] = 20
-            self.methods['in_string'] = 24
-            self.methods['in_int'] = 28
+            self.methods['out_string'] = 20
+            self.methods['out_int'] = 24
+            self.methods['in_string'] = 28
+            self.methods['in_int'] = 32
 
         if self.name == 'Object':
             self.inherit = 'Void'
@@ -330,7 +318,7 @@ class InitMethod(CILMethod):
         while temp_class != None:
             cclasses.insert(0,temp_class)
             temp_class = temp_class.inherit_class
-            
+
         for cclass in cclasses:
             for feature in cclass.childs():
                 if isinstance(feature,Feature.CoolAtr):
@@ -384,7 +372,6 @@ class Label(CILExpr):
         self.use_as_current = False
 
     def __str__(self) -> str:
-        # return f"{Fore.MAGENTA}{self.name}{Fore.WHITE}"
         return f"{self.name}"
     def __repr__(self) -> str:
         return self.__str__()
@@ -520,7 +507,6 @@ class CILIf(CILExpr):
         # self.then_label = then_label
 
     def __str__(self):
-        # return f'if not {self.condition} GOTO {Fore.MAGENTA}{self.else_label}{Fore.WHITE}'
         return f'if not {self.condition} GOTO {self.else_label}'
     def __repr__(self) -> str:
         return self.__str__()
@@ -618,7 +604,6 @@ class CILCommet(CILExpr):
 
     def __str__(self) -> str:
         result = self.text
-        # result = Fore.GREEN + self.text + Fore.WHITE
         return result
     def __repr__(self) -> str:
         return str(self)
@@ -630,7 +615,6 @@ class GOTO(CILExpr):
         self.return_void = True
     def __str__(self) -> str:
         return f"GOTO {self.label}"    
-        # return f"GOTO {Fore.YELLOW}{self.label}{Fore.WHITE}"    
     def __repr__(self) -> str:
         return self.__str__()
 
@@ -738,7 +722,6 @@ class CloseProgram(CILExpr):
 
     def __str__(self) -> str:
         return f'CLOSE'
-        # return f'{Fore.RED}CLOSE{Fore.WHITE}'
 
 class MipsLine(CILExpr):
     def __init__(self, line) -> None:
@@ -1204,8 +1187,6 @@ class DivExpression:
             body.add_expr(CILAssign(TempNames.get_name(),CILCallLocal(vvar,scope[vvar.id])))
     
     def let(let:CoolLet, body:Body, scope:dict = {}):
-        color = get_color()
-        # body.add_expr(CILCommet(f'{color}#Region Let'))
         body.add_expr(CILCommet(f'#Region Let'))
         
         let_scope:dict= {}
@@ -1269,7 +1250,6 @@ class DivExpression:
         DivExpression(let.in_scope, body, scope = let_scope)
         #Liberar espacio de la pila una vez se sale del let, el scope anterior al del let debe salir igual que antes por recursividad
         body.add_expr(FreeStack(length))        
-        # body.add_expr(CILCommet(f'{color}#End Region Let'))
         body.add_expr(CILCommet(f'#End Region Let'))
 
     def block(block:CoolBlockScope, body:Body, scope:dict = {}):
@@ -1294,8 +1274,6 @@ class DivExpression:
         pass
 
     def _while(_while:CoolWhile, body:Body, context:dict = {}):
-        color = get_color()
-        # loop = NameLabel(f'{color}loop').get()
         loop = NameLabel(f'loop').get()
         condition = _while.condition
         scope = _while.loop_scope

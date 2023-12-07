@@ -848,10 +848,10 @@ class CoolID(CoolVar):
     # def context_str(self):
     #     return self.name
     def is_atr(self, id):
-        if self.id  == env.self_type_name:
-            return True #SELF_TYPE es tratado como atributo en la clase object
-        else:
-            return super().is_atr(id)
+        # if self.id  == env.self_type_name:
+        #     return True #SELF_TYPE es tratado como atributo en la clase object
+        # else:
+        return super().is_atr(id)
         
     def get_type(self):
         if self.type == None:
@@ -874,11 +874,11 @@ class CoolID(CoolVar):
         return []
     
     def validate(self):
-        if self.id  == env.self_type_name:
-            return True #Este es un id especial que no se encuentra en el contexto
-        else:
-            self.get_contex_from_father()
-            return self.context.validate_id(self)
+        # if self.id  == env.self_type_name:
+        #     return True #Este es un id especial que no se encuentra en el contexto
+        # else:
+        self.get_contex_from_father()
+        return self.context.validate_id(self)
 
 class Dispatch(expr): #Dispatch
     def __init__(self, exp, type, function: CoolCallable, token_pos):

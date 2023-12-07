@@ -46,7 +46,10 @@ class SyntacticError(CoolError):
         CoolError.ERRORS.append(self)
 
     def __str__(self):
-        return f'({self.lineno}, {self.pos}) - SyntacticError: ERROR at or near "{self.value}"'
+        if self.value == 'ESAC' or self.value == 'ASSIGN' or self.value == 'NEW' or self.value == 'DARROW' or self.value == 'CLASS' or self.value == 'EOF' or self.value == "IN": 
+            return f'({self.lineno}, {self.pos}) - SyntacticError: ERROR at or near {self.value}'
+        else:
+            return f'({self.lineno}, {self.pos}) - SyntacticError: ERROR at or near "{self.value}"'
     
 class SemanticError(CoolError):
     def __init__(self, by = semantic, pos=0, lineno=0, value=None) -> None:
