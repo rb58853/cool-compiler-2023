@@ -1,10 +1,11 @@
 .data
-abort: .asciiz "error abort from "
+abort: .asciiz "Abort called from class "
 substring_error: .asciiz "error substring is out of range."
 String: .asciiz "String"
 Bool: .asciiz "Bool"
 Int: .asciiz "Int"
 Void: .asciiz "Void"
+string_space: .space 1024
 A2I: .asciiz "A2I"
 Main: .asciiz "Main"
 str1: .asciiz "0"
@@ -36,7 +37,7 @@ str26: .asciiz ""
 str27: .asciiz "678987"
 str28: .asciiz " == "
 str29: .asciiz "\n"
-StaticVoid: .word Void
+StaticVoid: .word Void, 4
 StaticIO: .word StaticObject, 8, IO_type_name, IO_abort, IO_copy, IO_out_string, IO_out_int, IO_in_string, IO_in_int
 
 StaticObject: .word StaticVoid, 8, Object_type_name, Object_abort, Object_copy
@@ -70,7 +71,7 @@ A2I_c2i:
 	li $t1, 0
 	end_compare_0:
 	beq $t1, $zero, else_0
-	li $t0 0
+	li $t0, 0
 	j endif_0
 else_0:
 	lw $t1, 4($sp)
@@ -88,7 +89,7 @@ else_0:
 	li $t1, 0
 	end_compare_1:
 	beq $t1, $zero, else_1
-	li $t0 1
+	li $t0, 1
 	j endif_1
 else_1:
 	lw $t1, 4($sp)
@@ -106,7 +107,7 @@ else_1:
 	li $t1, 0
 	end_compare_2:
 	beq $t1, $zero, else_2
-	li $t0 2
+	li $t0, 2
 	j endif_2
 else_2:
 	lw $t1, 4($sp)
@@ -124,7 +125,7 @@ else_2:
 	li $t1, 0
 	end_compare_3:
 	beq $t1, $zero, else_3
-	li $t0 3
+	li $t0, 3
 	j endif_3
 else_3:
 	lw $t1, 4($sp)
@@ -142,7 +143,7 @@ else_3:
 	li $t1, 0
 	end_compare_4:
 	beq $t1, $zero, else_4
-	li $t0 4
+	li $t0, 4
 	j endif_4
 else_4:
 	lw $t1, 4($sp)
@@ -160,7 +161,7 @@ else_4:
 	li $t1, 0
 	end_compare_5:
 	beq $t1, $zero, else_5
-	li $t0 5
+	li $t0, 5
 	j endif_5
 else_5:
 	lw $t1, 4($sp)
@@ -178,7 +179,7 @@ else_5:
 	li $t1, 0
 	end_compare_6:
 	beq $t1, $zero, else_6
-	li $t0 6
+	li $t0, 6
 	j endif_6
 else_6:
 	lw $t1, 4($sp)
@@ -196,7 +197,7 @@ else_6:
 	li $t1, 0
 	end_compare_7:
 	beq $t1, $zero, else_7
-	li $t0 7
+	li $t0, 7
 	j endif_7
 else_7:
 	lw $t1, 4($sp)
@@ -214,7 +215,7 @@ else_7:
 	li $t1, 0
 	end_compare_8:
 	beq $t1, $zero, else_8
-	li $t0 8
+	li $t0, 8
 	j endif_8
 else_8:
 	lw $t1, 4($sp)
@@ -232,7 +233,7 @@ else_8:
 	li $t1, 0
 	end_compare_9:
 	beq $t1, $zero, else_9
-	li $t0 9
+	li $t0, 9
 	j endif_9
 else_9:
 	lw $t0, 0($sp)
@@ -245,7 +246,7 @@ else_9:
 	addi $sp, $sp, 4
 	lw $ra, 0($sp)
 	addi $sp, $sp, 4
-	li $t0 0
+	li $t0, 0
 endif_9:
 endif_8:
 endif_7:
@@ -260,7 +261,7 @@ endif_0:
 	jr $ra
 A2I_i2c:
 	lw $t1, 4($sp)
-	li $t0 0
+	li $t0, 0
 	beq $t1, $t0, compare_0
 	addi $t0, $zero, 0
 	j end_compare_12
@@ -283,7 +284,7 @@ A2I_i2c:
 	j endif_10
 else_10:
 	lw $t1, 4($sp)
-	li $t0 1
+	li $t0, 1
 	beq $t1, $t0, compare_1
 	addi $t0, $zero, 0
 	j end_compare_13
@@ -306,7 +307,7 @@ else_10:
 	j endif_11
 else_11:
 	lw $t1, 4($sp)
-	li $t0 2
+	li $t0, 2
 	beq $t1, $t0, compare_2
 	addi $t0, $zero, 0
 	j end_compare_14
@@ -329,7 +330,7 @@ else_11:
 	j endif_12
 else_12:
 	lw $t1, 4($sp)
-	li $t0 3
+	li $t0, 3
 	beq $t1, $t0, compare_3
 	addi $t0, $zero, 0
 	j end_compare_15
@@ -352,7 +353,7 @@ else_12:
 	j endif_13
 else_13:
 	lw $t1, 4($sp)
-	li $t0 4
+	li $t0, 4
 	beq $t1, $t0, compare_4
 	addi $t0, $zero, 0
 	j end_compare_16
@@ -375,7 +376,7 @@ else_13:
 	j endif_14
 else_14:
 	lw $t1, 4($sp)
-	li $t0 5
+	li $t0, 5
 	beq $t1, $t0, compare_5
 	addi $t0, $zero, 0
 	j end_compare_17
@@ -398,7 +399,7 @@ else_14:
 	j endif_15
 else_15:
 	lw $t1, 4($sp)
-	li $t0 6
+	li $t0, 6
 	beq $t1, $t0, compare_6
 	addi $t0, $zero, 0
 	j end_compare_18
@@ -421,7 +422,7 @@ else_15:
 	j endif_16
 else_16:
 	lw $t1, 4($sp)
-	li $t0 7
+	li $t0, 7
 	beq $t1, $t0, compare_7
 	addi $t0, $zero, 0
 	j end_compare_19
@@ -444,7 +445,7 @@ else_16:
 	j endif_17
 else_17:
 	lw $t1, 4($sp)
-	li $t0 8
+	li $t0, 8
 	beq $t1, $t0, compare_8
 	addi $t0, $zero, 0
 	j end_compare_20
@@ -467,7 +468,7 @@ else_17:
 	j endif_18
 else_18:
 	lw $t1, 4($sp)
-	li $t0 9
+	li $t0, 9
 	beq $t1, $t0, compare_9
 	addi $t0, $zero, 0
 	j end_compare_21
@@ -534,7 +535,7 @@ A2I_a2i:
 	addi $sp, $sp, 4
 	lw $ra, 0($sp)
 	addi $sp, $sp, 4
-	li $t0 0
+	li $t0, 0
 	beq $a0, $t0, compare_10
 	addi $t0, $zero, 0
 	j end_compare_22
@@ -542,7 +543,7 @@ A2I_a2i:
 	addi $t0, $zero, 1
 	end_compare_22:
 	beq $t0, $zero, else_20
-	li $t0 0
+	li $t0, 0
 	j endif_20
 else_20:
 	lw $t1, 4($sp)
@@ -551,9 +552,9 @@ else_20:
 	sw $ra, 0($sp)
 	addi $sp, $sp, -12
 	sw $s2, 0($sp)
-	li $t0 0
+	li $t0, 0
 	sw $t0, 4($sp)
-	li $t0 1
+	li $t0, 1
 	sw $t0, 8($sp)
 	jal substr
 	addi $sp, $sp, 12
@@ -581,9 +582,9 @@ else_21:
 	sw $ra, 0($sp)
 	addi $sp, $sp, -12
 	sw $s2, 0($sp)
-	li $t0 0
+	li $t0, 0
 	sw $t0, 4($sp)
-	li $t0 1
+	li $t0, 1
 	sw $t0, 8($sp)
 	jal substr
 	addi $sp, $sp, 12
@@ -615,7 +616,7 @@ else_21:
 	sw $ra, 0($sp)
 	addi $sp, $sp, -12
 	sw $s2, 0($sp)
-	li $t0 1
+	li $t0, 1
 	sw $t0, 4($sp)
 	lw $t1, 32($sp)
 	move $s2, $t1
@@ -659,7 +660,7 @@ endif_20:
 A2I_a2i_aux:
 	#Region Let
 	addi $sp, $sp, -4
-	li $t0 0
+	li $t0, 0
 	sw $t0, 0($sp)
 	#Region Let
 	addi $sp, $sp, -4
@@ -676,7 +677,7 @@ A2I_a2i_aux:
 	sw $a0, 0($sp)
 	#Region Let
 	addi $sp, $sp, -4
-	li $t0 0
+	li $t0, 0
 	sw $t0, 0($sp)
 loop_0:
 	lw $t1, 0($sp)
@@ -684,7 +685,7 @@ loop_0:
 	slt $t0, $t1, $t2
 	beq $t0, $zero, end_while_0
 	lw $t1, 8($sp)
-	li $t0 10
+	li $t0, 10
 	mul $t2, $t1, $t0
 	lw $t0, 12($sp)
 	move $s2, $t0
@@ -702,7 +703,7 @@ loop_0:
 	sw $s2, 0($sp)
 	lw $t1, 36($sp)
 	sw $t1, 4($sp)
-	li $t0 1
+	li $t0, 1
 	sw $t0, 8($sp)
 	jal substr
 	addi $sp, $sp, 12
@@ -734,7 +735,7 @@ end_while_0:
 	jr $ra
 A2I_i2a:
 	lw $t1, 4($sp)
-	li $t0 0
+	li $t0, 0
 	beq $t1, $t0, compare_11
 	addi $t0, $zero, 0
 	j end_compare_23
@@ -756,7 +757,7 @@ A2I_i2a:
 	move $t0, $v0
 	j endif_23
 else_23:
-	li $t0 0
+	li $t0, 0
 	lw $t2, 4($sp)
 	slt $t1, $t0, $t2
 	beq $t1, $zero, else_24
@@ -814,7 +815,7 @@ endif_23:
 	jr $ra
 A2I_i2a_aux:
 	lw $t1, 4($sp)
-	li $t0 0
+	li $t0, 0
 	beq $t1, $t0, compare_12
 	addi $t0, $zero, 0
 	j end_compare_24
@@ -839,7 +840,7 @@ else_25:
 	#Region Let
 	addi $sp, $sp, -4
 	lw $t1, 8($sp)
-	li $t0 10
+	li $t0, 10
 	div $t1, $t0
 	mflo $t2
 	sw $t2, 0($sp)
@@ -868,7 +869,7 @@ else_25:
 	sw $s2, 0($sp)
 	lw $t1, 32($sp)
 	lw $t2, 24($sp)
-	li $t0 10
+	li $t0, 10
 	mul $t3, $t2, $t0
 	sub $t0, $t1, $t3
 	sw $t0, 4($sp)
@@ -932,7 +933,7 @@ Main_main:
 	sw $ra, 0($sp)
 	addi $sp, $sp, -8
 	sw $s2, 0($sp)
-	li $t0 678987
+	li $t0, 678987
 	sw $t0, 4($sp)
 	move $t0, $s2
 	lw $t0, 4($t0)
@@ -1024,6 +1025,9 @@ __init_A2I__:
 	sw $t0, 0($s1)
 	la $t0, StaticA2I
 	sw $t0, 4($s1)
+	addi $sp, $sp, -4
+	sw $s1, 0($sp)
+	addi $sp, $sp, 4
 	move $a0, $s1
 	jr $ra
 __init_Main__:
@@ -1035,6 +1039,9 @@ __init_Main__:
 	sw $t0, 0($s1)
 	la $t0, StaticMain
 	sw $t0, 4($s1)
+	addi $sp, $sp, -4
+	sw $s1, 0($sp)
+	addi $sp, $sp, 4
 	move $a0, $s1
 	jr $ra
 __init_IO__:
@@ -1058,8 +1065,15 @@ IO_out_int:
 	lw $a0, 0($sp)
 	jr $ra
 IO_in_int:
+	li $v0, 5
+	syscall
+	move $a0, $v0
 	jr $ra
 IO_in_string:
+li $v0, 8
+la $a0, string_space
+li $a1, 1024
+syscall
 	jr $ra
 IO_type_name:
 	lw $t0, 0($sp)
@@ -1125,8 +1139,15 @@ Main_out_int:
 	lw $a0, 0($sp)
 	jr $ra
 Main_in_int:
+	li $v0, 5
+	syscall
+	move $a0, $v0
 	jr $ra
 Main_in_string:
+li $v0, 8
+la $a0, string_space
+li $a1, 1024
+syscall
 	jr $ra
 Main_type_name:
 	lw $t0, 0($sp)
@@ -1154,6 +1175,33 @@ Int_type_name:
 Bool_type_name:
 	la $a0, Bool
 	jr $ra
+String_abort:
+	la $a0, abort
+	li $v0, 4
+	syscall
+	la $a0, String
+	li $v0, 4
+	syscall
+	li $v0, 10
+	syscall
+Int_abort:
+	la $a0, abort
+	li $v0, 4
+	syscall
+	la $a0, Int
+	li $v0, 4
+	syscall
+	li $v0, 10
+	syscall
+Bool_abort:
+	la $a0, abort
+	li $v0, 4
+	syscall
+	la $a0, Bool
+	li $v0, 4
+	syscall
+	li $v0, 10
+	syscall
 length:
 	lw $t0, 0($sp)
 	addi $t1, $zero, -1

@@ -84,6 +84,8 @@ class Data:
                     'Bool: .asciiz "Bool"',
                     'Int: .asciiz "Int"',
                     'Void: .asciiz "Void"',
+                    'string_space: .space 1024',
+                    'newline: .asciiz "\\n"'
                     ]
 
 class CILProgram():
@@ -98,7 +100,7 @@ class CILProgram():
         self.full_data()
     
     def full_data(self):
-        Data.add('StaticVoid: .word Void')
+        Data.add('StaticVoid: .word Void, 4')
         for key, value in zip(TYPES.keys(), TYPES.values()):
             temp = f'Static{key}: .word Static{value.inherit}, {value.space}, '
             i = 0
@@ -967,7 +969,7 @@ class IsType:
     def cool_atr(e): return isinstance(e,Feature.CoolAtr)
     def bool(e): return isinstance(e,CoolBool)
     def _not(e): return isinstance(e,CoolNot)
-    def uminus(e): return isinstance(e,CILUminus)
+    def uminus(e): return isinstance(e,CoolUminus)
     def isvoid(e): return isinstance(e,CoolIsVoid)
     # def out_string(e): return isinstance(e.callable) and 
 
@@ -1150,7 +1152,7 @@ class DivExpression:
                 rigth_value = DivExpression.load_string(logicar.right,body, scope)
             else:    
                 #en caso contrario hay que dividir la expresion
-                DivExpression(logicar.left,body,scope)
+                DivExpression(logicar.right,body,scope)
                 rigth_value = body.current_value()
 
             body.add_expr(CILogicalString(left_value,rigth_value,'='))
