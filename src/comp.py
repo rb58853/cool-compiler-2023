@@ -8,8 +8,7 @@ INPUT_FILE = f'{sys.argv[1]}'
 OUTPUT_FILE = f'{sys.argv[2]}'
 # INPUT_FILE = os.path.join(os.getcwd(), "tests/lexer/iis1.cl")
 
-# Cambio realizado aquí: especificando la codificación utf-8
-with open(INPUT_FILE, "r", encoding="utf-8") as f:
+with open(INPUT_FILE, "r") as f:
     code = f.read()
 
 lexer = CoolLexer()
@@ -17,14 +16,14 @@ tokens = []
 for t in lexer.tokenize(code):
     tokens.append(t)
 
-if len(lexer.errors) > 0:
+if len(lexer.errors)>0:
     for e in lexer.errors:
         print(e)
         exit(1)
 else:
-    parser = CoolParser(lexer=lexer)
+    parser = CoolParser(lexer = lexer)
     program = parser.parse(tokens)
-    if len(parser.errors) > 0:
+    if len(parser.errors)>0:
         for e in parser.errors:
             print(e)
         exit(1)
@@ -35,4 +34,4 @@ else:
                 print(e)
             exit(1)
         else:
-            exit(0)
+            exit(0)    

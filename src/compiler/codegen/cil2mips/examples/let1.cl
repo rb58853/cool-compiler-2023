@@ -1,9 +1,10 @@
 class Main{
     main(): Int { 
-        let x:Int <- 2, y:Int<- x + test(test(test(10,10),x),2) in{
-            y;
+        -- let x:Int <- 2 + let x:Int<-1 in x+ let y:Int <- x+2 in y + x, b:Int<-0 in {
+        let x:Int <- 4, y:Int<-x+ test(5,2) in {
+            x <- test(y,x);
+            x;
         }
-        
     };
 
     test(a:Int, b:Int):Int {

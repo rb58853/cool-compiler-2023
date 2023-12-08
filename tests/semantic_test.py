@@ -2,8 +2,7 @@ import pytest
 import os
 from utils import compare_errors, first_error_only_line
 
-tests_dir = os.path.join(os.path.dirname(__file__), 'semantic')
-
+tests_dir = __file__.rpartition('/')[0] + '/semantic/'
 tests = [(file) for file in os.listdir(tests_dir) if file.endswith('.cl')]
 
 @pytest.mark.semantic

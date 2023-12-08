@@ -4,8 +4,8 @@ import compiler.parser.main as parser
 import compiler.codegen.cool2cil.main as cil
 import compiler.codegen.cil2mips.main as mips
 
-file = 'callable'
-mips.mips_code(cil.cil_program(file), file+'1')
+file = 'list'
+mips.mips_code(cil.cil_program(file), file)
 # lexer.test_all_cases()
 # parser.test_all_cases()
 # semantic.test_all_cases()

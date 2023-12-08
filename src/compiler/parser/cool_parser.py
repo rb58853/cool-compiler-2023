@@ -32,6 +32,20 @@ class CoolParser(Parser):
             return token.index - self.lexer.init_index_line[token.lineno] + 1
     
     def error(self, token):
+        try:
+            if token.value == '<-':
+                token.value = 'ASSIGN'
+            if token.value == 'esac':
+                token.value = 'ESAC'
+            if token.value == 'class':
+                token.value = 'CLASS'
+            if token.value == '=>':
+                token.value = 'DARROW'
+            if token.value == 'new':
+                token.value = 'NEW'
+            if token.value == 'in':
+                token.value = 'IN'
+        except: pass
         if token:
             synt_error = SyntacticError(
             by= self,

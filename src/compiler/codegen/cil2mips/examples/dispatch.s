@@ -1,55 +1,84 @@
 .globl main
 main:
-#Region Let
-addi $sp, $sp, -4
-li $t0 4
-sw $t0, 0($sp)
-addi $sp, $sp, -4
-lw $t0, 4($sp)
-addi $sp, $sp, -12
-li $t1 5
-sw $t1, 4($sp)
-li $t2 2
-sw $t2, 8($sp)
-jal Main_test
-addi $sp, $sp, 12
-add $t3, $t0, $a0
-sw $t3, 0($sp)
-addi $sp, $sp, -12
-lw $t0, 12($sp)
-sw $t0, 4($sp)
-lw $t3, 16($sp)
-sw $t3, 8($sp)
-jal Main_test
-addi $sp, $sp, 12
-sw $a0, 4($sp)
-lw $t4, 4($sp)
-addi $sp, $sp, 8
-#End Region Let
-move $a0, $t4
-li $v0, 1
-syscall
-li $v0, 10
-syscall
-Main_test:
-#Region Let
-addi $sp, $sp, -4
-li $t5 10
-sw $t5, 0($sp)
-lw $t5, 12($sp)
-lw $t6, 8($sp)
-add $t7, $t5, $t6
-lw $t5, 0($sp)
-add $t6, $t7, $t5
-sw $t6, 8($sp)
-addi $sp, $sp, 4
-#End Region Let
-move $a0, $t6
-jr $ra
-move $a0, $v0
-li $t0 0
-li $t0 1
-li $t0 2
-__init_Main:__:
-move $a0, $a0
-jr $ra
+	addi $sp, $sp, -4
+	sw $ra, 0($sp)
+	jal __init_B__
+	lw $ra, 0($sp)
+	addi $sp, $sp, 4
+	move $t0, $a0
+	move $s2, $t0
+	addi $sp, $sp, -4
+	sw $ra, 0($sp)
+	addi $sp, $sp, -4
+	sw $s2, 0($sp)
+	jal B_a
+	addi $sp, $sp, 4
+	lw $ra, 0($sp)
+	addi $sp, $sp, 4
+	move $s2, $a0
+	addi $sp, $sp, -4
+	sw $ra, 0($sp)
+	addi $sp, $sp, -8
+	sw $s2, 0($sp)
+	li $t0 2
+	sw $t0, 4($sp)
+	jal A_f
+	addi $sp, $sp, 8
+	lw $ra, 0($sp)
+	addi $sp, $sp, 4
+	li $v0, 1
+	syscall
+	li $v0, 10
+	syscall
+A_f:
+	lw $t0, 0($sp)
+	lw $t1, 4($t0)
+	lw $t0, 4($sp)
+	add $t2, $t1, $t0
+	move $a0, $t2
+	jr $ra
+B_b:
+	addi $sp, $sp, -4
+	sw $ra, 0($sp)
+	jal __init_B__
+	lw $ra, 0($sp)
+	addi $sp, $sp, 4
+	move $t0, $a0
+	move $a0, $t0
+	jr $ra
+B_a:
+	addi $sp, $sp, -4
+	sw $ra, 0($sp)
+	jal __init_A__
+	lw $ra, 0($sp)
+	addi $sp, $sp, 4
+	move $t0, $a0
+	move $a0, $t0
+	jr $ra
+__init_A__:
+	li $a0, 16
+	li $v0, 9
+	syscall
+	move $s1, $v0
+	li $t0 13
+	sw $t0, 4($s1)
+	li $t0 0
+	sw $t0, 8($s1)
+	li $t0 0
+	sw $t0, 12($s1)
+	move $a0, $s1
+	jr $ra
+__init_B__:
+	li $a0, 4
+	li $v0, 9
+	syscall
+	move $s1, $v0
+	move $a0, $s1
+	jr $ra
+__init_Main__:
+	li $a0, 4
+	li $v0, 9
+	syscall
+	move $s1, $v0
+	move $a0, $s1
+	jr $ra

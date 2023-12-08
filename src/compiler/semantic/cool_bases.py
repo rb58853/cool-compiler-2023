@@ -26,8 +26,12 @@ class ObjectClass:
     
     class Features:
         def type_name():
-            #type_name() : String
-            return Feature.CoolDef('type_name',StringClass.type, [], CoolString(), token_pos=(0,0))
+            return Feature.CoolDef('type_name',
+                                    StringClass.type, 
+                                    [], 
+                                    CoolString(),
+                                    token_pos=(0,0)
+                                    )
         def abort():
             # abort() : Object
             return Feature.CoolDef('abort',env.object_type_name, [], CoolNew(env.object_type_name), token_pos=(0,0))

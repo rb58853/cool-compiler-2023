@@ -1,40 +1,23 @@
 from compiler.codegen.cil2mips.utils import to_hex
 import compiler.AST.environment as env
-from compiler.codegen.cool2cil.codegener import CILExpr, CILArithmeticOp, CILMethod, CILAssign, CILProgram, CILVar, IntNode, CILCommet, USE_i, StoreLocal, CILCallLocal, ReserveSTACK, FreeStack, CILReturn, Label, CILLogicalOP, CILIf, GOTO, CallMethod, FromA0, CloseProgram, MipsLine
-
-def write_in_heap(bytes_dir, space, free_register_0 = '$s0',free_register_1 = '$s1', temp_register = '$t9'):
-    lines= [
-        f'li $a0, {space}', # Número de bytes para asignar
-        f'li $v0, 9', # Código de la llamada al sistema para sbrk
-        f'syscall', # Asignar memoria en el heap
-        f'move {free_register_0}, $v0', # Guardar la dirección de la memoria asignada en un registro, desde aqui se empieza a escribir en el heap 
-        f'la {free_register_0}, {bytes_dir}', # Cargar en un registro la dirección de los bytes que se quieren escribir 
-        'copy:',
-        f'lb {temp_register},({free_register_0})', # Leer un byte desde la dirección de origen
-        f'sb {temp_register},({free_register_1})', # Almacenarlo en la dirección de destino
-        f'addiu {free_register_0},{free_register_0},1',
-        f'addiu {free_register_1},{free_register_1},1',
-        f'bne {temp_register},$zero,copy' # Repetir hasta que el terminador NUL haya sido copiado'
-    ]
-    return lines
-
-def load_from_heap(heap_dir, register, space):
-    lines = [
-
-    ]
-    return lines
+from compiler.codegen.cil2mips.templates import methods as templates
+from compiler.codegen.cil2mips.templates import init_bases, StartMethod
+from compiler.codegen.cool2cil.codegener import CILExpr, CILArithmeticOp, CILMethod, CILAssign, CILProgram, CILVar, IntNode, CILCommet, USE_i, StoreLocal, CILCallLocal, ReserveSTACK, FreeStack, CILReturn, Label, CILLogicalOP, CILIf, GOTO, CallMethod, FromA0, CloseProgram, MipsLine, ReserveHeap, StoreInDir, LoadFromDir, Data, StoreString, CILUminus, CILNot, LoadString, NameLabel, CILogicalString, CallFromDir, TYPES, CILVoid
 
 class Registers():
     def __init__(self, cil_method:CILMethod) -> None:
-        self.base_id = {'t':0}
-        for line in cil_method.body:
-            if isinstance(line, CILAssign) and not isinstance(line.dest, CILVar):
-                self.base_id['t'] = int(line.dest[5:])
-                break
+        pass
+        # self.base_id = {'t':0}
+        # for line in cil_method.body:
+        #     if isinstance(line, CILAssign) and not isinstance(line.dest, CILVar):
+        #         self.base_id['t'] = int(line.dest[5:])
+        #         break
             
     def get_temp(self,expr_id:str):
         if expr_id == 'a0':
             return '$a0'
+        if expr_id[0] == '$':
+            return expr_id
         id = int(expr_id[5:])
         return f'$t{id}'
         # return f'$t{id-self.base_id["t"]}'
@@ -43,13 +26,34 @@ class MIPS:
     def __init__(self) -> None:
         self.body:list[str] = []
     
-    def add_line(self, line):
-        self.body.append(line)
+    def add_line(self, line, tab =True):
+        #move $xy, $xy
+        if not(line[:4] == 'move' and line[6:8] == line[11:13]):
+            if tab:
+                self.body.append(f'\t{line}')
+            else:
+                self.body.append(line)
     
     def code(self) -> str:
-        result = ''
+        result = '.data\n'
+        for line in Data.body:
+            result+= f'{line}\n'
+
+        result += '.text\n'
         for line in self.body:
             result+= f'{line}\n'        
+
+        for type in TYPES.keys():
+            for meth in templates:
+                if meth.name not in TYPES[type].redefined_base_methods and meth.name in TYPES[type].methods:
+                    result +=f'{type}_'
+                    for line in meth.code():
+                        result+= f'{line}\n'
+        
+        for base in init_bases:
+            for line in base.code():
+                result+= f'{line}\n'                
+
         return result
     
 class CIL2MIPS():
@@ -59,7 +63,9 @@ class CIL2MIPS():
         self.generate_code(cil)
 
     def generate_code(self,cil:CILProgram):
-        self.mips.add_line('.globl main')
+        for line in StartMethod.code():
+            self.mips.add_line(line, False)
+
         for method in cil.methods:
             self.generate_from_method(method)
 
@@ -88,7 +94,7 @@ class CIL2MIPS():
             self.mips.add_line(str(cil_expr))
 
         if isinstance(cil_expr, Label):
-            self.mips.add_line(str(cil_expr))    
+            self.mips.add_line(str(cil_expr),False)    
         
         if isinstance(cil_expr, CILIf):
             self._if(cil_expr, register)
@@ -107,12 +113,57 @@ class CIL2MIPS():
 
         if isinstance(cil_expr, CloseProgram):
             self.close(cil_expr, register)
+        
+        if isinstance(cil_expr, ReserveHeap):
+            lines = cil_expr.to_mips()
+            for line in lines:
+                self.mips.add_line(line)
+
+        if isinstance(cil_expr, StoreInDir):    
+            lines = cil_expr.to_mips()
+            for line in lines:
+                self.mips.add_line(line)
+
+        if isinstance(cil_expr, LoadFromDir):
+            lines = cil_expr.to_mips()
+            for line in lines:
+                self.mips.add_line(line)
+
+        if isinstance(cil_expr, StoreString):
+            lines = cil_expr.to_mips()
+            for line in lines:
+                self.mips.add_line(line)
+        
+        if isinstance(cil_expr, CILUminus):
+            lines = cil_expr.to_mips()
+            for line in lines:
+                self.mips.add_line(line)        
+        
+        if isinstance(cil_expr, CILNot):
+            lines = cil_expr.to_mips()
+            for line in lines:
+                self.mips.add_line(line)        
+        
+        if isinstance(cil_expr, LoadString):
+            lines = cil_expr.to_mips()
+            for line in lines:
+                self.mips.add_line(line) 
+        if isinstance(cil_expr, CILogicalString):
+            lines = cil_expr.to_mips()
+            for line in lines:
+                self.mips.add_line(line) 
+                        
+        if isinstance(cil_expr, CallFromDir):
+            lines = cil_expr.to_mips()
+            for line in lines:
+                self.mips.add_line(line)
+        
+        if isinstance(cil_expr, CILVoid):
+            lines = cil_expr.to_mips()
+            for line in lines:
+                self.mips.add_line(line)
 
     def close(self, close_, register):        
-            result = close_.ret
-            self.mips.add_line(f'move $a0, {register.get_temp(result)}')
-            self.mips.add_line('li $v0, 1')
-            self.mips.add_line('syscall')
             self.mips.add_line('li $v0, 10')
             self.mips.add_line('syscall')
     
@@ -124,6 +175,8 @@ class CIL2MIPS():
 
     def _return(self, ret:CILReturn, register:Registers):
         result = ret.ret
+        if result =='':
+            pass
         self.mips.add_line(f'move $a0, {register.get_temp(result)}')
         self.mips.add_line('jr $ra')    
 
@@ -149,6 +202,8 @@ class CIL2MIPS():
         op = 'beq' # saltar al 'label' si condition == 0
         # if cil_if._while:
         #     op = 'bne' # saltar al 'label' si condition != 0
+        if condition =='':
+            pass
         self.mips.add_line(f'{op} {register.get_temp(condition)}, $zero, {label}') 
 
     def assign (self, cil_assign:CILAssign, register:Registers):
@@ -159,6 +214,8 @@ class CIL2MIPS():
                     self.mips.add_line(line=line)
 
             if isinstance(cil_assign.source,IntNode):
+                if cil_assign.dest =='':
+                    pass
                 r = register.get_temp(cil_assign.dest)
                 if not USE_i:
                     hex_num = to_hex(cil_assign.source.value)
@@ -168,6 +225,8 @@ class CIL2MIPS():
                     self.mips.add_line(f'li {r} {cil_assign.source.value}')
             
             if isinstance(cil_assign.source,CILCallLocal):
+                if cil_assign.dest =='':
+                    pass
                 r = register.get_temp(cil_assign.dest)
                 self.mips.add_line(self.load_stack(cil_assign.source,r))
             
@@ -175,11 +234,19 @@ class CIL2MIPS():
                 lines = self.logicar_op(cil_assign.source,register, cil_assign.dest)
                 for line in lines:
                     self.mips.add_line(line=line)
+
+            if isinstance(cil_assign.source, str):
+                if cil_assign.dest =='':
+                    pass
+                #esto quiere decir que se le paso un string de pythona la asignacion, lo que implica que es un movmiento de un registro a un temporal
+                self.mips.add_line(f'move {register.get_temp(cil_assign.dest)}, {register.get_temp(cil_assign.source)}')
         else:
             #Este es el caso donde se le asigna valor a una variable
             pass        
 
     def logicar_op(self, cil_logicar:CILLogicalOP, register:Registers, dest):
+        if dest =='' or cil_logicar.left =='' or cil_logicar.right =='':
+            pass
         r = register.get_temp(dest)
         left = register.get_temp(cil_logicar.left)
         rigth = register.get_temp(cil_logicar.right)
@@ -191,14 +258,25 @@ class CIL2MIPS():
                     f'li {rigth}, 1', 
                     f'slt {r}, {r}, {rigth}'] #si r < 1 entonces es 1, sino, es cero. Se usa un mismo registro que no necesito ya, luego esta libre. 
         if cil_logicar.operation == '=':
-            pass
-        
-        #TODO falta el caso = compara bit a bit los string. Lo demas es por direcciones.
+            label = NameLabel("compare").get()
+            label_end = NameLabel("end_compare").get()
+            return [
+                    f'beq {left}, {rigth}, {label}', #si son iguales salta a la etiqueta de son iguales
+                    f'addi {r}, $zero, 0', #si no son iguales se guarda cero, y posteriroment se salta al final de la comparacion
+                    f'j {label_end}', #salto al final
+                    f'{label}:', #etiqueta son iguales
+                    f'addi {r}, $zero, 1', #se guarda 1 en el registro destino
+                    f'{label_end}:' #etiqueta final
+                ] 
 
     def op(self, cil_add:CILArithmeticOp, register:Registers, dest):
         r = register.get_temp(dest)
         left = cil_add.left
         rigth = cil_add.right
+
+        if dest == '' or left == '' or rigth == '':
+            pass
+        
         if not isinstance (left, IntNode):left = register.get_temp(left)
         if not isinstance (rigth, IntNode): rigth = register.get_temp(rigth)
         
@@ -207,9 +285,12 @@ class CIL2MIPS():
         if cil_add.operation == '-':
             operation = 'sub'
         
-        if cil_add.operation == '*' or cil_add.operation == '/':   
-            if cil_add.operation == '*':
-                operation = 'mul'    
+        if cil_add.operation == '*':
+            operation = 'mul'
+        
+        if  cil_add.operation == '/':# or cil_add.operation == '*':   
+            # if cil_add.operation == '*':
+            #     operation = 'mul'    
             if cil_add.operation == '/':
                 operation = 'div'
 

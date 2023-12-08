@@ -847,6 +847,12 @@ class CoolID(CoolVar):
         return self.__str__()
     # def context_str(self):
     #     return self.name
+    def is_atr(self, id):
+        # if self.id  == env.self_type_name:
+        #     return True #SELF_TYPE es tratado como atributo en la clase object
+        # else:
+        return super().is_atr(id)
+        
     def get_type(self):
         if self.type == None:
             self.get_contex_from_father()
@@ -868,6 +874,9 @@ class CoolID(CoolVar):
         return []
     
     def validate(self):
+        # if self.id  == env.self_type_name:
+        #     return True #Este es un id especial que no se encuentra en el contexto
+        # else:
         self.get_contex_from_father()
         return self.context.validate_id(self)
 
@@ -878,6 +887,7 @@ class Dispatch(expr): #Dispatch
         self.name = 'dispatch'
         self.expr:expr = exp 
         self.type = type
+        self.statictype = type
         self.return_type = None
         self.function:CoolCallable = function
         self.check_type = False
@@ -939,11 +949,14 @@ class IntNode(CoolConstant):
         super().__init__(value,IntClass.type,token_pos)
 
 class CoolString(CoolConstant):
-    def __init__(self, value = "", token_pos = None) -> None:
+    data_id = 0
+    def __init__(self, value = '""', token_pos = None) -> None:
         super().__init__(value,StringClass.type,token_pos)
+        CoolString.data_id+=1
+        self.data_name = f'str{CoolString.data_id}'
 
 class CoolBool(CoolConstant):
-    def __init__(self, value,token_pos= None) -> None:
+    def __init__(self, value = False,token_pos= None) -> None:
         super().__init__(value,BoolClass.type,token_pos)
 #endregion
 
@@ -980,6 +993,14 @@ class Feature():
             self.type = type
             self.value = value
             self.name = 'class_atr'
+            if value is None:
+                if type == env.int_type_name:
+                    self.value = IntNode()
+                if type == env.string_type_name:
+                    self.value = CoolString()
+                if type == env.bool_type_name:
+                    self.value = CoolBool()
+                    
             Node.set_father(self,self.childs())
 
         def childs(self):
