@@ -300,7 +300,6 @@ class InitMethod(CILMethod):
         body = Body()
         body.add_expr(ReserveHeap(space))#Reservar espacio para la instancia
         body.add_expr(MipsLine(f'move {TempNames.get_s(1)}, $v0')) # Mover la dirección del heap al registro $s1
-        # body.add_expr(StoreInDir('$a0',0,'$a0')) #Guarda el puntero de a0 en a0(0)
         temp = TempNames.get_name()
         body.add_expr(MipsLine(f'la $t{temp[5:]}, {cclass.type}')) # Carga la direccion del tipo en Data
         body.add_expr(StoreInDir(temp,0)) #Guarda el tipo en la posicion 0
@@ -324,6 +323,8 @@ class InitMethod(CILMethod):
                 if isinstance(feature,Feature.CoolAtr):
                     DivExpression(feature, body, scope)
                     temp = body.current_value()
+                    if len(temp) != 6 and len(temp) != 3:
+                        pass
                     body.add_expr(StoreInDir(body.current_value(),pos)) #Guarda cada uno de los features en la memoria
                     TempNames.free([temp])
                     pos+=WORD
@@ -364,6 +365,11 @@ class CILVoid(CILExpr):
         super().__init__()
         self.return_void = True
         self.use_in_code_line = False
+        self.dest = '$a0'
+        self.use_as_current = True
+
+    def to_mips(self):
+        return ['la $a0, StaticVoid'] #Este es el none de Cool   
 
 class Label(CILExpr):
     def __init__(self, name_label) -> None:
@@ -709,10 +715,10 @@ class ToA0(CILExpr):
 class FromA0(CILExpr):
     def __init__(self) -> None:
         super().__init__()
-        self.dest = 'a0'
+        self.dest = '$a0'
         self.use_in_code_line = False
     def __str__(self) -> str:
-        return f'a0'    
+        return f'$a0'    
 
 class CloseProgram(CILExpr):
     def __init__(self, e) -> None:
@@ -759,11 +765,10 @@ class StoreInDir(CILExpr):
     def to_mips(self):
         if self.dir[0] !='$':
             self.dir = f'$t{self.dir[5:]}'
+        if self.dest[0] !='$':
+            self.dest = f'$t{self.dest[5:]}'
         
-        if self.dest[0] == '$' :
-            return [f'sw {self.dest}, {self.pos}({self.dir})']
-        else:
-            return [f'sw $t{self.dest[5:]}, {self.pos}({self.dir})']
+        return [f'sw {self.dest}, {self.pos}({self.dir})']
         
 class LoadFromDir(CILExpr):
     def __init__(self, dest, pos, dir) -> None:
@@ -896,7 +901,7 @@ class Body:
 
     def return_value(self):
         if self.current().return_void:
-            return ""
+            return "$a0"
         else:
             return self.current_value()
 
@@ -1133,7 +1138,7 @@ class DivExpression:
         body.add_expr(CILAssign(TempNames.get_name(),_int))
 
     def bool(_bool:CoolBool, body:Body, scope:dict = {}):
-        if _bool.value == False:
+        if _bool.value == 'false':
             body.add_expr(CILAssign(TempNames.get_name(),IntNode()))
         else:    
             body.add_expr(CILAssign(TempNames.get_name(),IntNode(1)))
@@ -1176,6 +1181,8 @@ class DivExpression:
         #yo puedo pedir el type dela clase del id directamente, porque el get atr sera sin formato dispatch(gramatica de cool)
         type = id.get_class_context().type #Este es el type de la clase que tiene el id
         pos = TYPES[type].atrs[id.id]
+        if len(value) != 6 and len(value) != 3:
+            pass
         body.add_expr(StoreInDir(value=value,pos=pos, dir=dir_instance))
         TempNames.free([dir_instance])
     
@@ -1268,7 +1275,7 @@ class DivExpression:
             pass
         else:
             DivExpression.goto_init(f'__init_{e.type}__',body,scope)
-            body.add_expr(CILAssign(TempNames.get_name(),'a0'))
+            body.add_expr(CILAssign(TempNames.get_name(),'$a0'))
 
     def case(case:CoolCase, scope:dict = {}):
         pass
@@ -1306,14 +1313,14 @@ class DivExpression:
         label_end = NameLabel('endif').get()
         result_expr = "$a0"#el resultado se mete en $a0, en caso de ser el if la ultima expresion de un metodo entonces devuelve el resultado
 
-        if IsType.bool(condition):
-            if condition:
-                body.add_expr(CILIf(IntNode(1),else_label=label))
-            else:
-                body.add_expr(CILIf(IntNode(0),else_label=label))
-        else:
-            DivExpression(condition,body,scope)
-            body.add_expr(CILIf(body.current_value(),else_label=label))
+        # if IsType.bool(condition):
+        #     if condition:
+        #         body.add_expr(CILIf(IntNode(1),else_label=label))
+        #     else:
+        #         body.add_expr(CILIf(IntNode(0),else_label=label))
+        # else:
+        DivExpression(condition,body,scope)
+        body.add_expr(CILIf(body.current_value(),else_label=label))
 
         DivExpression(then_s,body,scope)
         body.add_expr(CILAssign(result_expr,body.current_value()))

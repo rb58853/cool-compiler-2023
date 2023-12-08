@@ -7,7 +7,7 @@ def mips_code(cil_program, file_name = 'code'):
     print(cil_program)
     CIL2MIPS(cil= cil_program, mips=mips)
     code = mips.code() 
-    print(code)
+    # print(code)
     create_file(code, file_name)
 
 

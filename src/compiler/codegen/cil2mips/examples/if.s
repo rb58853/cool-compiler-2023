@@ -1,98 +1,139 @@
 .data
-IF_: .asciiz "IF_"
+abort: .asciiz "error abort from "
 Main: .asciiz "Main"
+StaticVoid: .asciiz "Void"
+
+StaticIO: .word StaticObject, 8, IO_type_name, IO_abort, IO_copy, IO_out_string, IO_out_int, IO_in_string, IO_in_int
+
+StaticObject: .word StaticVoid, 8, Object_type_name, Object_abort, Object_copy
+
+StaticMain: .word StaticIO, 12, Main_type_name, Main_abort, Main_copy, Main_out_string, Main_out_int, Main_in_string, Main_in_int, Main_main
+
 .text
 .globl main
 main:
+	jal __init_Main__
 	addi $sp, $sp, -4
-	sw $ra, 0($sp)
-	jal __init_IO__
-	lw $ra, 0($sp)
-	addi $sp, $sp, 4
-	move $t0, $a0
-	move $s2, $t0
-	addi $sp, $sp, -4
-	sw $ra, 0($sp)
-	addi $sp, $sp, -8
-	sw $s2, 0($sp)
-	addi $sp, $sp, -4
-	sw $ra, 0($sp)
-	jal __init_IF___
-	lw $ra, 0($sp)
-	addi $sp, $sp, 4
-	move $t0, $a0
-	move $s2, $t0
-	addi $sp, $sp, -4
-	sw $ra, 0($sp)
-	addi $sp, $sp, -12
-	sw $s2, 0($sp)
-	li $t0 3
-	sw $t0, 4($sp)
-	li $t0 2
-	sw $t0, 8($sp)
-	jal IF__test
-	addi $sp, $sp, 12
-	lw $ra, 0($sp)
-	addi $sp, $sp, 4
-	sw $a0, 4($sp)
-	jal out_int
-	addi $sp, $sp, 8
-	lw $ra, 0($sp)
-	addi $sp, $sp, 4
+	sw $a0, 0($sp)
+	jal Main_main
 	li $v0, 10
 	syscall
-IF__test:
-	lw $t0, 4($sp)
-	lw $t1, 8($sp)
-	slt $t2, $t0, $t1
-	addi $t2 $t2 -1
-	subu $t2 $zero $t2
-	addi $t2 $t2 -1
-	subu $t2 $zero $t2
-	addi $t2 $t2 -1
-	subu $t2 $zero $t2
-	beq $t2, $zero, else_0
-	li $t0 1
-	move $a0, $t0
-	j endif_0
-else_0:
-	li $t1 0
-	move $a0, $t1
-endif_0:
-	jr $ra
-__init_IF___:
-	li $a0, 4
-	li $v0, 9
-	syscall
-	move $s1, $v0
-	la $t0, IF_
-	sw $t0, 0($s1)
-	move $a0, $s1
+Main_main:
+loop_0:
+	li $t0 0
+	lw $t1, 0($sp)
+	lw $t2, 8($t1)
+	slt $t1, $t0, $t2
+	beq $t1, $zero, end_while_0
+	lw $t0, 0($sp)
+	lw $t1, 8($t0)
+	addi $t0, $t1, -1
+	lw $t1, 0($sp)
+	sw $t0, 8($t1)
+	j loop_0
+end_while_0:
 	jr $ra
 __init_Main__:
-	li $a0, 4
+	li $a0, 12
 	li $v0, 9
 	syscall
 	move $s1, $v0
 	la $t0, Main
 	sw $t0, 0($s1)
+	la $t0, StaticMain
+	sw $t0, 4($s1)
+	li $t0 5
+	sw $t0, 8($s1)
 	move $a0, $s1
 	jr $ra
-__init_IO__:
-	li $a0, 4
-	li $v0, 9
-	syscall
-	move $a0, $v0
-	jr $ra
-out_string:
+IO_out_string:
 	lw $a0, 4($sp)
 	li $v0, 4
 	syscall
 	lw $a0, 0($sp)
 	jr $ra
-out_int:
+IO_out_int:
 	lw $a0, 4($sp)
 	li $v0, 1
 	syscall
 	lw $a0, 0($sp)
+	jr $ra
+IO_in_int:
+	jr $ra
+IO_in_string:
+	jr $ra
+IO_type_name:
+	lw $t0, 0($sp)
+	lw $t1, 0($t0)
+	move $a0, $t1
+	jr $ra
+IO_copy:
+	jr $ra
+IO_abort:
+	la $a0, abort
+	li $v0, 4
+	syscall
+	lw $t0, 0($sp)
+	lw $a0, 0($t0)
+	li $v0, 4
+	syscall
+	li $v0, 10
+	syscall
+Object_type_name:
+	lw $t0, 0($sp)
+	lw $t1, 0($t0)
+	move $a0, $t1
+	jr $ra
+Object_copy:
+	jr $ra
+Object_abort:
+	la $a0, abort
+	li $v0, 4
+	syscall
+	lw $t0, 0($sp)
+	lw $a0, 0($t0)
+	li $v0, 4
+	syscall
+	li $v0, 10
+	syscall
+Main_out_string:
+	lw $a0, 4($sp)
+	li $v0, 4
+	syscall
+	lw $a0, 0($sp)
+	jr $ra
+Main_out_int:
+	lw $a0, 4($sp)
+	li $v0, 1
+	syscall
+	lw $a0, 0($sp)
+	jr $ra
+Main_in_int:
+	jr $ra
+Main_in_string:
+	jr $ra
+Main_type_name:
+	lw $t0, 0($sp)
+	lw $t1, 0($t0)
+	move $a0, $t1
+	jr $ra
+Main_copy:
+	jr $ra
+Main_abort:
+	la $a0, abort
+	li $v0, 4
+	syscall
+	lw $t0, 0($sp)
+	lw $a0, 0($t0)
+	li $v0, 4
+	syscall
+	li $v0, 10
+	syscall
+__init_IO__:
+	li $a0, 8
+	li $v0, 9
+	syscall
+	la $t0, StaticIO
+	sw $t0, 4($v0) 
+	move $a0, $v0
 	jr $ra

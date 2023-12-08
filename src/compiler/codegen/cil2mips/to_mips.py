@@ -2,7 +2,7 @@ from compiler.codegen.cil2mips.utils import to_hex
 import compiler.AST.environment as env
 from compiler.codegen.cil2mips.templates import methods as templates
 from compiler.codegen.cil2mips.templates import init_bases, StartMethod
-from compiler.codegen.cool2cil.codegener import CILExpr, CILArithmeticOp, CILMethod, CILAssign, CILProgram, CILVar, IntNode, CILCommet, USE_i, StoreLocal, CILCallLocal, ReserveSTACK, FreeStack, CILReturn, Label, CILLogicalOP, CILIf, GOTO, CallMethod, FromA0, CloseProgram, MipsLine, ReserveHeap, StoreInDir, LoadFromDir, Data, StoreString, CILUminus, CILNot, LoadString, NameLabel, CILogicalString, CallFromDir, TYPES
+from compiler.codegen.cool2cil.codegener import CILExpr, CILArithmeticOp, CILMethod, CILAssign, CILProgram, CILVar, IntNode, CILCommet, USE_i, StoreLocal, CILCallLocal, ReserveSTACK, FreeStack, CILReturn, Label, CILLogicalOP, CILIf, GOTO, CallMethod, FromA0, CloseProgram, MipsLine, ReserveHeap, StoreInDir, LoadFromDir, Data, StoreString, CILUminus, CILNot, LoadString, NameLabel, CILogicalString, CallFromDir, TYPES, CILVoid
 
 class Registers():
     def __init__(self, cil_method:CILMethod) -> None:
@@ -157,6 +157,11 @@ class CIL2MIPS():
             lines = cil_expr.to_mips()
             for line in lines:
                 self.mips.add_line(line)
+        
+        if isinstance(cil_expr, CILVoid):
+            lines = cil_expr.to_mips()
+            for line in lines:
+                self.mips.add_line(line)
 
     def close(self, close_, register):        
             self.mips.add_line('li $v0, 10')
@@ -170,6 +175,8 @@ class CIL2MIPS():
 
     def _return(self, ret:CILReturn, register:Registers):
         result = ret.ret
+        if result =='':
+            pass
         self.mips.add_line(f'move $a0, {register.get_temp(result)}')
         self.mips.add_line('jr $ra')    
 
@@ -195,6 +202,8 @@ class CIL2MIPS():
         op = 'beq' # saltar al 'label' si condition == 0
         # if cil_if._while:
         #     op = 'bne' # saltar al 'label' si condition != 0
+        if condition =='':
+            pass
         self.mips.add_line(f'{op} {register.get_temp(condition)}, $zero, {label}') 
 
     def assign (self, cil_assign:CILAssign, register:Registers):
@@ -205,6 +214,8 @@ class CIL2MIPS():
                     self.mips.add_line(line=line)
 
             if isinstance(cil_assign.source,IntNode):
+                if cil_assign.dest =='':
+                    pass
                 r = register.get_temp(cil_assign.dest)
                 if not USE_i:
                     hex_num = to_hex(cil_assign.source.value)
@@ -214,6 +225,8 @@ class CIL2MIPS():
                     self.mips.add_line(f'li {r} {cil_assign.source.value}')
             
             if isinstance(cil_assign.source,CILCallLocal):
+                if cil_assign.dest =='':
+                    pass
                 r = register.get_temp(cil_assign.dest)
                 self.mips.add_line(self.load_stack(cil_assign.source,r))
             
@@ -223,6 +236,8 @@ class CIL2MIPS():
                     self.mips.add_line(line=line)
 
             if isinstance(cil_assign.source, str):
+                if cil_assign.dest =='':
+                    pass
                 #esto quiere decir que se le paso un string de pythona la asignacion, lo que implica que es un movmiento de un registro a un temporal
                 self.mips.add_line(f'move {register.get_temp(cil_assign.dest)}, {register.get_temp(cil_assign.source)}')
         else:
@@ -230,6 +245,8 @@ class CIL2MIPS():
             pass        
 
     def logicar_op(self, cil_logicar:CILLogicalOP, register:Registers, dest):
+        if dest =='' or cil_logicar.left =='' or cil_logicar.right =='':
+            pass
         r = register.get_temp(dest)
         left = register.get_temp(cil_logicar.left)
         rigth = register.get_temp(cil_logicar.right)
@@ -256,6 +273,10 @@ class CIL2MIPS():
         r = register.get_temp(dest)
         left = cil_add.left
         rigth = cil_add.right
+
+        if dest == '' or left == '' or rigth == '':
+            pass
+        
         if not isinstance (left, IntNode):left = register.get_temp(left)
         if not isinstance (rigth, IntNode): rigth = register.get_temp(rigth)
         

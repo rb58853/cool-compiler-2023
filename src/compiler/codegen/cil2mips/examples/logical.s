@@ -1,4 +1,5 @@
 .data
+abort: .asciiz "error abort from "
 A: .asciiz "A"
 Main: .asciiz "Main"
 str2: .asciiz "A:\n"
@@ -36,13 +37,13 @@ str33: .asciiz "a(new) = a0 false\n"
 str1: .asciiz "A"
 StaticVoid: .asciiz "Void"
 
-StaticIO: .word StaticObject, IO_type_name, IO_abort, IO_copy, IO_out_string, IO_out_int, IO_in_string, IO_in_int
+StaticIO: .word StaticObject, 8, IO_type_name, IO_abort, IO_copy, IO_out_string, IO_out_int, IO_in_string, IO_in_int
 
-StaticObject: .word StaticVoid, Object_type_name, Object_abort, Object_copy
+StaticObject: .word StaticVoid, 8, Object_type_name, Object_abort, Object_copy
 
-StaticA: .word StaticObject, A_type_name, A_abort, A_copy, A_init, A_get_name, A_set_name, A_set_x, A_set_b, A_print
+StaticA: .word StaticObject, 20, A_type_name, A_abort, A_copy, A_init, A_get_name, A_set_name, A_set_x, A_set_b, A_print
 
-StaticMain: .word StaticIO, Main_type_name, Main_abort, Main_copy, Main_out_string, Main_out_int, Main_in_string, Main_in_int, Main_main
+StaticMain: .word StaticIO, 8, Main_type_name, Main_abort, Main_copy, Main_out_string, Main_out_int, Main_in_string, Main_in_int, Main_main
 
 .text
 .globl main
@@ -147,7 +148,7 @@ A_print:
 	sw $t0, 4($sp)
 	move $t0, $s2
 	lw $t0, 4($t0)
-	lw $t0, 16($t0)
+	lw $t0, 20($t0)
 	jal $t0
 	addi $sp, $sp, 8
 	lw $ra, 0($sp)
@@ -174,7 +175,7 @@ A_print:
 	sw $t1, 4($sp)
 	move $t1, $s2
 	lw $t1, 4($t1)
-	lw $t1, 16($t1)
+	lw $t1, 20($t1)
 	jal $t1
 	addi $sp, $sp, 8
 	lw $t0, 0($sp)
@@ -193,7 +194,7 @@ A_print:
 	sw $t3, 4($sp)
 	move $t2, $s2
 	lw $t2, 4($t2)
-	lw $t2, 16($t2)
+	lw $t2, 20($t2)
 	jal $t2
 	addi $sp, $sp, 8
 	lw $t0, 0($sp)
@@ -224,7 +225,7 @@ A_print:
 	sw $t3, 4($sp)
 	move $t3, $s2
 	lw $t3, 4($t3)
-	lw $t3, 16($t3)
+	lw $t3, 20($t3)
 	jal $t3
 	addi $sp, $sp, 8
 	lw $t0, 0($sp)
@@ -247,7 +248,7 @@ A_print:
 	sw $t5, 4($sp)
 	move $t4, $s2
 	lw $t4, 4($t4)
-	lw $t4, 20($t4)
+	lw $t4, 24($t4)
 	jal $t4
 	addi $sp, $sp, 8
 	lw $t0, 0($sp)
@@ -282,7 +283,7 @@ A_print:
 	sw $t5, 4($sp)
 	move $t5, $s2
 	lw $t5, 4($t5)
-	lw $t5, 16($t5)
+	lw $t5, 20($t5)
 	jal $t5
 	addi $sp, $sp, 8
 	lw $t0, 0($sp)
@@ -323,7 +324,7 @@ A_print:
 	sw $t6, 4($sp)
 	move $t6, $s2
 	lw $t6, 4($t6)
-	lw $t6, 16($t6)
+	lw $t6, 20($t6)
 	jal $t6
 	addi $sp, $sp, 8
 	lw $t0, 0($sp)
@@ -366,7 +367,7 @@ else_0:
 	sw $t8, 4($sp)
 	move $t8, $s2
 	lw $t8, 4($t8)
-	lw $t8, 16($t8)
+	lw $t8, 20($t8)
 	jal $t8
 	addi $sp, $sp, 8
 	lw $t0, 0($sp)
@@ -418,7 +419,7 @@ Main_main:
 	sw $t0, 12($sp)
 	move $t0, $s2
 	lw $t0, 4($t0)
-	lw $t0, 16($t0)
+	lw $t0, 20($t0)
 	jal $t0
 	addi $sp, $sp, 16
 	lw $ra, 0($sp)
@@ -432,7 +433,7 @@ Main_main:
 	sw $s2, 0($sp)
 	move $t1, $s2
 	lw $t1, 4($t1)
-	lw $t1, 36($t1)
+	lw $t1, 40($t1)
 	jal $t1
 	addi $sp, $sp, 4
 	lw $t0, 0($sp)
@@ -1319,7 +1320,15 @@ IO_type_name:
 IO_copy:
 	jr $ra
 IO_abort:
-	jr $ra
+	la $a0, abort
+	li $v0, 4
+	syscall
+	lw $t0, 0($sp)
+	lw $a0, 0($t0)
+	li $v0, 4
+	syscall
+	li $v0, 10
+	syscall
 Object_type_name:
 	lw $t0, 0($sp)
 	lw $t1, 0($t0)
@@ -1328,7 +1337,15 @@ Object_type_name:
 Object_copy:
 	jr $ra
 Object_abort:
-	jr $ra
+	la $a0, abort
+	li $v0, 4
+	syscall
+	lw $t0, 0($sp)
+	lw $a0, 0($t0)
+	li $v0, 4
+	syscall
+	li $v0, 10
+	syscall
 A_type_name:
 	lw $t0, 0($sp)
 	lw $t1, 0($t0)
@@ -1337,7 +1354,15 @@ A_type_name:
 A_copy:
 	jr $ra
 A_abort:
-	jr $ra
+	la $a0, abort
+	li $v0, 4
+	syscall
+	lw $t0, 0($sp)
+	lw $a0, 0($t0)
+	li $v0, 4
+	syscall
+	li $v0, 10
+	syscall
 Main_out_string:
 	lw $a0, 4($sp)
 	li $v0, 4
@@ -1362,7 +1387,15 @@ Main_type_name:
 Main_copy:
 	jr $ra
 Main_abort:
-	jr $ra
+	la $a0, abort
+	li $v0, 4
+	syscall
+	lw $t0, 0($sp)
+	lw $a0, 0($t0)
+	li $v0, 4
+	syscall
+	li $v0, 10
+	syscall
 __init_IO__:
 	li $a0, 8
 	li $v0, 9
