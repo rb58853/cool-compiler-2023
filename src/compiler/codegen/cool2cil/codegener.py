@@ -1,5 +1,5 @@
 import compiler.AST.environment as env
-from compiler.AST.ast import CoolProgram, CoolClass, Feature, expr, IntNode, CoolBool, CoolString, CoolLet, ArithmeticOP,Logicar,Assign, CoolID, Context, Dispatch, CoolCase, CoolWhile, CoolIf, CoolBlockScope, CoolCallable, CoolNew, CoolNot, CoolUminus
+from compiler.AST.ast import CoolProgram, CoolClass, Feature, expr, IntNode, CoolBool, CoolString, CoolLet, ArithmeticOP,Logicar,Assign, CoolID, Context, Dispatch, CoolCase, CoolWhile, CoolIf, CoolBlockScope, CoolCallable, CoolNew, CoolNot, CoolUminus, CoolIsVoid
 
 '''
 1. El registro $s3 se usa para cargar direcciones de data, si va a usar este registro en otro lugar usted debe guardar su valor en la pila para poder recuperarlo.
@@ -7,6 +7,7 @@ from compiler.AST.ast import CoolProgram, CoolClass, Feature, expr, IntNode, Coo
 3. El registro $s1 hay que controlarlo en pila, se usa para guardar las direcciones de las instancias nuevas creadas, si usted usa $s1 tendra que guardar su valor en pila, xq en caso de crear una instancia de clase el valor de $s1 sera modificado.
 4. El registro $s4 se usa en operaciones para guardar strings, no debera usarlo en otro ambito dado que cuando se guarda un string este registro sera manipulado
 5. El registro $s5 y $s6 se usan para comparacion de strings, si usted usa este registro debe tratarlo cuidadosamente xq una exprsion `=` los sobreescribe
+6. El registro $s7 se en isVoid. Si esta expresion es usada, este reistro es sobreescrito.
 '''
 #esto es para usar operaciones con valores inmediatos, por ejemplo addi $s0, $1, 5 . Las constantes solo admiten 16 bytes. Valor default = False
 USE_i = True
@@ -81,7 +82,8 @@ class Data:
                     'substring_error: .asciiz "error substring is out of range."',
                     'String: .asciiz "String"',
                     'Bool: .asciiz "Bool"',
-                    'Int: .asciiz "Int"'
+                    'Int: .asciiz "Int"',
+                    'Void: .asciiz "Void"',
                     ]
 
 class CILProgram():
@@ -96,8 +98,7 @@ class CILProgram():
         self.full_data()
     
     def full_data(self):
-        Data.add(f'StaticVoid: .asciiz "Void"\n')
-
+        Data.add('StaticVoid: .word Void')
         for key, value in zip(TYPES.keys(), TYPES.values()):
             temp = f'Static{key}: .word Static{value.inherit}, {value.space}, '
             i = 0
@@ -107,7 +108,6 @@ class CILProgram():
                 i+=1
 
             Data.add(f'{temp[:-2]}\n')
-
 
     def generate_init_types(self):
         for type in self.types.values():
@@ -324,6 +324,9 @@ class InitMethod(CILMethod):
             cclasses.insert(0,temp_class)
             temp_class = temp_class.inherit_class
 
+        body.add_expr(ReserveSTACK(4))#reserva 4 de pila para pasar el self
+        body.add_expr(StoreLocal('self',0,'$s1'))#reserva 4 de pila para pasar el self
+
         for cclass in cclasses:
             for feature in cclass.childs():
                 if isinstance(feature,Feature.CoolAtr):
@@ -338,6 +341,7 @@ class InitMethod(CILMethod):
         body.expressions.insert(0,Label(f'__init_{cclass.type}__'))
         # body.add_expr(CILId('$s1'))
         # body.add_expr(CILReturn(body.return_value()))
+        body.add_expr(FreeStack(4))#libera 4 de pila que era el self
         body.add_expr(CILReturn('$s1'))
         TempNames.free_s(1)
         self.body = [e for e in body.expressions]          
@@ -367,15 +371,43 @@ class CILExpr():
         return self.__str__()    
 
 class CILVoid(CILExpr):
-    def __init__(self) -> None:
+    def __init__(self, dest = '$a0') -> None:
         super().__init__()
+        self.use_as_current = True
         self.return_void = True
         self.use_in_code_line = False
-        self.dest = '$a0'
+        self.dest = dest
+    def __str__(self) -> str:
+        return f"{self.dest} = Void"
+    def to_mips(self):
+        return [f'la {self.dest}, StaticVoid'] #Este es el none de Cool   
+
+class CILIsVoid(CILExpr):
+    def __init__(self, dest) -> None:
+        super().__init__()
+        '''Recibe una variable y devuelve si es void o no, sobrescribe el valor del temporal por su condicion isVoid, es decir 0 o 1'''
+        super().__init__()
+        self.dest = dest
+        self.label_equals = NameLabel('equals').get()
+        self.label_end = NameLabel('end_equals').get()
         self.use_as_current = True
 
+    def __str__(self) -> str:
+        return f'isVoid({self.dest})'
     def to_mips(self):
-        return ['la $a0, StaticVoid'] #Este es el none de Cool   
+        dest = self.dest         
+        if self.dest[0]!='$':
+            dest = f'$t{dest[5:]}'
+        
+        return[
+            'la $s7, StaticVoid',
+            f'beq {dest}, $s7, {self.label_equals}',
+            f'li {dest}, 0', #no es igual a void
+            f'j {self.label_end}', #salta a la etiqueta final
+            f'{self.label_equals}:', #eiqueta equals
+            f'li {dest}, 1', #es igual a void
+            f'{self.label_end}:' #fin de la comparacion
+        ]    
 
 class Label(CILExpr):
     def __init__(self, name_label) -> None:
@@ -936,6 +968,7 @@ class IsType:
     def bool(e): return isinstance(e,CoolBool)
     def _not(e): return isinstance(e,CoolNot)
     def uminus(e): return isinstance(e,CILUminus)
+    def isvoid(e): return isinstance(e,CoolIsVoid)
     # def out_string(e): return isinstance(e.callable) and 
 
 class DivExpression:
@@ -978,7 +1011,20 @@ class DivExpression:
         if IsType._not(e):
             DivExpression._not(e,body,scope)
         if IsType.uminus(e):
-            DivExpression.uminus(e,body,scope)    
+            DivExpression.uminus(e,body,scope)
+        if IsType.isvoid(e):
+            DivExpression.isVoid(e,body,scope)
+        if e is None:
+            DivExpression.void(e,body,scope)        
+    
+    def isVoid (e:CoolIsVoid, body:Body, scope:dict = {}):
+        DivExpression(e.value,body,scope)
+        temp = body.current_value()
+        body.add_expr(CILIsVoid(temp))
+        TempNames.free([temp])
+
+    def void(e, body:Body, scope:dict = {}):
+        body.add_expr(CILVoid())
 
     def _not(e: CoolNot, body:Body, scope:dict = {}):
         DivExpression(e.value, body, scope)
@@ -1202,6 +1248,7 @@ class DivExpression:
         else:
             body.add_expr(CILAssign(TempNames.get_name(),CILCallLocal(vvar,scope[vvar.id])))
         TempNames.free([temp])
+    
     def let(let:CoolLet, body:Body, scope:dict = {}):
         body.add_expr(CILCommet(f'#Region Let'))
         
@@ -1246,8 +1293,8 @@ class DivExpression:
                     let_scope[var] += WORD
                 
             
-            # if vvar.get_type() == env.int_type_name:
-            if vvar.value is not None:
+            # if vvar.value is not None:
+            if True:
                 DivExpression(vvar.value, body, scope = let_scope)
                 temp = body.current_value()
                 if isinstance(let_scope[vvar.id],list):

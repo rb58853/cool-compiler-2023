@@ -4,6 +4,7 @@ substring_error: .asciiz "error substring is out of range."
 String: .asciiz "String"
 Bool: .asciiz "Bool"
 Int: .asciiz "Int"
+Void: .asciiz "Void"
 CellularAutomaton: .asciiz "CellularAutomaton"
 Main: .asciiz "Main"
 str3: .asciiz "\n"
@@ -15,8 +16,7 @@ str8: .asciiz "."
 str9: .asciiz ""
 str10: .asciiz "         X         "
 str2: .asciiz ""
-StaticVoid: .asciiz "Void"
-
+StaticVoid: .word Void
 StaticIO: .word StaticObject, 8, IO_type_name, IO_abort, IO_copy, IO_out_string, IO_out_int, IO_in_string, IO_in_int
 
 StaticObject: .word StaticVoid, 8, Object_type_name, Object_abort, Object_copy
@@ -414,6 +414,7 @@ loop_0:
 	sw $t0, 8($sp)
 	j loop_0
 end_while_0:
+	la $a0, StaticVoid
 	lw $t1, 0($sp)
 	lw $t0, 12($sp)
 	sw $t1, 8($t0)
@@ -516,6 +517,7 @@ loop_1:
 	sw $t0, 0($sp)
 	j loop_1
 end_while_1:
+	la $a0, StaticVoid
 	addi $sp, $sp, 4
 	#End Region Let
 	lw $t0, 0($sp)
@@ -554,7 +556,8 @@ __init_Main__:
 	sw $t0, 0($s1)
 	la $t0, StaticMain
 	sw $t0, 4($s1)
-	sw $t0, 8($s1)
+	la $a0, StaticVoid
+	sw $a0, 8($s1)
 	move $a0, $s1
 	jr $ra
 __init_IO__:

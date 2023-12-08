@@ -1,12 +1,16 @@
 .data
 abort: .asciiz "error abort from "
+substring_error: .asciiz "error substring is out of range."
+String: .asciiz "String"
+Bool: .asciiz "Bool"
+Int: .asciiz "Int"
+Void: .asciiz "Void"
 List: .asciiz "List"
 Cons: .asciiz "Cons"
 Main: .asciiz "Main"
 str1: .asciiz "\n"
 str2: .asciiz " "
-StaticVoid: .asciiz "Void"
-
+StaticVoid: .word Void
 StaticIO: .word StaticObject, 8, IO_type_name, IO_abort, IO_copy, IO_out_string, IO_out_int, IO_in_string, IO_in_int
 
 StaticObject: .word StaticVoid, 8, Object_type_name, Object_abort, Object_copy
@@ -371,6 +375,7 @@ loop_0:
 	sw $a0, 8($t0)
 	j loop_0
 end_while_0:
+	la $a0, StaticVoid
 	jr $ra
 __init_List__:
 	li $a0, 8
@@ -394,7 +399,8 @@ __init_Cons__:
 	sw $t0, 4($s1)
 	li $t0 0
 	sw $t0, 8($s1)
-	sw $t0, 12($s1)
+	la $a0, StaticVoid
+	sw $a0, 12($s1)
 	move $a0, $s1
 	jr $ra
 __init_Main__:
@@ -406,7 +412,8 @@ __init_Main__:
 	sw $t0, 0($s1)
 	la $t0, StaticMain
 	sw $t0, 4($s1)
-	sw $t0, 8($s1)
+	la $a0, StaticVoid
+	sw $a0, 8($s1)
 	move $a0, $s1
 	jr $ra
 __init_IO__:
@@ -534,11 +541,99 @@ Main_abort:
 	syscall
 	li $v0, 10
 	syscall
+String_type_name:
+	la $a0, String
+	jr $ra
+Int_type_name:
+	la $a0, Int
+	jr $ra
+Bool_type_name:
+	la $a0, Bool
+	jr $ra
 length:
 	lw $t0, 0($sp)
 	addi $t1, $zero, -1
-	loop_len:	lb t2, 0($t0)
-	addi $t1, 1
+	loop_len:
+	lb $t2, 0($t0)
+	addi $t0, $t0, 1
+	addi $t1, $t1, 1
 	bnez $t2, loop_len
 	move $a0, $t1
+	jr $ra
+substr:
+	lw $t0, 0($sp)
+	addi $t1, $zero, -1
+	loop_len_full:
+	lb $t2, 0($t0)
+	addi $t0, $t0, 1
+	addi $t1, $t1, 1
+	bnez $t2, loop_len_full
+	move $t6, $t1
+	lw $t0, 0($sp)
+	lw $t5, 4($sp)
+	add $t0, $t0, $t5
+	lw $t1, 8($sp)
+	slt $t4, $t5, $zero
+	bnez $t4, s_error
+	add $t5, $t5, $t1
+	slt $t4, $t6, $t5
+	bnez $t4, s_error
+	addi $t4, $t1, 1
+	add $a0, $zero, $t4
+	li $v0, 9
+	syscall
+	move $t3, $v0
+	li $t4, 0
+	loop_substring:
+	lb $t2, 0($t0)
+	sb $t2, 0($t3)
+	addi $t0, $t0, 1
+	addi $t3, $t3, 1
+	addi $t4, $t4, 1
+	slt $t6, $t4, $t1
+	bnez $t6, loop_substring
+	move $a0, $v0
+	jr $ra
+	s_error:
+	la $a0, substring_error
+	li $v0, 4
+	syscall
+	li $v0, 10
+	syscall
+concat:
+	lw $t0, 0($sp)
+	addi $t1, $zero, -1
+	loop_len_concat_one:
+	lb $t2, 0($t0)
+	addi $t0, $t0, 1
+	addi $t1, $t1, 1
+	bnez $t2, loop_len_concat_one
+	lw $t0, 4($sp)
+	loop_len_concat_two:
+	lb $t2, 0($t0)
+	addi $t0, $t0, 1
+	addi $t1, $t1, 1
+	bnez $t2, loop_len_concat_two
+	move $t3, $t1
+	addi $t3, $t3, 1
+	add $a0, $zero, $t3
+	li $v0, 9
+	syscall
+	move $t4, $v0
+	lw $t0, 0($sp)
+	concat_copy_one:
+	lb $t2, 0($t0)
+	beq $t2, $zero, end_concat_one
+	sb $t2, 0($t4)
+	addi $t0, $t0, 1
+	addi $t4, $t4, 1
+	bnez $t2, concat_copy_one
+	end_concat_one:	lw $t0, 4($sp)
+	concat_copy_two:
+	lb $t2, 0($t0)
+	sb $t2, 0($t4)
+	addi $t0, $t0, 1
+	addi $t4, $t4, 1
+	bnez $t2, concat_copy_two
+	move $a0, $v0
 	jr $ra

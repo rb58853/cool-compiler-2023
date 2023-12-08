@@ -2,7 +2,7 @@ from compiler.codegen.cil2mips.utils import to_hex
 import compiler.AST.environment as env
 from compiler.codegen.cil2mips.templates import methods as templates
 from compiler.codegen.cil2mips.templates import init_bases, StartMethod, uninherits_methods, contants
-from compiler.codegen.cool2cil.codegener import CILExpr, CILArithmeticOp, CILMethod, CILAssign, CILProgram, CILVar, IntNode, CILCommet, USE_i, StoreLocal, CILCallLocal, ReserveSTACK, FreeStack, CILReturn, Label, CILLogicalOP, CILIf, GOTO, CallMethod, FromA0, CloseProgram, MipsLine, ReserveHeap, StoreInDir, LoadFromDir, Data, StoreString, CILUminus, CILNot, LoadString, NameLabel, CILogicalString, CallFromDir, TYPES, CILVoid
+from compiler.codegen.cool2cil.codegener import CILExpr, CILArithmeticOp, CILMethod, CILAssign, CILProgram, CILVar, IntNode, CILCommet, USE_i, StoreLocal, CILCallLocal, ReserveSTACK, FreeStack, CILReturn, Label, CILLogicalOP, CILIf, GOTO, CallMethod, FromA0, CloseProgram, MipsLine, ReserveHeap, StoreInDir, LoadFromDir, Data, StoreString, CILUminus, CILNot, LoadString, NameLabel, CILogicalString, CallFromDir, TYPES, CILVoid, CILIsVoid
 
 class Registers():
     def __init__(self, cil_method:CILMethod) -> None:
@@ -169,6 +169,11 @@ class CIL2MIPS():
                 self.mips.add_line(line)
         
         if isinstance(cil_expr, CILVoid):
+            lines = cil_expr.to_mips()
+            for line in lines:
+                self.mips.add_line(line)
+                
+        if isinstance(cil_expr, CILIsVoid):
             lines = cil_expr.to_mips()
             for line in lines:
                 self.mips.add_line(line)

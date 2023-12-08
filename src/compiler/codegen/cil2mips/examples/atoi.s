@@ -1,6 +1,10 @@
 .data
 abort: .asciiz "error abort from "
 substring_error: .asciiz "error substring is out of range."
+String: .asciiz "String"
+Bool: .asciiz "Bool"
+Int: .asciiz "Int"
+Void: .asciiz "Void"
 A2I: .asciiz "A2I"
 Main: .asciiz "Main"
 str1: .asciiz "0"
@@ -32,8 +36,7 @@ str26: .asciiz ""
 str27: .asciiz "678987"
 str28: .asciiz " == "
 str29: .asciiz "\n"
-StaticVoid: .asciiz "Void"
-
+StaticVoid: .word Void
 StaticIO: .word StaticObject, 8, IO_type_name, IO_abort, IO_copy, IO_out_string, IO_out_int, IO_in_string, IO_in_int
 
 StaticObject: .word StaticVoid, 8, Object_type_name, Object_abort, Object_copy
@@ -719,6 +722,7 @@ loop_0:
 	sw $t0, 0($sp)
 	j loop_0
 end_while_0:
+	la $a0, StaticVoid
 	addi $sp, $sp, 4
 	#End Region Let
 	addi $sp, $sp, 4
@@ -1141,6 +1145,15 @@ Main_abort:
 	syscall
 	li $v0, 10
 	syscall
+String_type_name:
+	la $a0, String
+	jr $ra
+Int_type_name:
+	la $a0, Int
+	jr $ra
+Bool_type_name:
+	la $a0, Bool
+	jr $ra
 length:
 	lw $t0, 0($sp)
 	addi $t1, $zero, -1
