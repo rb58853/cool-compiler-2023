@@ -31,6 +31,7 @@ class InInt:
         'in_int:',     
         '\tjr $ra'              
         ]
+
 class InString:
     name = 'in_string'
     def code():
@@ -69,7 +70,7 @@ class Abort:
         '\tsyscall'
         ]
     
-class Copy:
+class Copy: #TODO
     name = 'copy'
     def code():
         return [
@@ -203,8 +204,22 @@ class Concat:
         '\tjr $ra'
         ]        
     
+class ConstantTypeName:
+    '''Imprime texto con el nombre del tipo de una instancia dada'''
+    def __init__(self, type) -> None:
+        self.name = f'{type}_type_name:'
+        self.type = type
+
+    def code(self):
+        return [
+        self.name,
+        f'\tla $a0, {self.type}', #mover el string del type_name de la clase constante a $a0
+        '\tjr $ra'
+        ]    
+    
 methods = [OutString,OutInt,InInt, InString, TypeName,Copy, Abort]
 uninherits_methods = [Length, Substring, Concat]
+contants = [ConstantTypeName("String"),ConstantTypeName("Int"),ConstantTypeName("Bool")] #TODO usar los nombres de env
 
 class IO:
     '''Crea una instancia de la clase IO, la guarda en memoria y devuelve su putero'''

@@ -1,6 +1,9 @@
 .data
 abort: .asciiz "error abort from "
 substring_error: .asciiz "error substring is out of range."
+String: .asciiz "String"
+Bool: .asciiz "Bool"
+Int: .asciiz "Int"
 CellularAutomaton: .asciiz "CellularAutomaton"
 Main: .asciiz "Main"
 str3: .asciiz "\n"
@@ -662,6 +665,15 @@ Main_abort:
 	syscall
 	li $v0, 10
 	syscall
+String_type_name:
+	la $a0, String
+	jr $ra
+Int_type_name:
+	la $a0, Int
+	jr $ra
+Bool_type_name:
+	la $a0, Bool
+	jr $ra
 length:
 	lw $t0, 0($sp)
 	addi $t1, $zero, -1

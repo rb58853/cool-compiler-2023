@@ -36,7 +36,10 @@ def test_all_cases():
 
             if equals:
                 print(Fore.GREEN)
-                print(f'{case} PASSED')
+                # print(f'{case} PASSED')
+                print(f'\n######################### {case} #############################')
+                for e in lexer.errors:
+                    print(e)
             else:
                 print(Fore.RED)
                 print(f'\n######################### {case} #############################')

@@ -78,7 +78,10 @@ class Data:
     def free():
         Data.body = [
                     'abort: .asciiz "error abort from "',
-                    'substring_error: .asciiz "error substring is out of range."'
+                    'substring_error: .asciiz "error substring is out of range."',
+                    'String: .asciiz "String"',
+                    'Bool: .asciiz "Bool"',
+                    'Int: .asciiz "Int"'
                     ]
 
 class CILProgram():
@@ -1389,7 +1392,9 @@ class DivExpression:
         label_method = f'{type}_{id}'
         if basic:
             #si es basico entonces el metodo tiene siempre el mismo nombre xq no existe la herencia de estas clases
-            label_method = f'{id}'
+            #esto es para los metodos especificos de una class, los metodos de object si deben usarse con TYPE_method
+            if id in env.static_methods: #los metodos estaticos son los del string
+                label_method = f'{id}'
 
         if instance is not None: #En caso que se le pase una instancia se guarda en $s2
             body.add_expr(CILAssign('$s2',instance))

@@ -1,7 +1,7 @@
 from compiler.codegen.cil2mips.utils import to_hex
 import compiler.AST.environment as env
 from compiler.codegen.cil2mips.templates import methods as templates
-from compiler.codegen.cil2mips.templates import init_bases, StartMethod, uninherits_methods
+from compiler.codegen.cil2mips.templates import init_bases, StartMethod, uninherits_methods, contants
 from compiler.codegen.cool2cil.codegener import CILExpr, CILArithmeticOp, CILMethod, CILAssign, CILProgram, CILVar, IntNode, CILCommet, USE_i, StoreLocal, CILCallLocal, ReserveSTACK, FreeStack, CILReturn, Label, CILLogicalOP, CILIf, GOTO, CallMethod, FromA0, CloseProgram, MipsLine, ReserveHeap, StoreInDir, LoadFromDir, Data, StoreString, CILUminus, CILNot, LoadString, NameLabel, CILogicalString, CallFromDir, TYPES, CILVoid
 
 class Registers():
@@ -53,6 +53,11 @@ class MIPS:
                     result +=f'{type}_'
                     for line in meth.code():
                         result+= f'{line}\n'
+        
+        for meth in contants:
+            #Estos son metodos de las clases constantes
+            for line in meth.code():
+                result+= f'{line}\n'
 
         for meth in uninherits_methods:
             #Estos son metodos que no se pueden heredar, luego siempre tienen el mismo nombre y etiqueta
