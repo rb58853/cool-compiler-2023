@@ -513,6 +513,7 @@ class CILIf(CILExpr):
         self._while = _while
         self.condition = condition
         self.else_label = else_label 
+        self.dest = '$a0'
         # self.then_label = then_label
 
     def __str__(self):
@@ -1312,16 +1313,21 @@ class DivExpression:
         result_expr = "$a0"#el resultado se mete en $a0, en caso de ser el if la ultima expresion de un metodo entonces devuelve el resultado
 
         DivExpression(condition,body,scope)
+        temp = body.current_value()
         body.add_expr(CILIf(body.current_value(),else_label=label))
+        TempNames.free([temp]) #Esta linea es nueva, antes pinchaba bien
 
         DivExpression(then_s,body,scope)
+        temp = body.current_value()
         body.add_expr(CILAssign(result_expr,body.current_value()))
-        # then_return = body.current_value()
         body.add_expr(GOTO(label_end))
         body.add_expr(Label(label))
+        TempNames.free([temp]) #Esta linea es nueva, antes pinchaba bien
         DivExpression(else_s,body,scope)
+        temp = body.current_value()
         body.add_expr(CILAssign(result_expr,body.current_value()))
         body.add_expr(Label(label_end))
+        TempNames.free([temp]) #Esta linea es nueva, antes pinchaba bien
 
     def dispatch(dispatch:Dispatch, body:Body, scope:dict = {}):
         callable:CoolCallable = dispatch.function
