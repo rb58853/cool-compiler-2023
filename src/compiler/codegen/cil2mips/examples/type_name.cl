@@ -10,8 +10,10 @@ class B inherits A{
 };
 class Main inherits IO{
     main(): IO { 
+
         let a:A<- new A in {
-        a <- New B;    
+        a <- New B;
+        "wqeqw".abort();    
         out_string(a.type_name());
         out_string("\n");
         out_string(new String.type_name());

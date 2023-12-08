@@ -215,11 +215,33 @@ class ConstantTypeName:
         self.name,
         f'\tla $a0, {self.type}', #mover el string del type_name de la clase constante a $a0
         '\tjr $ra'
-        ]    
+        ]
+    
+class ConstantAbort:
+    '''Imprime texto con el nombre del tipo de una instancia dada'''
+    def __init__(self, type) -> None:
+        self.name = f'{type}_abort:'
+        self.type = type
+
+    def code(self):
+        return [
+        f'{self.name}',
+        '\tla $a0, abort',  #texto del abort en la seccion de data
+        '\tli $v0, 4',      #El 4 es para imprimir string
+	    '\tsyscall',        #llamanda al sistema
+        f'\tla $a0, {self.type}', #texto del tipo
+        '\tli $v0, 4',      #El 4 es para imprimir string
+	    '\tsyscall',        #llamanda al sistema
+        '\tli $v0, 10',     #Codigo para cerrar el programa
+        '\tsyscall'
+        ]
     
 methods = [OutString,OutInt,InInt, InString, TypeName,Copy, Abort]
 uninherits_methods = [Length, Substring, Concat]
-contants = [ConstantTypeName("String"),ConstantTypeName("Int"),ConstantTypeName("Bool")] #TODO usar los nombres de env
+ 
+#TODO usar los nombres de env
+contants = [ConstantTypeName("String"),ConstantTypeName("Int"),ConstantTypeName("Bool"),
+            ConstantAbort("String"),ConstantAbort("Int"),ConstantAbort("Bool")]
 
 class IO:
     '''Crea una instancia de la clase IO, la guarda en memoria y devuelve su putero'''

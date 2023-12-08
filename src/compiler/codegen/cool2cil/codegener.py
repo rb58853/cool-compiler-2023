@@ -78,7 +78,7 @@ class Data:
     
     def free():
         Data.body = [
-                    'abort: .asciiz "error abort from "',
+                    'abort: .asciiz "Abort called from class "',
                     'substring_error: .asciiz "error substring is out of range."',
                     'String: .asciiz "String"',
                     'Bool: .asciiz "Bool"',
@@ -375,7 +375,7 @@ class CILVoid(CILExpr):
         super().__init__()
         self.use_as_current = True
         self.return_void = True
-        self.use_in_code_line = False
+        self.use_in_code_line = True
         self.dest = dest
     def __str__(self) -> str:
         return f"{self.dest} = Void"

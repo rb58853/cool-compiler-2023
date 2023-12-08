@@ -6,6 +6,8 @@ Bool: .asciiz "Bool"
 Int: .asciiz "Int"
 Void: .asciiz "Void"
 Main: .asciiz "Main"
+str2: .asciiz "exit\n"
+str1: .asciiz "2 is trivially prime.\n"
 StaticVoid: .word Void
 StaticIO: .word StaticObject, 8, IO_type_name, IO_abort, IO_copy, IO_out_string, IO_out_int, IO_in_string, IO_in_int
 
@@ -29,23 +31,20 @@ Main_main:
 	sw $ra, 0($sp)
 	addi $sp, $sp, -8
 	sw $s2, 0($sp)
-	lw $t0, 12($sp)
-	lw $t1, 8($t0)
-	sw $t1, 4($sp)
-	jal Main_out_int
-	addi $sp, $sp, 8
-	lw $ra, 0($sp)
-	addi $sp, $sp, 4
-	lw $t0, 0($sp)
-	move $s2, $t0
-	addi $sp, $sp, -4
-	sw $ra, 0($sp)
-	addi $sp, $sp, -8
-	sw $s2, 0($sp)
-	lw $t0, 12($sp)
-	lw $t1, 12($t0)
-	sw $t1, 4($sp)
-	jal Main_out_int
+	li $a0, 7
+	li $v0, 9
+	syscall
+	move $s4, $v0
+	la $s3, str2
+	copy_0:
+	lb $t0, 0($s3)
+	sb $t0, 0($s4)
+	addiu $s3, $s3, 1
+	addiu $s4, $s4, 1
+	bnez $t0, copy_0
+	move $t0, $v0
+	sw $t0, 4($sp)
+	jal Main_out_string
 	addi $sp, $sp, 8
 	lw $ra, 0($sp)
 	addi $sp, $sp, 4
@@ -61,10 +60,35 @@ __init_Main__:
 	sw $t0, 4($s1)
 	addi $sp, $sp, -4
 	sw $s1, 0($sp)
-	li $t0 1
+	li $t0, 5
 	sw $t0, 8($s1)
 	lw $t0, 0($sp)
-	lw $t1, 8($t0)
+	move $s2, $t0
+	addi $sp, $sp, -8
+	sw $s1, 0($sp)
+	sw $ra, 4($sp)
+	addi $sp, $sp, -8
+	sw $s2, 0($sp)
+	li $a0, 24
+	li $v0, 9
+	syscall
+	move $s4, $v0
+	la $s3, str1
+	copy_1:
+	lb $t0, 0($s3)
+	sb $t0, 0($s4)
+	addiu $s3, $s3, 1
+	addiu $s4, $s4, 1
+	bnez $t0, copy_1
+	move $t0, $v0
+	sw $t0, 4($sp)
+	jal Main_out_string
+	addi $sp, $sp, 8
+	lw $s1, 0($sp)
+	lw $ra, 4($sp)
+	addi $sp, $sp, 8
+	li $t0, 2
+	li $t1, 2
 	sw $t1, 12($s1)
 	addi $sp, $sp, 4
 	move $a0, $s1
@@ -169,6 +193,33 @@ Int_type_name:
 Bool_type_name:
 	la $a0, Bool
 	jr $ra
+String_abort::
+	la $a0, abort
+	li $v0, 4
+	syscall
+	la $a0, String
+	li $v0, 4
+	syscall
+	li $v0, 10
+	syscall
+Int_abort::
+	la $a0, abort
+	li $v0, 4
+	syscall
+	la $a0, Int
+	li $v0, 4
+	syscall
+	li $v0, 10
+	syscall
+Bool_abort::
+	la $a0, abort
+	li $v0, 4
+	syscall
+	la $a0, Bool
+	li $v0, 4
+	syscall
+	li $v0, 10
+	syscall
 length:
 	lw $t0, 0($sp)
 	addi $t1, $zero, -1

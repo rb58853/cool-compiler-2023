@@ -115,8 +115,8 @@ class CIL2MIPS():
         if isinstance(cil_expr, CallMethod):
             self.call_meth(cil_expr)
 
-        if isinstance(cil_expr, FromA0):
-            self.mips.add_line(f'a0')
+        # if isinstance(cil_expr, FromA0):
+        #     self.mips.add_line(f'a0')
 
         if isinstance(cil_expr, MipsLine):
             self.mips.add_line(cil_expr.line)    
@@ -172,7 +172,7 @@ class CIL2MIPS():
             lines = cil_expr.to_mips()
             for line in lines:
                 self.mips.add_line(line)
-                
+
         if isinstance(cil_expr, CILIsVoid):
             lines = cil_expr.to_mips()
             for line in lines:
@@ -237,7 +237,7 @@ class CIL2MIPS():
                     self.mips.add_line(f'lui {r} {hex_num[:6]}')
                     self.mips.add_line(f'ori {r} 0x{hex_num[4:]}')
                 else:
-                    self.mips.add_line(f'li {r} {cil_assign.source.value}')
+                    self.mips.add_line(f'li {r}, {cil_assign.source.value}')
             
             if isinstance(cil_assign.source,CILCallLocal):
                 if cil_assign.dest =='':

@@ -1,5 +1,5 @@
 .data
-abort: .asciiz "error abort from "
+abort: .asciiz "Abort called from class "
 substring_error: .asciiz "error substring is out of range."
 String: .asciiz "String"
 Bool: .asciiz "Bool"
@@ -27,7 +27,7 @@ main:
 	li $v0, 10
 	syscall
 Main_main:
-	li $t0 0
+	li $t0, 0
 	move $a0, $t0
 	jr $ra
 __init_Main__:
@@ -39,6 +39,8 @@ __init_Main__:
 	sw $t0, 0($s1)
 	la $t0, StaticMain
 	sw $t0, 4($s1)
+	addi $sp, $sp, -4
+	sw $s1, 0($sp)
 	lw $t0, 0($sp)
 	move $s2, $t0
 	addi $sp, $sp, -8
@@ -64,25 +66,24 @@ __init_Main__:
 	lw $s1, 0($sp)
 	lw $ra, 4($sp)
 	addi $sp, $sp, 8
-	# a0
 	li $t0, 2
 	sw $t0, 8($s1)
 	lw $t0, 0($sp)
 	lw $t1, 8($t0)
 	sw $t1, 12($s1)
-	li $t0 0
+	li $t0, 0
 	sw $t0, 16($s1)
-	li $t0 500
+	li $t0, 500
 	sw $t0, 20($s1)
 loop_0:
-	li $t0 1
+	li $t0, 1
 	beq $t0, $zero, end_while_0
 	lw $t0, 0($sp)
 	lw $t1, 12($t0)
 	addi $t0, $t1, 1
 	lw $t1, 0($sp)
 	sw $t0, 12($t1)
-	li $t0 2
+	li $t0, 2
 	lw $t1, 0($sp)
 	sw $t0, 16($t1)
 loop_1:
@@ -95,7 +96,7 @@ loop_1:
 	mul $t0, $t2, $t3
 	slt $t2, $t1, $t0
 	beq $t2, $zero, else_0
-	li $t0 0
+	li $t0, 0
 	j endif_0
 else_0:
 	lw $t0, 0($sp)
@@ -110,7 +111,7 @@ else_0:
 	mflo $t0
 	mul $t3, $t2, $t0
 	sub $t0, $t1, $t3
-	li $t1 0
+	li $t1, 0
 	beq $t0, $t1, compare_0
 	addi $t0, $zero, 0
 	j end_compare_0
@@ -118,10 +119,10 @@ else_0:
 	addi $t0, $zero, 1
 	end_compare_0:
 	beq $t0, $zero, else_1
-	li $t0 0
+	li $t0, 0
 	j endif_1
 else_1:
-	li $t0 1
+	li $t0, 1
 endif_1:
 endif_0:
 	beq $t0, $zero, end_while_1
@@ -161,7 +162,6 @@ end_while_1:
 	lw $s1, 0($sp)
 	lw $ra, 4($sp)
 	addi $sp, $sp, 8
-	# a0
 	lw $t0, 0($sp)
 	move $s2, $t0
 	addi $sp, $sp, -8
@@ -187,10 +187,9 @@ end_while_1:
 	lw $s1, 0($sp)
 	lw $ra, 4($sp)
 	addi $sp, $sp, 8
-	# a0
 	j endif_2
 else_2:
-	li $t0 0
+	li $t0, 0
 endif_2:
 	lw $t1, 0($sp)
 	lw $t2, 20($t1)
@@ -225,7 +224,6 @@ endif_2:
 	lw $s1, 4($sp)
 	lw $ra, 8($sp)
 	addi $sp, $sp, 12
-	# a0
 	j endif_3
 else_3:
 	li $a0, 9
@@ -245,6 +243,7 @@ endif_3:
 end_while_0:
 	la $a0, StaticVoid
 	sw $a0, 24($s1)
+	addi $sp, $sp, 4
 	move $a0, $s1
 	jr $ra
 __init_IO__:
@@ -347,6 +346,33 @@ Int_type_name:
 Bool_type_name:
 	la $a0, Bool
 	jr $ra
+String_abort:
+	la $a0, abort
+	li $v0, 4
+	syscall
+	la $a0, String
+	li $v0, 4
+	syscall
+	li $v0, 10
+	syscall
+Int_abort:
+	la $a0, abort
+	li $v0, 4
+	syscall
+	la $a0, Int
+	li $v0, 4
+	syscall
+	li $v0, 10
+	syscall
+Bool_abort:
+	la $a0, abort
+	li $v0, 4
+	syscall
+	la $a0, Bool
+	li $v0, 4
+	syscall
+	li $v0, 10
+	syscall
 length:
 	lw $t0, 0($sp)
 	addi $t1, $zero, -1
