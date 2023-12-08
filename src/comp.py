@@ -8,7 +8,7 @@ INPUT_FILE = f'{sys.argv[1]}'
 OUTPUT_FILE = f'{sys.argv[2]}'
 # INPUT_FILE = os.path.join(os.getcwd(), "tests/lexer/iis1.cl")
 
-with open(INPUT_FILE, "r") as f:
+with open(INPUT_FILE, "r", encoding="utf-8") as f:  # Agregado encoding="utf-8"
     code = f.read()
 
 lexer = CoolLexer()
