@@ -215,6 +215,17 @@ class CoolVar(expr):
         self.id = id
         self.type = type
         self.value:expr = value
+        if self.value is None:
+            if type == env.string_type_name:
+                self.value = CoolString()
+            elif type == env.int_type_name:
+                self.value = IntNode()
+            elif type == env.bool_type_name:
+                self.value = CoolBool()
+            else:
+                #Aqui hay que asignar que es un void, o simplemente dejarlo en None que es lo mismo
+                pass
+                
         if self.value is not None:
             Node.set_father(self,self.childs())
 
@@ -992,6 +1003,16 @@ class Feature():
             self.id = id
             self.type = type
             self.value = value
+            if self.value is None:
+                if type == env.string_type_name:
+                    self.value = CoolString()
+                elif type == env.int_type_name:
+                    self.value = IntNode()
+                elif type == env.bool_type_name:
+                    self.value = CoolBool()
+                else:
+                    #Aqui hay que asignar que es un void, o simplemente dejarlo en None que es lo mismo
+                    pass
             self.name = 'class_atr'
             if value is None:
                 if type == env.int_type_name:

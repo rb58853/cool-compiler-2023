@@ -68,7 +68,6 @@ A2I_c2i:
 	end_compare_0:
 	beq $t1, $zero, else_0
 	li $t0 0
-	move $a0, $t0
 	j endif_0
 else_0:
 	lw $t1, 4($sp)
@@ -87,7 +86,6 @@ else_0:
 	end_compare_1:
 	beq $t1, $zero, else_1
 	li $t0 1
-	move $a0, $t0
 	j endif_1
 else_1:
 	lw $t1, 4($sp)
@@ -106,7 +104,6 @@ else_1:
 	end_compare_2:
 	beq $t1, $zero, else_2
 	li $t0 2
-	move $a0, $t0
 	j endif_2
 else_2:
 	lw $t1, 4($sp)
@@ -125,7 +122,6 @@ else_2:
 	end_compare_3:
 	beq $t1, $zero, else_3
 	li $t0 3
-	move $a0, $t0
 	j endif_3
 else_3:
 	lw $t1, 4($sp)
@@ -144,7 +140,6 @@ else_3:
 	end_compare_4:
 	beq $t1, $zero, else_4
 	li $t0 4
-	move $a0, $t0
 	j endif_4
 else_4:
 	lw $t1, 4($sp)
@@ -163,7 +158,6 @@ else_4:
 	end_compare_5:
 	beq $t1, $zero, else_5
 	li $t0 5
-	move $a0, $t0
 	j endif_5
 else_5:
 	lw $t1, 4($sp)
@@ -182,7 +176,6 @@ else_5:
 	end_compare_6:
 	beq $t1, $zero, else_6
 	li $t0 6
-	move $a0, $t0
 	j endif_6
 else_6:
 	lw $t1, 4($sp)
@@ -201,7 +194,6 @@ else_6:
 	end_compare_7:
 	beq $t1, $zero, else_7
 	li $t0 7
-	move $a0, $t0
 	j endif_7
 else_7:
 	lw $t1, 4($sp)
@@ -220,7 +212,6 @@ else_7:
 	end_compare_8:
 	beq $t1, $zero, else_8
 	li $t0 8
-	move $a0, $t0
 	j endif_8
 else_8:
 	lw $t1, 4($sp)
@@ -239,7 +230,6 @@ else_8:
 	end_compare_9:
 	beq $t1, $zero, else_9
 	li $t0 9
-	move $a0, $t0
 	j endif_9
 else_9:
 	lw $t0, 0($sp)
@@ -253,7 +243,6 @@ else_9:
 	lw $ra, 0($sp)
 	addi $sp, $sp, 4
 	li $t0 0
-	move $a0, $t0
 endif_9:
 endif_8:
 endif_7:
@@ -264,6 +253,7 @@ endif_3:
 endif_2:
 endif_1:
 endif_0:
+	move $a0, $t0
 	jr $ra
 A2I_i2c:
 	lw $t1, 4($sp)
@@ -287,7 +277,6 @@ A2I_i2c:
 	addiu $s4, $s4, 1
 	bnez $t0, copy_0
 	move $t0, $v0
-	move $a0, $t0
 	j endif_10
 else_10:
 	lw $t1, 4($sp)
@@ -311,7 +300,6 @@ else_10:
 	addiu $s4, $s4, 1
 	bnez $t0, copy_1
 	move $t0, $v0
-	move $a0, $t0
 	j endif_11
 else_11:
 	lw $t1, 4($sp)
@@ -335,7 +323,6 @@ else_11:
 	addiu $s4, $s4, 1
 	bnez $t0, copy_2
 	move $t0, $v0
-	move $a0, $t0
 	j endif_12
 else_12:
 	lw $t1, 4($sp)
@@ -359,7 +346,6 @@ else_12:
 	addiu $s4, $s4, 1
 	bnez $t0, copy_3
 	move $t0, $v0
-	move $a0, $t0
 	j endif_13
 else_13:
 	lw $t1, 4($sp)
@@ -383,7 +369,6 @@ else_13:
 	addiu $s4, $s4, 1
 	bnez $t0, copy_4
 	move $t0, $v0
-	move $a0, $t0
 	j endif_14
 else_14:
 	lw $t1, 4($sp)
@@ -407,7 +392,6 @@ else_14:
 	addiu $s4, $s4, 1
 	bnez $t0, copy_5
 	move $t0, $v0
-	move $a0, $t0
 	j endif_15
 else_15:
 	lw $t1, 4($sp)
@@ -431,7 +415,6 @@ else_15:
 	addiu $s4, $s4, 1
 	bnez $t0, copy_6
 	move $t0, $v0
-	move $a0, $t0
 	j endif_16
 else_16:
 	lw $t1, 4($sp)
@@ -455,7 +438,6 @@ else_16:
 	addiu $s4, $s4, 1
 	bnez $t0, copy_7
 	move $t0, $v0
-	move $a0, $t0
 	j endif_17
 else_17:
 	lw $t1, 4($sp)
@@ -479,7 +461,6 @@ else_17:
 	addiu $s4, $s4, 1
 	bnez $t0, copy_8
 	move $t0, $v0
-	move $a0, $t0
 	j endif_18
 else_18:
 	lw $t1, 4($sp)
@@ -503,7 +484,6 @@ else_18:
 	addiu $s4, $s4, 1
 	bnez $t0, copy_9
 	move $t0, $v0
-	move $a0, $t0
 	j endif_19
 else_19:
 	lw $t0, 0($sp)
@@ -528,7 +508,6 @@ else_19:
 	addiu $s4, $s4, 1
 	bnez $t0, copy_10
 	move $t0, $v0
-	move $a0, $t0
 endif_19:
 endif_18:
 endif_17:
@@ -539,6 +518,7 @@ endif_13:
 endif_12:
 endif_11:
 endif_10:
+	move $a0, $t0
 	jr $ra
 A2I_a2i:
 	lw $t1, 4($sp)
@@ -560,7 +540,6 @@ A2I_a2i:
 	end_compare_22:
 	beq $t0, $zero, else_20
 	li $t0 0
-	move $a0, $t0
 	j endif_20
 else_20:
 	lw $t1, 4($sp)
@@ -771,7 +750,6 @@ A2I_i2a:
 	addiu $s4, $s4, 1
 	bnez $t0, copy_11
 	move $t0, $v0
-	move $a0, $t0
 	j endif_23
 else_23:
 	li $t0 0
@@ -852,7 +830,6 @@ A2I_i2a_aux:
 	addiu $s4, $s4, 1
 	bnez $t0, copy_13
 	move $t0, $v0
-	move $a0, $t0
 	j endif_25
 else_25:
 	#Region Let

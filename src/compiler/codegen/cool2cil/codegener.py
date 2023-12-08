@@ -508,14 +508,15 @@ class CILogicalString(CILLogicalOP):
         return lines
 
 class CILIf(CILExpr):
-    def __init__(self, condition, else_label, _while = False):
+    def __init__(self, condition, else_label, _while = False, dest = '$a0'):
         super().__init__()
         self._while = _while
         self.condition = condition
         self.else_label = else_label 
-        self.dest = '$a0'
+        self.dest = dest
         # self.then_label = then_label
-
+    def set_des(self, dest):
+        self.dest = dest
     def __str__(self):
         return f'if not {self.condition} GOTO {self.else_label}'
     def __repr__(self) -> str:
@@ -1314,20 +1315,24 @@ class DivExpression:
 
         DivExpression(condition,body,scope)
         temp = body.current_value()
-        body.add_expr(CILIf(body.current_value(),else_label=label))
+        cil_if = CILIf(body.current_value(),else_label=label)
+        body.add_expr(cil_if)
         TempNames.free([temp]) #Esta linea es nueva, antes pinchaba bien
 
         DivExpression(then_s,body,scope)
         temp = body.current_value()
-        body.add_expr(CILAssign(result_expr,body.current_value()))
+        # body.add_expr(CILAssign(result_expr,body.current_value()))
         body.add_expr(GOTO(label_end))
         body.add_expr(Label(label))
-        TempNames.free([temp]) #Esta linea es nueva, antes pinchaba bien
+        cil_if.set_des(temp) #el final del if es el temporal dentro del then
+        TempNames.free([temp]) #Libera el temporal que se usa para el then, se puede usar en el else TODO warning
+        
         DivExpression(else_s,body,scope)
         temp = body.current_value()
-        body.add_expr(CILAssign(result_expr,body.current_value()))
+        # body.add_expr(CILAssign(result_expr,body.current_value()))
         body.add_expr(Label(label_end))
-        TempNames.free([temp]) #Esta linea es nueva, antes pinchaba bien
+        cil_if.set_des(temp) #el final del if es el temporal dentro del else
+        # TempNames.free([temp]) #Esta linea es nueva, antes pinchaba bien
 
     def dispatch(dispatch:Dispatch, body:Body, scope:dict = {}):
         callable:CoolCallable = dispatch.function
