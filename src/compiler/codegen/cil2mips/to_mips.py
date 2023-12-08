@@ -1,7 +1,7 @@
 from compiler.codegen.cil2mips.utils import to_hex
 import compiler.AST.environment as env
 from compiler.codegen.cil2mips.templates import methods as templates
-from compiler.codegen.cil2mips.templates import init_bases, StartMethod
+from compiler.codegen.cil2mips.templates import init_bases, StartMethod, uninherits_methods
 from compiler.codegen.cool2cil.codegener import CILExpr, CILArithmeticOp, CILMethod, CILAssign, CILProgram, CILVar, IntNode, CILCommet, USE_i, StoreLocal, CILCallLocal, ReserveSTACK, FreeStack, CILReturn, Label, CILLogicalOP, CILIf, GOTO, CallMethod, FromA0, CloseProgram, MipsLine, ReserveHeap, StoreInDir, LoadFromDir, Data, StoreString, CILUminus, CILNot, LoadString, NameLabel, CILogicalString, CallFromDir, TYPES, CILVoid
 
 class Registers():
@@ -43,17 +43,22 @@ class MIPS:
         for line in self.body:
             result+= f'{line}\n'        
 
+        for base in init_bases:
+            for line in base.code():
+                result+= f'{line}\n'                
+
         for type in TYPES.keys():
             for meth in templates:
                 if meth.name not in TYPES[type].redefined_base_methods and meth.name in TYPES[type].methods:
                     result +=f'{type}_'
                     for line in meth.code():
                         result+= f'{line}\n'
-        
-        for base in init_bases:
-            for line in base.code():
-                result+= f'{line}\n'                
 
+        for meth in uninherits_methods:
+            #Estos son metodos que no se pueden heredar, luego siempre tienen el mismo nombre y etiqueta
+            for line in meth.code():
+                result+= f'{line}\n'
+        
         return result
     
 class CIL2MIPS():

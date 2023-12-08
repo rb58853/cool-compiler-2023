@@ -1188,11 +1188,12 @@ class DivExpression:
     
     def local_var(vvar, body:Body, scope:dict = {}):
         #Si el scope tiene dos posiciones para ua variable entonces, se ha definido que la variable que se usa para definir a una con su mismo nombre estara en la posicion 1, y la variable nueva creada es la que esta en la posision 0.
+        temp = TempNames.get_name()
         if isinstance(scope[vvar.id], list):
             body.add_expr(CILAssign(TempNames.get_name(),CILCallLocal(vvar,scope[vvar.id][1])))
         else:
             body.add_expr(CILAssign(TempNames.get_name(),CILCallLocal(vvar,scope[vvar.id])))
-    
+        TempNames.free([temp])
     def let(let:CoolLet, body:Body, scope:dict = {}):
         body.add_expr(CILCommet(f'#Region Let'))
         
@@ -1288,12 +1289,6 @@ class DivExpression:
         
         body.add_expr(Label(loop)) #Todos los cambios de la condiciona tienen que volverse a pocesar
 
-        # if IsType.bool(condition):
-        #     if condition:
-        #         body.add_expr(CILIf(IntNode(1),else_label=end_while))
-        #     else:
-        #         body.add_expr(CILIf(IntNode(0),else_label=end_while))
-        # else:
         DivExpression(condition,body, context)
         temp = body.current_value()
         body.add_expr(CILIf(body.current_value(),else_label=end_while, _while=True))
@@ -1313,12 +1308,6 @@ class DivExpression:
         label_end = NameLabel('endif').get()
         result_expr = "$a0"#el resultado se mete en $a0, en caso de ser el if la ultima expresion de un metodo entonces devuelve el resultado
 
-        # if IsType.bool(condition):
-        #     if condition:
-        #         body.add_expr(CILIf(IntNode(1),else_label=label))
-        #     else:
-        #         body.add_expr(CILIf(IntNode(0),else_label=label))
-        # else:
         DivExpression(condition,body,scope)
         body.add_expr(CILIf(body.current_value(),else_label=label))
 
@@ -1356,11 +1345,14 @@ class DivExpression:
         and expr_type != env.string_type_name:
             DivExpression(dispatch.expr, body,scope)
         else:
-            #aqui se pueden usar las funciones basicas de string y las funciones de object
-            pass 
-        instance = body.current_value()#esto va a ser una instancia de clase, dado que es lo que sale de la parte izquierda del dispatch
+            DivExpression(dispatch.expr, body,scope)
+            instance = body.current_value()
+            #Si la parte izquierda es un valor basico entonces se le hace saber eso al callable esto 
+            DivExpression.callable(callable,body,scope,instance, expr_type, expr_type, basic= True)
+            return
         
-        DivExpression.callable(callable,body,scope,instance, type, dinamyc_type)#se le pasa esa intancia como self   
+        instance = body.current_value()#esto va a ser una instancia de clase, dado que es lo que sale de la parte izquierda del dispatch
+        DivExpression.callable(callable,body,scope,instance, type, dinamyc_type)#se le pasa esa intancia como self
     
     def call_meth(meth:CoolCallable, body:Body, scope:dict = {}):
         #esto es lo que se llama cuando se llama al metodo sin nada deante en formato dispatch
@@ -1373,25 +1365,17 @@ class DivExpression:
         DivExpression.callable(meth,body,scope,instance, type)
         TempNames.free([instance])
 
-    def callable(callable:CoolCallable, body:Body, scope:dict = {},instance= None, cclass_type = None, dinamyc_type= None):
+    def callable(callable:CoolCallable, body:Body, scope:dict = {},instance= None, cclass_type = None, dinamyc_type= None, basic = False):
         #Instance es la instancia desde la cual se va a llamar al metodo, a esta instancia hay que pedirle la direccion de su metodo.
         type = cclass_type
-        # if cclass_type is None:
-        #     context:Context = callable.get_class_context()
-        #     type = context.type
-        # else:    
-        #     #Si es llamado desde un dispatch hay que pasarle el tipo
-        #     type = cclass_type
 
         arguments = callable.params
         id = callable.id.id
 
-        #Si la funcion no es base y no esta redefinida, ya que se pueden redefinir metodos de object
-        # if id in env.base_methods:
-        #     label_method = f'{id}'
-        #     type ='' #con esto se logra que type deje de ser none y salte al metodo base ya que es el mismo en caso que no haya una redefinicion 
-        # else:
         label_method = f'{type}_{id}'
+        if basic:
+            #si es basico entonces el metodo tiene siempre el mismo nombre xq no existe la herencia de estas clases
+            label_method = f'{id}'
 
         if instance is not None: #En caso que se le pase una instancia se guarda en $s2
             body.add_expr(CILAssign('$s2',instance))
@@ -1460,7 +1444,8 @@ class DivExpression:
             pos = TYPES[dinamyc_type].methods[callable.id.id] #esta es la posicion del metodo en la parte estatica
             dir = TempNames.get_name()
             body.add_expr(CILAssign(dir,'$s2'))#la instancia esta en el registro $s2, guarda su valor en dir
-            body.add_expr(CallFromDir(dir,pos))    
+            body.add_expr(CallFromDir(dir,pos))
+            TempNames.free([dir]) #Libera la direcion que le pasa    
 
         #Aqui hay que recuperar el valor de los registros temporales. Para ello hay que liberar la pila de los argumentos con los que se llamo la funcion, luego de ello recueperar la posicion en pila de los temporales restando el desplaziento que se libero
         body.add_expr(FreeStack(space))

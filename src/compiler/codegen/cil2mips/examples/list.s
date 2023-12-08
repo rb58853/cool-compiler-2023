@@ -70,8 +70,8 @@ List_cons:
 	sw $ra, 0($sp)
 	addi $sp, $sp, -12
 	sw $s2, 0($sp)
-	lw $t0, 20($sp)
-	sw $t0, 4($sp)
+	lw $t1, 20($sp)
+	sw $t1, 4($sp)
 	lw $t0, 16($sp)
 	sw $t0, 8($sp)
 	move $t0, $s2
@@ -94,8 +94,8 @@ Cons_cons:
 	sw $ra, 0($sp)
 	addi $sp, $sp, -12
 	sw $s2, 0($sp)
-	lw $t0, 20($sp)
-	sw $t0, 4($sp)
+	lw $t1, 20($sp)
+	sw $t1, 4($sp)
 	lw $t0, 16($sp)
 	sw $t0, 8($sp)
 	move $t0, $s2
@@ -121,18 +121,18 @@ Cons_tail:
 	move $a0, $t1
 	jr $ra
 Cons_init:
-	lw $t0, 4($sp)
-	lw $t1, 0($sp)
-	sw $t0, 8($t1)
-	lw $t0, 8($sp)
-	lw $t1, 0($sp)
-	sw $t0, 12($t1)
+	lw $t1, 4($sp)
+	lw $t0, 0($sp)
+	sw $t1, 8($t0)
+	lw $t1, 8($sp)
+	lw $t0, 0($sp)
+	sw $t1, 12($t0)
 	lw $t0, 0($sp)
 	move $a0, $t0
 	jr $ra
 Main_print_list:
-	lw $t0, 4($sp)
-	move $s2, $t0
+	lw $t1, 4($sp)
+	move $s2, $t1
 	addi $sp, $sp, -4
 	sw $ra, 0($sp)
 	addi $sp, $sp, -4
@@ -145,11 +145,10 @@ Main_print_list:
 	lw $ra, 0($sp)
 	addi $sp, $sp, 4
 	beq $a0, $zero, else_0
-	lw $t1, 0($sp)
-	move $s2, $t1
-	addi $sp, $sp, -8
-	sw $t0, 0($sp)
-	sw $ra, 4($sp)
+	lw $t0, 0($sp)
+	move $s2, $t0
+	addi $sp, $sp, -4
+	sw $ra, 0($sp)
 	addi $sp, $sp, -8
 	sw $s2, 0($sp)
 	li $a0, 3
@@ -158,53 +157,47 @@ Main_print_list:
 	move $s4, $v0
 	la $s3, str1
 	copy_0:
-	lb $t1, 0($s3)
-	sb $t1, 0($s4)
+	lb $t0, 0($s3)
+	sb $t0, 0($s4)
 	addiu $s3, $s3, 1
 	addiu $s4, $s4, 1
-	bnez $t1, copy_0
-	move $t1, $v0
-	sw $t1, 4($sp)
+	bnez $t0, copy_0
+	move $t0, $v0
+	sw $t0, 4($sp)
 	jal Main_out_string
 	addi $sp, $sp, 8
-	lw $t0, 0($sp)
-	lw $ra, 4($sp)
-	addi $sp, $sp, 8
+	lw $ra, 0($sp)
+	addi $sp, $sp, 4
 	j endif_0
 else_0:
-	lw $t1, 0($sp)
-	move $s2, $t1
-	addi $sp, $sp, -8
-	sw $t0, 0($sp)
-	sw $ra, 4($sp)
+	lw $t0, 0($sp)
+	move $s2, $t0
+	addi $sp, $sp, -4
+	sw $ra, 0($sp)
 	addi $sp, $sp, -8
 	sw $s2, 0($sp)
-	lw $t1, 20($sp)
+	lw $t1, 16($sp)
 	move $s2, $t1
-	addi $sp, $sp, -8
-	sw $t0, 0($sp)
-	sw $ra, 4($sp)
+	addi $sp, $sp, -4
+	sw $ra, 0($sp)
 	addi $sp, $sp, -4
 	sw $s2, 0($sp)
-	move $t1, $s2
-	lw $t1, 4($t1)
-	lw $t1, 24($t1)
-	jal $t1
+	move $t0, $s2
+	lw $t0, 4($t0)
+	lw $t0, 24($t0)
+	jal $t0
 	addi $sp, $sp, 4
-	lw $t0, 0($sp)
-	lw $ra, 4($sp)
-	addi $sp, $sp, 8
+	lw $ra, 0($sp)
+	addi $sp, $sp, 4
 	sw $a0, 4($sp)
 	jal Main_out_int
 	addi $sp, $sp, 8
+	lw $ra, 0($sp)
+	addi $sp, $sp, 4
 	lw $t0, 0($sp)
-	lw $ra, 4($sp)
-	addi $sp, $sp, 8
-	lw $t1, 0($sp)
-	move $s2, $t1
-	addi $sp, $sp, -8
-	sw $t0, 0($sp)
-	sw $ra, 4($sp)
+	move $s2, $t0
+	addi $sp, $sp, -4
+	sw $ra, 0($sp)
 	addi $sp, $sp, -8
 	sw $s2, 0($sp)
 	li $a0, 2
@@ -213,46 +206,41 @@ else_0:
 	move $s4, $v0
 	la $s3, str2
 	copy_1:
-	lb $t1, 0($s3)
-	sb $t1, 0($s4)
+	lb $t0, 0($s3)
+	sb $t0, 0($s4)
 	addiu $s3, $s3, 1
 	addiu $s4, $s4, 1
-	bnez $t1, copy_1
-	move $t1, $v0
-	sw $t1, 4($sp)
+	bnez $t0, copy_1
+	move $t0, $v0
+	sw $t0, 4($sp)
 	jal Main_out_string
 	addi $sp, $sp, 8
-	lw $t0, 0($sp)
-	lw $ra, 4($sp)
-	addi $sp, $sp, 8
-	lw $t1, 0($sp)
-	move $s2, $t1
-	addi $sp, $sp, -8
-	sw $t0, 0($sp)
-	sw $ra, 4($sp)
-	addi $sp, $sp, -8
-	sw $s2, 0($sp)
-	lw $t1, 20($sp)
-	move $s2, $t1
-	addi $sp, $sp, -8
-	sw $t0, 0($sp)
-	sw $ra, 4($sp)
-	addi $sp, $sp, -4
-	sw $s2, 0($sp)
-	move $t1, $s2
-	lw $t1, 4($t1)
-	lw $t1, 28($t1)
-	jal $t1
+	lw $ra, 0($sp)
 	addi $sp, $sp, 4
 	lw $t0, 0($sp)
-	lw $ra, 4($sp)
-	addi $sp, $sp, 8
+	move $s2, $t0
+	addi $sp, $sp, -4
+	sw $ra, 0($sp)
+	addi $sp, $sp, -8
+	sw $s2, 0($sp)
+	lw $t1, 16($sp)
+	move $s2, $t1
+	addi $sp, $sp, -4
+	sw $ra, 0($sp)
+	addi $sp, $sp, -4
+	sw $s2, 0($sp)
+	move $t0, $s2
+	lw $t0, 4($t0)
+	lw $t0, 28($t0)
+	jal $t0
+	addi $sp, $sp, 4
+	lw $ra, 0($sp)
+	addi $sp, $sp, 4
 	sw $a0, 4($sp)
 	jal Main_print_list
 	addi $sp, $sp, 8
-	lw $t0, 0($sp)
-	lw $ra, 4($sp)
-	addi $sp, $sp, 8
+	lw $ra, 0($sp)
+	addi $sp, $sp, 4
 endif_0:
 	jr $ra
 Main_main:
@@ -277,164 +265,110 @@ Main_main:
 	lw $ra, 0($sp)
 	addi $sp, $sp, 4
 	move $s2, $a0
-	addi $sp, $sp, -8
-	sw $t0, 0($sp)
-	sw $ra, 4($sp)
-	addi $sp, $sp, -8
-	sw $s2, 0($sp)
-	li $t1 2
-	sw $t1, 4($sp)
-	move $t1, $s2
-	lw $t1, 4($t1)
-	lw $t1, 32($t1)
-	jal $t1
-	addi $sp, $sp, 8
-	lw $t0, 0($sp)
-	lw $ra, 4($sp)
-	addi $sp, $sp, 8
-	move $s2, $a0
-	addi $sp, $sp, -12
-	sw $t0, 0($sp)
-	sw $t1, 4($sp)
-	sw $ra, 8($sp)
-	addi $sp, $sp, -8
-	sw $s2, 0($sp)
-	li $t2 3
-	sw $t2, 4($sp)
-	move $t2, $s2
-	lw $t2, 4($t2)
-	lw $t2, 32($t2)
-	jal $t2
-	addi $sp, $sp, 8
-	lw $t0, 0($sp)
-	lw $t1, 4($sp)
-	lw $ra, 8($sp)
-	addi $sp, $sp, 12
-	move $s2, $a0
-	addi $sp, $sp, -16
-	sw $t0, 0($sp)
-	sw $t1, 4($sp)
-	sw $t2, 8($sp)
-	sw $ra, 12($sp)
-	addi $sp, $sp, -8
-	sw $s2, 0($sp)
-	li $t3 4
-	sw $t3, 4($sp)
-	move $t3, $s2
-	lw $t3, 4($t3)
-	lw $t3, 32($t3)
-	jal $t3
-	addi $sp, $sp, 8
-	lw $t0, 0($sp)
-	lw $t1, 4($sp)
-	lw $t2, 8($sp)
-	lw $ra, 12($sp)
-	addi $sp, $sp, 16
-	move $s2, $a0
-	addi $sp, $sp, -20
-	sw $t0, 0($sp)
-	sw $t1, 4($sp)
-	sw $t2, 8($sp)
-	sw $t3, 12($sp)
-	sw $ra, 16($sp)
-	addi $sp, $sp, -8
-	sw $s2, 0($sp)
-	li $t4 5
-	sw $t4, 4($sp)
-	move $t4, $s2
-	lw $t4, 4($t4)
-	lw $t4, 32($t4)
-	jal $t4
-	addi $sp, $sp, 8
-	lw $t0, 0($sp)
-	lw $t1, 4($sp)
-	lw $t2, 8($sp)
-	lw $t3, 12($sp)
-	lw $ra, 16($sp)
-	addi $sp, $sp, 20
-	lw $t5, 0($sp)
-	sw $a0, 8($t5)
-loop_0:
-	lw $t5, 0($sp)
-	lw $t6, 8($t5)
-	move $s2, $t6
-	addi $sp, $sp, -24
-	sw $t0, 0($sp)
-	sw $t1, 4($sp)
-	sw $t2, 8($sp)
-	sw $t3, 12($sp)
-	sw $t4, 16($sp)
-	sw $ra, 20($sp)
 	addi $sp, $sp, -4
+	sw $ra, 0($sp)
+	addi $sp, $sp, -8
 	sw $s2, 0($sp)
-	move $t5, $s2
-	lw $t5, 4($t5)
-	lw $t5, 20($t5)
-	jal $t5
+	li $t0 2
+	sw $t0, 4($sp)
+	move $t0, $s2
+	lw $t0, 4($t0)
+	lw $t0, 32($t0)
+	jal $t0
+	addi $sp, $sp, 8
+	lw $ra, 0($sp)
+	addi $sp, $sp, 4
+	move $s2, $a0
+	addi $sp, $sp, -4
+	sw $ra, 0($sp)
+	addi $sp, $sp, -8
+	sw $s2, 0($sp)
+	li $t0 3
+	sw $t0, 4($sp)
+	move $t0, $s2
+	lw $t0, 4($t0)
+	lw $t0, 32($t0)
+	jal $t0
+	addi $sp, $sp, 8
+	lw $ra, 0($sp)
+	addi $sp, $sp, 4
+	move $s2, $a0
+	addi $sp, $sp, -4
+	sw $ra, 0($sp)
+	addi $sp, $sp, -8
+	sw $s2, 0($sp)
+	li $t0 4
+	sw $t0, 4($sp)
+	move $t0, $s2
+	lw $t0, 4($t0)
+	lw $t0, 32($t0)
+	jal $t0
+	addi $sp, $sp, 8
+	lw $ra, 0($sp)
+	addi $sp, $sp, 4
+	move $s2, $a0
+	addi $sp, $sp, -4
+	sw $ra, 0($sp)
+	addi $sp, $sp, -8
+	sw $s2, 0($sp)
+	li $t0 5
+	sw $t0, 4($sp)
+	move $t0, $s2
+	lw $t0, 4($t0)
+	lw $t0, 32($t0)
+	jal $t0
+	addi $sp, $sp, 8
+	lw $ra, 0($sp)
 	addi $sp, $sp, 4
 	lw $t0, 0($sp)
-	lw $t1, 4($sp)
-	lw $t2, 8($sp)
-	lw $t3, 12($sp)
-	lw $t4, 16($sp)
-	lw $ra, 20($sp)
-	addi $sp, $sp, 24
+	sw $a0, 8($t0)
+loop_0:
+	lw $t0, 0($sp)
+	lw $t1, 8($t0)
+	move $s2, $t1
+	addi $sp, $sp, -4
+	sw $ra, 0($sp)
+	addi $sp, $sp, -4
+	sw $s2, 0($sp)
+	move $t0, $s2
+	lw $t0, 4($t0)
+	lw $t0, 20($t0)
+	jal $t0
+	addi $sp, $sp, 4
+	lw $ra, 0($sp)
+	addi $sp, $sp, 4
 	addi $a0 $a0 -1
 	subu $a0 $zero $a0
 	beq $a0, $zero, end_while_0
-	lw $t6, 0($sp)
-	move $s2, $t6
-	addi $sp, $sp, -28
-	sw $t0, 0($sp)
-	sw $t1, 4($sp)
-	sw $t2, 8($sp)
-	sw $t3, 12($sp)
-	sw $t4, 16($sp)
-	sw $t5, 20($sp)
-	sw $ra, 24($sp)
+	lw $t0, 0($sp)
+	move $s2, $t0
+	addi $sp, $sp, -4
+	sw $ra, 0($sp)
 	addi $sp, $sp, -8
 	sw $s2, 0($sp)
-	lw $t6, 36($sp)
-	lw $t7, 8($t6)
-	sw $t7, 4($sp)
+	lw $t0, 12($sp)
+	lw $t1, 8($t0)
+	sw $t1, 4($sp)
 	jal Main_print_list
 	addi $sp, $sp, 8
-	lw $t0, 0($sp)
-	lw $t1, 4($sp)
-	lw $t2, 8($sp)
-	lw $t3, 12($sp)
-	lw $t4, 16($sp)
-	lw $t5, 20($sp)
-	lw $ra, 24($sp)
-	addi $sp, $sp, 28
-	lw $t6, 0($sp)
-	lw $t7, 8($t6)
-	move $s2, $t7
-	addi $sp, $sp, -28
-	sw $t0, 0($sp)
-	sw $t1, 4($sp)
-	sw $t2, 8($sp)
-	sw $t3, 12($sp)
-	sw $t4, 16($sp)
-	sw $t5, 20($sp)
-	sw $ra, 24($sp)
-	addi $sp, $sp, -4
-	sw $s2, 0($sp)
-	move $t6, $s2
-	lw $t6, 4($t6)
-	lw $t6, 28($t6)
-	jal $t6
+	lw $ra, 0($sp)
 	addi $sp, $sp, 4
 	lw $t0, 0($sp)
-	lw $t1, 4($sp)
-	lw $t2, 8($sp)
-	lw $t3, 12($sp)
-	lw $t4, 16($sp)
-	lw $t5, 20($sp)
-	lw $ra, 24($sp)
-	addi $sp, $sp, 28
-	lw $t7, 0($sp)
-	sw $a0, 8($t7)
+	lw $t1, 8($t0)
+	move $s2, $t1
+	addi $sp, $sp, -4
+	sw $ra, 0($sp)
+	addi $sp, $sp, -4
+	sw $s2, 0($sp)
+	move $t0, $s2
+	lw $t0, 4($t0)
+	lw $t0, 28($t0)
+	jal $t0
+	addi $sp, $sp, 4
+	lw $ra, 0($sp)
+	addi $sp, $sp, 4
+	lw $t0, 0($sp)
+	sw $a0, 8($t0)
 	j loop_0
 end_while_0:
 	jr $ra
@@ -474,6 +408,14 @@ __init_Main__:
 	sw $t0, 4($s1)
 	sw $t0, 8($s1)
 	move $a0, $s1
+	jr $ra
+__init_IO__:
+	li $a0, 8
+	li $v0, 9
+	syscall
+	la $t0, StaticIO
+	sw $t0, 4($v0) 
+	move $a0, $v0
 	jr $ra
 IO_out_string:
 	lw $a0, 4($sp)
@@ -592,11 +534,11 @@ Main_abort:
 	syscall
 	li $v0, 10
 	syscall
-__init_IO__:
-	li $a0, 8
-	li $v0, 9
-	syscall
-	la $t0, StaticIO
-	sw $t0, 4($v0) 
-	move $a0, $v0
+length:
+	lw $t0, 0($sp)
+	addi $t1, $zero, -1
+	loop_len:	lb t2, 0($t0)
+	addi $t1, 1
+	bnez $t2, loop_len
+	move $a0, $t1
 	jr $ra
