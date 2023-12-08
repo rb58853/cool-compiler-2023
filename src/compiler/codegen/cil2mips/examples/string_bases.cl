@@ -1,7 +1,7 @@
 class Main inherits IO{
     main(): IO { 
     {
-        out_string("123456".substr(0,5));
+        out_string("123456".concat("11"));
     }    
     };
 };

@@ -3,6 +3,7 @@ abort: .asciiz "error abort from "
 substring_error: .asciiz "error substring is out of range."
 Main: .asciiz "Main"
 str1: .asciiz "123456"
+str2: .asciiz "11"
 StaticVoid: .asciiz "Void"
 
 StaticIO: .word StaticObject, 8, IO_type_name, IO_abort, IO_copy, IO_out_string, IO_out_int, IO_in_string, IO_in_int
@@ -42,14 +43,23 @@ Main_main:
 	move $s2, $t0
 	addi $sp, $sp, -4
 	sw $ra, 0($sp)
-	addi $sp, $sp, -12
+	addi $sp, $sp, -8
 	sw $s2, 0($sp)
-	li $t0 0
+	li $a0, 3
+	li $v0, 9
+	syscall
+	move $s4, $v0
+	la $s3, str2
+	copy_1:
+	lb $t0, 0($s3)
+	sb $t0, 0($s4)
+	addiu $s3, $s3, 1
+	addiu $s4, $s4, 1
+	bnez $t0, copy_1
+	move $t0, $v0
 	sw $t0, 4($sp)
-	li $t0 7
-	sw $t0, 8($sp)
-	jal substr
-	addi $sp, $sp, 12
+	jal concat
+	addi $sp, $sp, 8
 	lw $ra, 0($sp)
 	addi $sp, $sp, 4
 	sw $a0, 4($sp)
@@ -210,3 +220,40 @@ substr:
 	syscall
 	li $v0, 10
 	syscall
+concat:
+	lw $t0, 0($sp)
+	addi $t1, $zero, -1
+	loop_len_concat_one:
+	lb $t2, 0($t0)
+	addi $t0, $t0, 1
+	addi $t1, $t1, 1
+	bnez $t2, loop_len_concat_one
+	lw $t0, 4($sp)
+	loop_len_concat_two:
+	lb $t2, 0($t0)
+	addi $t0, $t0, 1
+	addi $t1, $t1, 1
+	bnez $t2, loop_len_concat_two
+	move $t3, $t1
+	addi $t3, $t3, 1
+	add $a0, $zero, $t3
+	li $v0, 9
+	syscall
+	move $t4, $v0
+	lw $t0, 0($sp)
+	concat_copy_one:
+	lb $t2, 0($t0)
+	beq $t2, $zero, end_concat_one
+	sb $t2, 0($t4)
+	addi $t0, $t0, 1
+	addi $t4, $t4, 1
+	bnez $t2, concat_copy_one
+	end_concat_one:	lw $t0, 4($sp)
+	concat_copy_two:
+	lb $t2, 0($t0)
+	sb $t2, 0($t4)
+	addi $t0, $t0, 1
+	addi $t4, $t4, 1
+	bnez $t2, concat_copy_two
+	move $a0, $v0
+	jr $ra

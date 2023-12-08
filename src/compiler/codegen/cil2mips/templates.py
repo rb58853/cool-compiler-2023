@@ -120,7 +120,7 @@ class Substring:
         '\tbnez $t4, s_error', #compara el valor de $t4 con cero, si es diferente entonce salta al error, el len pedido se va de rango
 
         ########################### Reservar Memoria
-        '\taddi $t4, $t1, 1',         #Guarda en $t4 el tamanno que debe tener el nuevo substring +1 
+        '\taddi $t4, $t1, 1',         #Guarda en $t4 el tamanno que debe tener el nuevo substring +1 (caracter nulo)
         '\tadd $a0, $zero, $t4',      # Reservar espacio igual a $t1 + 1 que es el length del nuevo substring
         '\tli $v0, 9',               # Código de sistema para sbrk
         '\tsyscall',  
@@ -150,31 +150,61 @@ class Substring:
         '\tsyscall'
         ]
          
-'''
-            f'{self.label_loop}:',
-            f'lb {temp1}, 0({dir1})',         # Cargar el caracter actual en temporal
-            f'lb {temp2}, 0({dir2})',         # Cargar el caracter actual en temporal
-            f'addiu {dir1}, {dir1}, 1',       # Avanzar a la siguiente posición en la memoria
-            f'addiu {dir2}, {dir2}, 1',       # Avanzar a la siguiente posición en la memoria
-            f'bne {temp1}, {temp2}, {self.label_not_equals}', #si son distintos ir a la etiqueta de `no son iguales`, en otro caso sigue.
-            f'bnez {temp1}, {self.label_loop}',    # Si llega a aqui entonces ambos temporales tienen igual vaor xq no aslto arriba, luego basta comparar uno con zero, si es distinto de cero, repite el ciclo, en caso de ser cero, se llego al caracter final con todos iguales, por lo tanto son iguales los string
-            f'li {dest}, 1', #Si llega a aqui xq el ciclo termino sin desigualdad entonces son iguales, se le asigna 1 al valor de salida
-            f'j {self.label_end}', #salta hasta el final sin asignar 0
-            f'{self.label_not_equals}:',
-            f'li {dest}, 0', #asigna 0 al resultado final
-            f'{self.label_end}:', #etiqueta final
-'''
-
-class concat:
+class Concat:
     name = 'concat'
     def code():
         return [
-        'length:',
+        'concat:',
+        ########################## length #############
+        '\tlw $t0, 0($sp)',      #mueve a t0 valor 0 de la pila, este una direcicon con un string almacenado
+        '\taddi $t1, $zero, -1', #Guarda -1 en t1
+        '\tloop_len_concat_one:',
+        '\tlb $t2, 0($t0)',       # Cargar en t2 el caracter actual
+        '\taddi $t0, $t0, 1',         #  aunmenta t0 en 1
+        '\taddi $t1, $t1, 1',         # aumenta t1 en 1, que seria el contador del len 
+        '\tbnez $t2, loop_len_concat_one',  # lo compara con el caracter nulo, en caso de no serlo repite el ciclo
+        
+        '\tlw $t0, 4($sp)',       #carga en t0 el valor del string que se le pasa
+        '\tloop_len_concat_two:',
+        '\tlb $t2, 0($t0)',       # Cargar en t2 el caracter actual
+        '\taddi $t0, $t0, 1',         #  aunmenta t0 en 1
+        '\taddi $t1, $t1, 1',         # aumenta t1 en 1, que seria el contador del len 
+        '\tbnez $t2, loop_len_concat_two',  # lo compara con el caracter nulo, en caso de no serlo repite el ciclo
+        
+
+        '\tmove $t3, $t1',       # mueve a $t3 el valor de $t1, que es el length sumado de ambos string  
+        '\taddi $t3, $t3, 1',       # suma 1 para el caracter nulo, este es el nuevo length
+
+        '\tadd $a0, $zero, $t3',      # Reservar espacio igual length del nuevo string
+        '\tli $v0, 9',               # Código de sistema para sbrk
+        '\tsyscall',  
+        '\tmove $t4, $v0',            #Guarda en 3 la direccion de memoria donde se va a guardar el nuevo substring
+        
+        '\tlw $t0, 0($sp)',      #mueve a t0 valor 0 de la pila, este una direcicon con un string almacenado
+        '\tconcat_copy_one:',
+        '\tlb $t2, 0($t0)',       # Cargar en t2 el caracter actual
+        '\tbeq $t2, $zero, end_concat_one',  # lo compara con el caracter nulo, en caso de serlo sale del ciclo sin escribirlo
+        '\tsb $t2, 0($t4)',       # Guarda en t4 el caracter actual
+        '\taddi $t0, $t0, 1',         #  aunmenta t0 en 1
+        '\taddi $t4, $t4, 1',         # aumenta t4 en 1, que seria donde esta escribiendo 
+        '\tbnez $t2, concat_copy_one',  # lo compara con el caracter nulo, en caso de no serlo repite el ciclo
+        
+        '\tend_concat_one:'
+        
+        '\tlw $t0, 4($sp)',      #mueve a t0 valor 4 de la pila, este una direcicon con el strng pasado por parametro
+        '\tconcat_copy_two:',
+        '\tlb $t2, 0($t0)',       # Cargar en t2 el caracter actual
+        '\tsb $t2, 0($t4)',       # guarda en t4 el caracter actual
+        '\taddi $t0, $t0, 1',         #  aunmenta t0 en 1
+        '\taddi $t4, $t4, 1',         # aumenta t4 en 1, que seria donde esta escribiendo 
+        '\tbnez $t2, concat_copy_two',  # lo compara con el caracter nulo, en caso de no serlo repite el ciclo
+        
+        '\tmove $a0, $v0', #mueve la direccion de inicio del nueov string a $a0
         '\tjr $ra'
         ]        
     
 methods = [OutString,OutInt,InInt, InString, TypeName,Copy, Abort]
-uninherits_methods = [Length, Substring]
+uninherits_methods = [Length, Substring, Concat]
 
 class IO:
     '''Crea una instancia de la clase IO, la guarda en memoria y devuelve su putero'''
