@@ -94,12 +94,61 @@ class Length:
         ]
 
 class Substring:
-    name = 'substring'
+    name = 'substr'
     def code():
         return [
-        'length:',
-        '\tjr $ra'
-        ]   
+        'substr:',
+        ########################## length #############
+        '\tlw $t0, 0($sp)',      #mueve a t0 valor 0 de la pila, este una direcicon con un string almacenado
+        '\taddi $t1, $zero, -1', #Guarda -1 en t1
+        '\tloop_len_full:',
+        '\tlb $t2, 0($t0)',       # Cargar en t2 el caracter actual
+        '\taddi $t0, $t0, 1',         #  aunmenta t0 en 1
+        '\taddi $t1, $t1, 1',         # aumenta t1 en 1, que seria el contador del len 
+        '\tbnez $t2, loop_len_full',  # lo compara con el caracter nulo, en caso de no serlo repite el ciclo
+        '\tmove $t6, $t1',       # mueve a $t6 el valor de $t1, que es el length del string completo        
+
+        ######################## Cargar valores en pila y comparar para lanzar errores
+        '\tlw $t0, 0($sp)',         #mueve a t0 valor 0 de la pila, este una direcicon con un string almacenado
+        '\tlw $t5, 4($sp)',         #mueve a t5 valor 4 de la pila, esto es donde comienza el string
+        '\tadd $t0, $t0, $t5',       #aumenta t0 en el valor index donde debe comenzar el substring, desde aqui se cargan bytes
+        '\tlw $t1, 8($sp)',         #mueve a t1 valor 8 de la pila, esto es el length
+        '\tslt $t4, $t5, $zero',    #$t4 = 1 si $t5 < $zero, de lo contrario $t4 = 0
+        '\tbnez $t4, s_error', #compara el valor de $t4 con cero, si es diferente entonce salta al error,ya que el index es menor que 0
+        '\tadd $t5, $t5, $t1',      #aumenta $t5 en el length que debe tener el substring
+        '\tslt $t4, $t6, $t5',      # $t4 = 1 si $t6(len del string original) < $t5, de lo contrario $t4 = 0
+        '\tbnez $t4, s_error', #compara el valor de $t4 con cero, si es diferente entonce salta al error, el len pedido se va de rango
+
+        ########################### Reservar Memoria
+        '\taddi $t4, $t1, 1',         #Guarda en $t4 el tamanno que debe tener el nuevo substring +1 
+        '\tadd $a0, $zero, $t4',      # Reservar espacio igual a $t1 + 1 que es el length del nuevo substring
+        '\tli $v0, 9',               # Código de sistema para sbrk
+        '\tsyscall',  
+        '\tmove $t3, $v0',            #Guarda en 3 la direccion de memoria donde se va a guardar el nuevo substring
+        
+        ########################## ciclo para escribir le nuevo substring
+        '\tli $t4, 0',
+        '\tloop_substring:',
+        '\tlb $t2, 0($t0)',           # Cargar en t2 el caracter actual
+        '\tsb $t2, 0($t3)',           # guarda el caracter actual en t3
+        '\taddi $t0, $t0, 1',         #  aunmenta t0 en 1
+        '\taddi $t3, $t3, 1',         #  aunmenta t3 en 1
+        '\taddi $t4, $t4, 1',         #  aunmenta t4 en 1, este es el lengthcount
+        '\tslt $t6, $t4, $t1',        # $t6 = 1 si $t4(contador) < $t1(nuevo len), de lo contrario $t6 = 0
+        '\tbnez $t6, loop_substring', #compara $t6 con cero, si es diferente entonces salta a loop_sub...
+        
+        ######################### retorno de la funcion
+        '\tmove $a0, $v0',           # mueve a $a0 el valor de $v0, donde comienza el nuevo string substring        
+        '\tjr $ra',                  # regresa a la posicion desde dond fue llamado        
+        
+        ######################## zona de error
+        '\ts_error:',                # etiqueta en caso de error
+        '\tla $a0, substring_error', # carga el texto de error desde data en $a0
+        '\tli $v0, 4',               #El 4 es para imprimir string(error)
+	    '\tsyscall',                 #llamanda al sistema
+        '\tli $v0, 10',              #Codigo para cerrar el programa
+        '\tsyscall'
+        ]
          
 '''
             f'{self.label_loop}:',
@@ -125,7 +174,7 @@ class concat:
         ]        
     
 methods = [OutString,OutInt,InInt, InString, TypeName,Copy, Abort]
-uninherits_methods = [Length]
+uninherits_methods = [Length, Substring]
 
 class IO:
     '''Crea una instancia de la clase IO, la guarda en memoria y devuelve su putero'''

@@ -1,5 +1,6 @@
 .data
 abort: .asciiz "error abort from "
+substring_error: .asciiz "error substring is out of range."
 Main: .asciiz "Main"
 str1: .asciiz "123456"
 StaticVoid: .asciiz "Void"
@@ -41,14 +42,18 @@ Main_main:
 	move $s2, $t0
 	addi $sp, $sp, -4
 	sw $ra, 0($sp)
-	addi $sp, $sp, -4
+	addi $sp, $sp, -12
 	sw $s2, 0($sp)
-	jal length
-	addi $sp, $sp, 4
+	li $t0 0
+	sw $t0, 4($sp)
+	li $t0 7
+	sw $t0, 8($sp)
+	jal substr
+	addi $sp, $sp, 12
 	lw $ra, 0($sp)
 	addi $sp, $sp, 4
 	sw $a0, 4($sp)
-	jal Main_out_int
+	jal Main_out_string
 	addi $sp, $sp, 8
 	lw $ra, 0($sp)
 	addi $sp, $sp, 4
@@ -165,3 +170,43 @@ length:
 	bnez $t2, loop_len
 	move $a0, $t1
 	jr $ra
+substr:
+	lw $t0, 0($sp)
+	addi $t1, $zero, -1
+	loop_len_full:
+	lb $t2, 0($t0)
+	addi $t0, $t0, 1
+	addi $t1, $t1, 1
+	bnez $t2, loop_len_full
+	move $t6, $t1
+	lw $t0, 0($sp)
+	lw $t5, 4($sp)
+	add $t0, $t0, $t5
+	lw $t1, 8($sp)
+	slt $t4, $t5, $zero
+	bnez $t4, s_error
+	add $t5, $t5, $t1
+	slt $t4, $t6, $t5
+	bnez $t4, s_error
+	addi $t4, $t1, 1
+	add $a0, $zero, $t4
+	li $v0, 9
+	syscall
+	move $t3, $v0
+	li $t4, 0
+	loop_substring:
+	lb $t2, 0($t0)
+	sb $t2, 0($t3)
+	addi $t0, $t0, 1
+	addi $t3, $t3, 1
+	addi $t4, $t4, 1
+	slt $t6, $t4, $t1
+	bnez $t6, loop_substring
+	move $a0, $v0
+	jr $ra
+	s_error:
+	la $a0, substring_error
+	li $v0, 4
+	syscall
+	li $v0, 10
+	syscall

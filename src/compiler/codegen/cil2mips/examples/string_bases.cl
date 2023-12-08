@@ -1,7 +1,7 @@
 class Main inherits IO{
     main(): IO { 
     {
-        out_int("123456".length());
+        out_string("123456".substr(0,5));
     }    
     };
 };

@@ -76,7 +76,10 @@ class Data:
             Data.body.append(data)
     
     def free():
-        Data.body = ['abort: .asciiz "error abort from "']
+        Data.body = [
+                    'abort: .asciiz "error abort from "',
+                    'substring_error: .asciiz "error substring is out of range."'
+                    ]
 
 class CILProgram():
     def __init__(self, program:CoolProgram):
