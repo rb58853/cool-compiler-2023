@@ -16,6 +16,7 @@ class ObjectClass:
         r_features.append(ObjectClass.Features.type_name())
         r_features.append(ObjectClass.Features.abort())
         r_features.append(ObjectClass.Features.copy())
+        
         return r_features
     
     def cclass() -> CoolClass:

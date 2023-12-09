@@ -19,15 +19,12 @@ Main: .asciiz "Main"
 str2: .asciiz "Int"
 str3: .asciiz "String"
 str4: .asciiz "Bool"
-str5: .asciiz "Object"
-str6: .asciiz "IO"
-str7: .asciiz "A"
-str8: .asciiz "B"
-str9: .asciiz "C"
-str10: .asciiz "D"
-str11: .asciiz "E"
-str12: .asciiz "F"
-str13: .asciiz "G"
+str5: .asciiz "IO"
+str6: .asciiz "C"
+str7: .asciiz "D"
+str8: .asciiz "E"
+str9: .asciiz "F"
+str10: .asciiz "G"
 str1: .asciiz "error"
 StaticVoid: .word Void, 4
 StaticObject: .word Object_inherits, 8, Object_type_name, Object_abort, Object_copy
@@ -80,6 +77,16 @@ main:
 	li $v0, 10
 	syscall
 Main_main:
+	addi $sp, $sp, -8
+	sw $ra, 0($sp)
+	sw $s2, 4($sp)
+	jal __init_B__
+	lw $ra, 0($sp)
+	lw $s2, 4($sp)
+	addi $sp, $sp, 8
+	move $t0, $a0
+	lw $t1, 0($sp)
+	sw $t0, 8($t1)
 	lw $t0, 0($sp)
 	lw $t1, 8($t0)
 	move $t0, $t1
@@ -114,7 +121,7 @@ Main_main:
 	la $s7, case_2
 	end_if_temps_4:
 	end_if_temps_5:
-	lw $s5, 12($t0)
+	lw $s5, 16($t0)
 	slt $s6, $s5, $t2
 	beqz $s6, end_if_temps_7
 	slt $s6, $zero, $s5
@@ -123,7 +130,7 @@ Main_main:
 	la $s7, case_3
 	end_if_temps_6:
 	end_if_temps_7:
-	lw $s5, 16($t0)
+	lw $s5, 28($t0)
 	slt $s6, $s5, $t2
 	beqz $s6, end_if_temps_9
 	slt $s6, $zero, $s5
@@ -132,7 +139,7 @@ Main_main:
 	la $s7, case_4
 	end_if_temps_8:
 	end_if_temps_9:
-	lw $s5, 20($t0)
+	lw $s5, 32($t0)
 	slt $s6, $s5, $t2
 	beqz $s6, end_if_temps_11
 	slt $s6, $zero, $s5
@@ -141,7 +148,7 @@ Main_main:
 	la $s7, case_5
 	end_if_temps_10:
 	end_if_temps_11:
-	lw $s5, 24($t0)
+	lw $s5, 36($t0)
 	slt $s6, $s5, $t2
 	beqz $s6, end_if_temps_13
 	slt $s6, $zero, $s5
@@ -150,7 +157,7 @@ Main_main:
 	la $s7, case_6
 	end_if_temps_12:
 	end_if_temps_13:
-	lw $s5, 28($t0)
+	lw $s5, 40($t0)
 	slt $s6, $s5, $t2
 	beqz $s6, end_if_temps_15
 	slt $s6, $zero, $s5
@@ -159,7 +166,7 @@ Main_main:
 	la $s7, case_7
 	end_if_temps_14:
 	end_if_temps_15:
-	lw $s5, 32($t0)
+	lw $s5, 44($t0)
 	slt $s6, $s5, $t2
 	beqz $s6, end_if_temps_17
 	slt $s6, $zero, $s5
@@ -168,33 +175,6 @@ Main_main:
 	la $s7, case_8
 	end_if_temps_16:
 	end_if_temps_17:
-	lw $s5, 36($t0)
-	slt $s6, $s5, $t2
-	beqz $s6, end_if_temps_19
-	slt $s6, $zero, $s5
-	beqz $s6, end_if_temps_18
-	move $t2, $s5
-	la $s7, case_9
-	end_if_temps_18:
-	end_if_temps_19:
-	lw $s5, 40($t0)
-	slt $s6, $s5, $t2
-	beqz $s6, end_if_temps_21
-	slt $s6, $zero, $s5
-	beqz $s6, end_if_temps_20
-	move $t2, $s5
-	la $s7, case_10
-	end_if_temps_20:
-	end_if_temps_21:
-	lw $s5, 44($t0)
-	slt $s6, $s5, $t2
-	beqz $s6, end_if_temps_23
-	slt $s6, $zero, $s5
-	beqz $s6, end_if_temps_22
-	move $t2, $s5
-	la $s7, case_11
-	end_if_temps_22:
-	end_if_temps_23:
 	j $s7
 error_case_0:
 	la $a0, case_error
@@ -252,7 +232,7 @@ case_2:
 	sw $t0, 12($t2)
 	j end_case_0
 case_3:
-	li $a0, 7
+	li $a0, 3
 	li $v0, 9
 	syscall
 	move $s4, $v0
@@ -268,7 +248,7 @@ case_3:
 	sw $t0, 12($t2)
 	j end_case_0
 case_4:
-	li $a0, 3
+	li $a0, 2
 	li $v0, 9
 	syscall
 	move $s4, $v0
@@ -343,54 +323,6 @@ case_8:
 	addiu $s3, $s3, 1
 	addiu $s4, $s4, 1
 	bnez $t0, copy_8
-	move $t0, $v0
-	lw $t2, 0($sp)
-	sw $t0, 12($t2)
-	j end_case_0
-case_9:
-	li $a0, 2
-	li $v0, 9
-	syscall
-	move $s4, $v0
-	la $s3, str11
-	copy_9:
-	lb $t0, 0($s3)
-	sb $t0, 0($s4)
-	addiu $s3, $s3, 1
-	addiu $s4, $s4, 1
-	bnez $t0, copy_9
-	move $t0, $v0
-	lw $t2, 0($sp)
-	sw $t0, 12($t2)
-	j end_case_0
-case_10:
-	li $a0, 2
-	li $v0, 9
-	syscall
-	move $s4, $v0
-	la $s3, str12
-	copy_10:
-	lb $t0, 0($s3)
-	sb $t0, 0($s4)
-	addiu $s3, $s3, 1
-	addiu $s4, $s4, 1
-	bnez $t0, copy_10
-	move $t0, $v0
-	lw $t2, 0($sp)
-	sw $t0, 12($t2)
-	j end_case_0
-case_11:
-	li $a0, 2
-	li $v0, 9
-	syscall
-	move $s4, $v0
-	la $s3, str13
-	copy_11:
-	lb $t0, 0($s3)
-	sb $t0, 0($s4)
-	addiu $s3, $s3, 1
-	addiu $s4, $s4, 1
-	bnez $t0, copy_11
 	move $t0, $v0
 	lw $t2, 0($sp)
 	sw $t0, 12($t2)
@@ -540,12 +472,12 @@ __init_Main__:
 	syscall
 	move $s4, $v0
 	la $s3, str1
-	copy_12:
+	copy_9:
 	lb $t0, 0($s3)
 	sb $t0, 0($s4)
 	addiu $s3, $s3, 1
 	addiu $s4, $s4, 1
-	bnez $t0, copy_12
+	bnez $t0, copy_9
 	move $t0, $v0
 	sw $t0, 12($s1)
 	addi $sp, $sp, 4

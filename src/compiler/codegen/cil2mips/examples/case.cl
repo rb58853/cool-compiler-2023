@@ -12,6 +12,8 @@ class Main inherits IO{
     main(): IO
     { 
         {
+            a<- new B;
+
             case a of
             int:Int => exit <-"Int";
             string:String => exit <-"String";

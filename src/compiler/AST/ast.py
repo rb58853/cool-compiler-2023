@@ -159,6 +159,9 @@ class Node(PlotNode):
             return self.name
 
     def get_class_context(self):
+        if self.context is None:
+            self.get_contex_from_father() #TODO WARNING esto es nuevo antes, todo pinchaba bien
+
         if self.context.cclass != None:
             return self.context
         else:
