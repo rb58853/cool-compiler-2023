@@ -1353,22 +1353,24 @@ class DivExpression:
             was_call = False
             if body.current_value() =='$a0':
                     #si es el retorno de una funcion hay que guardar uno en un temporal
-                    temp = TempNames.get_name()
-                    body.add_expr(CILAssign(temp,'$a0'))
+                    left_value = body.current_value()
+                    # temp = body.current_value()
+                    # temp = TempNames.get_name()
+                    body.add_expr(CILAssign(left_value,'$a0'))
                     was_call = True
                     
             left_value = body.current_value()
             DivExpression(logicar.right,body,scope)
             rigth_value = body.current_value()
+            # temp1 = TempNames.get_name()
+            body.add_expr(CILAssign(left_value,CILLogicalOP(left_value,rigth_value,logicar.op)))
             TempNames.free([left_value,rigth_value])
-            temp1 = TempNames.get_name()
-            body.add_expr(CILAssign(temp1,CILLogicalOP(left_value,rigth_value,logicar.op)))
             
             #TODO ERROR antes cuando no se liberaba temp1 funcionaba
-            TempNames.free([temp1])
+            # TempNames.free([temp1])
 
-            if was_call:
-                TempNames.free([temp])
+            # if was_call:
+            #     TempNames.free([temp])
         else:
             was_call = False
             #En caso de ser string hay que usar el comparador de strings
@@ -1380,8 +1382,8 @@ class DivExpression:
                 DivExpression(logicar.left,body,scope)
                 if body.current_value() =='$a0':
                     #si es el retorno de una funcion hay que guardar uno en un temporal
-                    temp = TempNames.get_name()
-                    body.add_expr(CILAssign(temp,'$a0'))
+                    left_value = body.current_value()
+                    body.add_expr(CILAssign(left_value,'$a0'))
                     was_call = True
 
                 left_value = body.current_value()
@@ -1398,8 +1400,9 @@ class DivExpression:
             # body.add_expr(CILAssign(temp,CILogicalString(left_value,rigth_value,'=')))
             body.add_expr(CILogicalString(left_value,rigth_value,'='))
             TempNames.free([left_value,rigth_value])
-            if was_call:
-                TempNames.free([temp])
+            
+            # if was_call:
+            #     TempNames.free([temp])
 
     def logicar_not_eq(logicar:Logicar, body:Body, scope:dict = {}):
         if (IsType.int(logicar.left)) and (IsType.int(logicar.right)):
@@ -1436,12 +1439,14 @@ class DivExpression:
     
     def int(_int:IntNode, body:Body, scope:dict = {}):
         body.add_expr(CILAssign(TempNames.get_name(),_int))
+        TempNames.free([TempNames.get_name()])
 
     def bool(_bool:CoolBool, body:Body, scope:dict = {}):
         if _bool.value == 'false':
             body.add_expr(CILAssign(TempNames.get_name(),IntNode()))
         else:    
             body.add_expr(CILAssign(TempNames.get_name(),IntNode(1)))
+        TempNames.free(body.current_value())    
 
     def get_atr(id:CoolID, body:Body, scope:dict = {}, instance = 'self', dest= None):
         # body.add_expr(CILCallAtr(scope[instance],id))

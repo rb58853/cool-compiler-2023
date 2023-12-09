@@ -177,12 +177,12 @@ else_69:
 	sub $t1, $t1, $t2
 	li $t0, 0
 	beq $t1, $t0, compare_22
-	addi $t0, $zero, 0
+	addi $t1, $zero, 0
 	j end_compare_69
 	compare_22:
-	addi $t0, $zero, 1
+	addi $t1, $zero, 1
 	end_compare_69:
-	beq $t0, $zero, else_70
+	beq $t1, $zero, else_70
 	li $t0, 0
 	j endif_70
 else_70:

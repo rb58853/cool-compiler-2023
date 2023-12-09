@@ -106,15 +106,14 @@ Main_pal:
 	lw $ra, 0($sp)
 	lw $s2, 4($sp)
 	addi $sp, $sp, 8
-	move $t0, $a0
-	li $t1, 0
-	beq $t0, $t1, compare_33
-	addi $t0, $zero, 0
+	li $t0, 0
+	beq $a0, $t0, compare_33
+	addi $a0, $zero, 0
 	j end_compare_81
 	compare_33:
-	addi $t0, $zero, 1
+	addi $a0, $zero, 1
 	end_compare_81:
-	beq $t0, $zero, else_78
+	beq $a0, $zero, else_78
 	li $t0, 1
 	j endif_78
 else_78:
@@ -131,15 +130,14 @@ else_78:
 	lw $ra, 0($sp)
 	lw $s2, 4($sp)
 	addi $sp, $sp, 8
-	move $t0, $a0
-	li $t1, 1
-	beq $t0, $t1, compare_34
-	addi $t0, $zero, 0
+	li $t0, 1
+	beq $a0, $t0, compare_34
+	addi $a0, $zero, 0
 	j end_compare_82
 	compare_34:
-	addi $t0, $zero, 1
+	addi $a0, $zero, 1
 	end_compare_82:
-	beq $t0, $zero, else_79
+	beq $a0, $zero, else_79
 	li $t0, 1
 	j endif_79
 else_79:
@@ -160,54 +158,49 @@ else_79:
 	lw $ra, 0($sp)
 	lw $s2, 4($sp)
 	addi $sp, $sp, 8
-	move $t0, $a0
-	lw $t2, 4($sp)
-	move $s2, $t2
-	addi $sp, $sp, -12
-	sw $t0, 0($sp)
-	sw $ra, 4($sp)
-	sw $s2, 8($sp)
+	lw $t1, 4($sp)
+	move $s2, $t1
+	addi $sp, $sp, -8
+	sw $ra, 0($sp)
+	sw $s2, 4($sp)
 	addi $sp, $sp, -12
 	sw $s2, 0($sp)
-	lw $t2, 28($sp)
-	move $s2, $t2
-	addi $sp, $sp, -12
-	sw $t0, 0($sp)
-	sw $ra, 4($sp)
-	sw $s2, 8($sp)
+	lw $t1, 24($sp)
+	move $s2, $t1
+	addi $sp, $sp, -8
+	sw $ra, 0($sp)
+	sw $s2, 4($sp)
 	addi $sp, $sp, -4
 	sw $s2, 0($sp)
-	lw $s2, 12($sp)
+	lw $s2, 8($sp)
 	jal length
 	addi $sp, $sp, 4
-	lw $t0, 0($sp)
-	lw $ra, 4($sp)
-	lw $s2, 8($sp)
-	addi $sp, $sp, 12
+	lw $ra, 0($sp)
+	lw $s2, 4($sp)
+	addi $sp, $sp, 8
 	addi $a0, $a0, -1
 	sw $a0, 4($sp)
-	li $t1, 1
-	sw $t1, 8($sp)
-	lw $s2, 20($sp)
+	li $t0, 1
+	sw $t0, 8($sp)
+	lw $s2, 16($sp)
 	jal substr
 	addi $sp, $sp, 12
-	lw $t0, 0($sp)
-	lw $ra, 4($sp)
-	lw $s2, 8($sp)
-	addi $sp, $sp, 12
+	lw $ra, 0($sp)
+	lw $s2, 4($sp)
+	addi $sp, $sp, 8
 	loop_compare_47:
-	lb $s5, 0($t0)
+	lb $s5, 0($a0)
 	lb $s6, 0($a0)
-	addiu $t0, $t0, 1
+	addiu $a0, $a0, 1
 	addiu $a0, $a0, 1
 	bne $s5, $s6, end_not_equals_47
 	bnez $s5, loop_compare_47
-	li $t0, 1
+	li $a0, 1
 	j end_compare_80
 	end_not_equals_47:
-	li $t0, 0
+	li $a0, 0
 	end_compare_80:
-	beq $t0, $zero, else_80
+	beq $a0, $zero, else_80
 	lw $t0, 0($sp)
 	move $s2, $t0
 	addi $sp, $sp, -8

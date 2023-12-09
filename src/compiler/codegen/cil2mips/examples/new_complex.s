@@ -141,32 +141,29 @@ Main_main:
 	lw $ra, 0($sp)
 	lw $s2, 4($sp)
 	addi $sp, $sp, 8
-	move $t0, $a0
-	lw $t2, 0($sp)
-	move $s2, $t2
-	addi $sp, $sp, -12
-	sw $t0, 0($sp)
-	sw $ra, 4($sp)
-	sw $s2, 8($sp)
+	lw $t1, 0($sp)
+	move $s2, $t1
+	addi $sp, $sp, -8
+	sw $ra, 0($sp)
+	sw $s2, 4($sp)
 	addi $sp, $sp, -4
 	sw $s2, 0($sp)
-	lw $s2, 12($sp)
-	move $t1, $s2
-	lw $t1, 4($t1)
-	lw $t1, 44($t1)
-	jal $t1
-	addi $sp, $sp, 4
-	lw $t0, 0($sp)
-	lw $ra, 4($sp)
 	lw $s2, 8($sp)
-	addi $sp, $sp, 12
-	beq $t0, $a0, compare_23
-	addi $t0, $zero, 0
+	move $t0, $s2
+	lw $t0, 4($t0)
+	lw $t0, 44($t0)
+	jal $t0
+	addi $sp, $sp, 4
+	lw $ra, 0($sp)
+	lw $s2, 4($sp)
+	addi $sp, $sp, 8
+	beq $a0, $a0, compare_23
+	addi $a0, $zero, 0
 	j end_compare_70
 	compare_23:
-	addi $t0, $zero, 1
+	addi $a0, $zero, 1
 	end_compare_70:
-	beq $t0, $zero, else_73
+	beq $a0, $zero, else_73
 	lw $t0, 4($sp)
 	move $s2, $t0
 	addi $sp, $sp, -8
@@ -349,19 +346,19 @@ Complex_init:
 	lw $t1, 8($t0)
 	lw $t2, 4($sp)
 	beq $t1, $t2, compare_24
-	addi $t0, $zero, 0
+	addi $t1, $zero, 0
 	j end_compare_71
 	compare_24:
-	addi $t0, $zero, 1
+	addi $t1, $zero, 1
 	end_compare_71:
 	lw $t0, 0($sp)
 	lw $t1, 12($t0)
 	lw $t2, 8($sp)
 	beq $t1, $t2, compare_25
-	addi $t0, $zero, 0
+	addi $t1, $zero, 0
 	j end_compare_72
 	compare_25:
-	addi $t0, $zero, 1
+	addi $t1, $zero, 1
 	end_compare_72:
 	lw $t0, 0($sp)
 	move $a0, $t0
@@ -371,12 +368,12 @@ Complex_print:
 	lw $t1, 12($t0)
 	li $t0, 0
 	beq $t1, $t0, compare_26
-	addi $t0, $zero, 0
+	addi $t1, $zero, 0
 	j end_compare_73
 	compare_26:
-	addi $t0, $zero, 1
+	addi $t1, $zero, 1
 	end_compare_73:
-	beq $t0, $zero, else_75
+	beq $t1, $zero, else_75
 	lw $t0, 0($sp)
 	move $s2, $t0
 	addi $sp, $sp, -8
@@ -495,10 +492,10 @@ Complex_reflect_0:
 	addi $t2 $t2 -1
 	subu $t2 $zero $t2
 	beq $t1, $t2, compare_27
-	addi $t0, $zero, 0
+	addi $t1, $zero, 0
 	j end_compare_74
 	compare_27:
-	addi $t0, $zero, 1
+	addi $t1, $zero, 1
 	end_compare_74:
 	lw $t0, 0($sp)
 	lw $t1, 12($t0)
@@ -507,10 +504,10 @@ Complex_reflect_0:
 	addi $t2 $t2 -1
 	subu $t2 $zero $t2
 	beq $t1, $t2, compare_28
-	addi $t0, $zero, 0
+	addi $t1, $zero, 0
 	j end_compare_75
 	compare_28:
-	addi $t0, $zero, 1
+	addi $t1, $zero, 1
 	end_compare_75:
 	lw $t0, 0($sp)
 	move $a0, $t0
@@ -523,10 +520,10 @@ Complex_reflect_X:
 	addi $t2 $t2 -1
 	subu $t2 $zero $t2
 	beq $t1, $t2, compare_29
-	addi $t0, $zero, 0
+	addi $t1, $zero, 0
 	j end_compare_76
 	compare_29:
-	addi $t0, $zero, 1
+	addi $t1, $zero, 1
 	end_compare_76:
 	lw $t0, 0($sp)
 	move $a0, $t0
@@ -539,10 +536,10 @@ Complex_reflect_Y:
 	addi $t2 $t2 -1
 	subu $t2 $zero $t2
 	beq $t1, $t2, compare_30
-	addi $t0, $zero, 0
+	addi $t1, $zero, 0
 	j end_compare_77
 	compare_30:
-	addi $t0, $zero, 1
+	addi $t1, $zero, 1
 	end_compare_77:
 	lw $t0, 0($sp)
 	move $a0, $t0
@@ -569,12 +566,12 @@ Complex_equal:
 	lw $s2, 8($sp)
 	addi $sp, $sp, 12
 	beq $t1, $a0, compare_31
-	addi $t0, $zero, 0
+	addi $t1, $zero, 0
 	j end_compare_78
 	compare_31:
-	addi $t0, $zero, 1
+	addi $t1, $zero, 1
 	end_compare_78:
-	beq $t0, $zero, else_76
+	beq $t1, $zero, else_76
 	lw $t0, 0($sp)
 	lw $t1, 12($t0)
 	lw $t2, 4($sp)
@@ -596,12 +593,12 @@ Complex_equal:
 	lw $s2, 8($sp)
 	addi $sp, $sp, 12
 	beq $t1, $a0, compare_32
-	addi $t0, $zero, 0
+	addi $t1, $zero, 0
 	j end_compare_79
 	compare_32:
-	addi $t0, $zero, 1
+	addi $t1, $zero, 1
 	end_compare_79:
-	beq $t0, $zero, else_77
+	beq $t1, $zero, else_77
 	li $t0, 1
 	j endif_77
 else_77:

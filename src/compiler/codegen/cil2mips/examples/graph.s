@@ -1142,17 +1142,16 @@ loop_1:
 	lw $ra, 0($sp)
 	lw $s2, 4($sp)
 	addi $sp, $sp, 8
-	move $t0, $a0
-	li $t1, 0
-	beq $t0, $t1, compare_0
-	addi $t0, $zero, 0
+	li $t0, 0
+	beq $a0, $t0, compare_0
+	addi $a0, $zero, 0
 	j end_compare_32
 	compare_0:
-	addi $t0, $zero, 1
+	addi $a0, $zero, 1
 	end_compare_32:
-	addi $t0 $t0 -1
-	subu $t0 $zero $t0
-	beq $t0, $zero, end_while_1
+	addi $a0 $a0 -1
+	subu $a0 $zero $a0
+	beq $a0, $zero, end_while_1
 	#Region Let
 	addi $sp, $sp, -4
 	lw $t0, 8($sp)
@@ -1485,15 +1484,14 @@ Parse_a2i:
 	lw $ra, 0($sp)
 	lw $s2, 4($sp)
 	addi $sp, $sp, 8
-	move $t0, $a0
-	li $t1, 0
-	beq $t0, $t1, compare_1
-	addi $t0, $zero, 0
+	li $t0, 0
+	beq $a0, $t0, compare_1
+	addi $a0, $zero, 0
 	j end_compare_33
 	compare_1:
-	addi $t0, $zero, 1
+	addi $a0, $zero, 1
 	end_compare_33:
-	beq $t0, $zero, else_12
+	beq $a0, $zero, else_12
 	li $t0, 0
 	j endif_12
 else_12:
@@ -1514,21 +1512,20 @@ else_12:
 	lw $ra, 0($sp)
 	lw $s2, 4($sp)
 	addi $sp, $sp, 8
-	move $t0, $a0
-	la $t1, str20
+	la $t0, str20
 	loop_compare_12:
-	lb $s5, 0($t0)
-	lb $s6, 0($t1)
+	lb $s5, 0($a0)
+	lb $s6, 0($t0)
+	addiu $a0, $a0, 1
 	addiu $t0, $t0, 1
-	addiu $t1, $t1, 1
 	bne $s5, $s6, end_not_equals_12
 	bnez $s5, loop_compare_12
-	li $t0, 1
+	li $a0, 1
 	j end_compare_12
 	end_not_equals_12:
-	li $t0, 0
+	li $a0, 0
 	end_compare_12:
-	beq $t0, $zero, else_13
+	beq $a0, $zero, else_13
 	lw $t0, 0($sp)
 	move $s2, $t0
 	addi $sp, $sp, -8
@@ -1594,21 +1591,20 @@ else_13:
 	lw $ra, 0($sp)
 	lw $s2, 4($sp)
 	addi $sp, $sp, 8
-	move $t0, $a0
-	la $t1, str21
+	la $t0, str21
 	loop_compare_13:
-	lb $s5, 0($t0)
-	lb $s6, 0($t1)
+	lb $s5, 0($a0)
+	lb $s6, 0($t0)
+	addiu $a0, $a0, 1
 	addiu $t0, $t0, 1
-	addiu $t1, $t1, 1
 	bne $s5, $s6, end_not_equals_13
 	bnez $s5, loop_compare_13
-	li $t0, 1
+	li $a0, 1
 	j end_compare_13
 	end_not_equals_13:
-	li $t0, 0
+	li $a0, 0
 	end_compare_13:
-	beq $t0, $zero, else_14
+	beq $a0, $zero, else_14
 	lw $t0, 0($sp)
 	move $s2, $t0
 	addi $sp, $sp, -8
@@ -1880,12 +1876,12 @@ else_16:
 	lw $t1, 4($sp)
 	lw $t2, 8($sp)
 	beq $t1, $t2, compare_2
-	addi $t0, $zero, 0
+	addi $t1, $zero, 0
 	j end_compare_34
 	compare_2:
-	addi $t0, $zero, 1
+	addi $t1, $zero, 1
 	end_compare_34:
-	beq $t0, $zero, else_17
+	beq $t1, $zero, else_17
 	li $a0, 1
 	li $v0, 9
 	syscall
@@ -2127,17 +2123,16 @@ loop_4:
 	lw $ra, 0($sp)
 	lw $s2, 4($sp)
 	addi $sp, $sp, 8
-	move $t0, $a0
-	li $t1, 0
-	beq $t0, $t1, compare_3
-	addi $t0, $zero, 0
+	li $t0, 0
+	beq $a0, $t0, compare_3
+	addi $a0, $zero, 0
 	j end_compare_35
 	compare_3:
-	addi $t0, $zero, 1
+	addi $a0, $zero, 1
 	end_compare_35:
-	addi $t0 $t0 -1
-	subu $t0 $zero $t0
-	beq $t0, $zero, end_while_4
+	addi $a0 $a0 -1
+	subu $a0 $zero $a0
+	beq $a0, $zero, end_while_4
 	#Region Let
 	addi $sp, $sp, -4
 	lw $t0, 8($sp)
@@ -2470,15 +2465,14 @@ Main_a2i:
 	lw $ra, 0($sp)
 	lw $s2, 4($sp)
 	addi $sp, $sp, 8
-	move $t0, $a0
-	li $t1, 0
-	beq $t0, $t1, compare_4
-	addi $t0, $zero, 0
+	li $t0, 0
+	beq $a0, $t0, compare_4
+	addi $a0, $zero, 0
 	j end_compare_36
 	compare_4:
-	addi $t0, $zero, 1
+	addi $a0, $zero, 1
 	end_compare_36:
-	beq $t0, $zero, else_28
+	beq $a0, $zero, else_28
 	li $t0, 0
 	j endif_28
 else_28:
@@ -2499,21 +2493,20 @@ else_28:
 	lw $ra, 0($sp)
 	lw $s2, 4($sp)
 	addi $sp, $sp, 8
-	move $t0, $a0
-	la $t1, str20
+	la $t0, str20
 	loop_compare_28:
-	lb $s5, 0($t0)
-	lb $s6, 0($t1)
+	lb $s5, 0($a0)
+	lb $s6, 0($t0)
+	addiu $a0, $a0, 1
 	addiu $t0, $t0, 1
-	addiu $t1, $t1, 1
 	bne $s5, $s6, end_not_equals_28
 	bnez $s5, loop_compare_28
-	li $t0, 1
+	li $a0, 1
 	j end_compare_28
 	end_not_equals_28:
-	li $t0, 0
+	li $a0, 0
 	end_compare_28:
-	beq $t0, $zero, else_29
+	beq $a0, $zero, else_29
 	lw $t0, 0($sp)
 	move $s2, $t0
 	addi $sp, $sp, -8
@@ -2579,21 +2572,20 @@ else_29:
 	lw $ra, 0($sp)
 	lw $s2, 4($sp)
 	addi $sp, $sp, 8
-	move $t0, $a0
-	la $t1, str21
+	la $t0, str21
 	loop_compare_29:
-	lb $s5, 0($t0)
-	lb $s6, 0($t1)
+	lb $s5, 0($a0)
+	lb $s6, 0($t0)
+	addiu $a0, $a0, 1
 	addiu $t0, $t0, 1
-	addiu $t1, $t1, 1
 	bne $s5, $s6, end_not_equals_29
 	bnez $s5, loop_compare_29
-	li $t0, 1
+	li $a0, 1
 	j end_compare_29
 	end_not_equals_29:
-	li $t0, 0
+	li $a0, 0
 	end_compare_29:
-	beq $t0, $zero, else_30
+	beq $a0, $zero, else_30
 	lw $t0, 0($sp)
 	move $s2, $t0
 	addi $sp, $sp, -8
@@ -2865,12 +2857,12 @@ else_32:
 	lw $t1, 4($sp)
 	lw $t2, 8($sp)
 	beq $t1, $t2, compare_5
-	addi $t0, $zero, 0
+	addi $t1, $zero, 0
 	j end_compare_37
 	compare_5:
-	addi $t0, $zero, 1
+	addi $t1, $zero, 1
 	end_compare_37:
-	beq $t0, $zero, else_33
+	beq $t1, $zero, else_33
 	li $a0, 1
 	li $v0, 9
 	syscall

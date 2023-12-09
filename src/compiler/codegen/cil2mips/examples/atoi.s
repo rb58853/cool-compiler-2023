@@ -312,12 +312,12 @@ A2I_i2c:
 	lw $t1, 4($sp)
 	li $t0, 0
 	beq $t1, $t0, compare_6
-	addi $t0, $zero, 0
+	addi $t1, $zero, 0
 	j end_compare_50
 	compare_6:
-	addi $t0, $zero, 1
+	addi $t1, $zero, 1
 	end_compare_50:
-	beq $t0, $zero, else_46
+	beq $t1, $zero, else_46
 	li $a0, 2
 	li $v0, 9
 	syscall
@@ -335,12 +335,12 @@ else_46:
 	lw $t1, 4($sp)
 	li $t0, 1
 	beq $t1, $t0, compare_7
-	addi $t0, $zero, 0
+	addi $t1, $zero, 0
 	j end_compare_51
 	compare_7:
-	addi $t0, $zero, 1
+	addi $t1, $zero, 1
 	end_compare_51:
-	beq $t0, $zero, else_47
+	beq $t1, $zero, else_47
 	li $a0, 2
 	li $v0, 9
 	syscall
@@ -358,12 +358,12 @@ else_47:
 	lw $t1, 4($sp)
 	li $t0, 2
 	beq $t1, $t0, compare_8
-	addi $t0, $zero, 0
+	addi $t1, $zero, 0
 	j end_compare_52
 	compare_8:
-	addi $t0, $zero, 1
+	addi $t1, $zero, 1
 	end_compare_52:
-	beq $t0, $zero, else_48
+	beq $t1, $zero, else_48
 	li $a0, 2
 	li $v0, 9
 	syscall
@@ -381,12 +381,12 @@ else_48:
 	lw $t1, 4($sp)
 	li $t0, 3
 	beq $t1, $t0, compare_9
-	addi $t0, $zero, 0
+	addi $t1, $zero, 0
 	j end_compare_53
 	compare_9:
-	addi $t0, $zero, 1
+	addi $t1, $zero, 1
 	end_compare_53:
-	beq $t0, $zero, else_49
+	beq $t1, $zero, else_49
 	li $a0, 2
 	li $v0, 9
 	syscall
@@ -404,12 +404,12 @@ else_49:
 	lw $t1, 4($sp)
 	li $t0, 4
 	beq $t1, $t0, compare_10
-	addi $t0, $zero, 0
+	addi $t1, $zero, 0
 	j end_compare_54
 	compare_10:
-	addi $t0, $zero, 1
+	addi $t1, $zero, 1
 	end_compare_54:
-	beq $t0, $zero, else_50
+	beq $t1, $zero, else_50
 	li $a0, 2
 	li $v0, 9
 	syscall
@@ -427,12 +427,12 @@ else_50:
 	lw $t1, 4($sp)
 	li $t0, 5
 	beq $t1, $t0, compare_11
-	addi $t0, $zero, 0
+	addi $t1, $zero, 0
 	j end_compare_55
 	compare_11:
-	addi $t0, $zero, 1
+	addi $t1, $zero, 1
 	end_compare_55:
-	beq $t0, $zero, else_51
+	beq $t1, $zero, else_51
 	li $a0, 2
 	li $v0, 9
 	syscall
@@ -450,12 +450,12 @@ else_51:
 	lw $t1, 4($sp)
 	li $t0, 6
 	beq $t1, $t0, compare_12
-	addi $t0, $zero, 0
+	addi $t1, $zero, 0
 	j end_compare_56
 	compare_12:
-	addi $t0, $zero, 1
+	addi $t1, $zero, 1
 	end_compare_56:
-	beq $t0, $zero, else_52
+	beq $t1, $zero, else_52
 	li $a0, 2
 	li $v0, 9
 	syscall
@@ -473,12 +473,12 @@ else_52:
 	lw $t1, 4($sp)
 	li $t0, 7
 	beq $t1, $t0, compare_13
-	addi $t0, $zero, 0
+	addi $t1, $zero, 0
 	j end_compare_57
 	compare_13:
-	addi $t0, $zero, 1
+	addi $t1, $zero, 1
 	end_compare_57:
-	beq $t0, $zero, else_53
+	beq $t1, $zero, else_53
 	li $a0, 2
 	li $v0, 9
 	syscall
@@ -496,12 +496,12 @@ else_53:
 	lw $t1, 4($sp)
 	li $t0, 8
 	beq $t1, $t0, compare_14
-	addi $t0, $zero, 0
+	addi $t1, $zero, 0
 	j end_compare_58
 	compare_14:
-	addi $t0, $zero, 1
+	addi $t1, $zero, 1
 	end_compare_58:
-	beq $t0, $zero, else_54
+	beq $t1, $zero, else_54
 	li $a0, 2
 	li $v0, 9
 	syscall
@@ -519,12 +519,12 @@ else_54:
 	lw $t1, 4($sp)
 	li $t0, 9
 	beq $t1, $t0, compare_15
-	addi $t0, $zero, 0
+	addi $t1, $zero, 0
 	j end_compare_59
 	compare_15:
-	addi $t0, $zero, 1
+	addi $t1, $zero, 1
 	end_compare_59:
-	beq $t0, $zero, else_55
+	beq $t1, $zero, else_55
 	li $a0, 2
 	li $v0, 9
 	syscall
@@ -590,15 +590,14 @@ A2I_a2i:
 	lw $ra, 0($sp)
 	lw $s2, 4($sp)
 	addi $sp, $sp, 8
-	move $t0, $a0
-	li $t1, 0
-	beq $t0, $t1, compare_16
-	addi $t0, $zero, 0
+	li $t0, 0
+	beq $a0, $t0, compare_16
+	addi $a0, $zero, 0
 	j end_compare_60
 	compare_16:
-	addi $t0, $zero, 1
+	addi $a0, $zero, 1
 	end_compare_60:
-	beq $t0, $zero, else_56
+	beq $a0, $zero, else_56
 	li $t0, 0
 	j endif_56
 else_56:
@@ -619,21 +618,20 @@ else_56:
 	lw $ra, 0($sp)
 	lw $s2, 4($sp)
 	addi $sp, $sp, 8
-	move $t0, $a0
-	la $t1, str55
+	la $t0, str55
 	loop_compare_42:
-	lb $s5, 0($t0)
-	lb $s6, 0($t1)
+	lb $s5, 0($a0)
+	lb $s6, 0($t0)
+	addiu $a0, $a0, 1
 	addiu $t0, $t0, 1
-	addiu $t1, $t1, 1
 	bne $s5, $s6, end_not_equals_42
 	bnez $s5, loop_compare_42
-	li $t0, 1
+	li $a0, 1
 	j end_compare_48
 	end_not_equals_42:
-	li $t0, 0
+	li $a0, 0
 	end_compare_48:
-	beq $t0, $zero, else_57
+	beq $a0, $zero, else_57
 	lw $t0, 0($sp)
 	move $s2, $t0
 	addi $sp, $sp, -8
@@ -699,21 +697,20 @@ else_57:
 	lw $ra, 0($sp)
 	lw $s2, 4($sp)
 	addi $sp, $sp, 8
-	move $t0, $a0
-	la $t1, str56
+	la $t0, str56
 	loop_compare_43:
-	lb $s5, 0($t0)
-	lb $s6, 0($t1)
+	lb $s5, 0($a0)
+	lb $s6, 0($t0)
+	addiu $a0, $a0, 1
 	addiu $t0, $t0, 1
-	addiu $t1, $t1, 1
 	bne $s5, $s6, end_not_equals_43
 	bnez $s5, loop_compare_43
-	li $t0, 1
+	li $a0, 1
 	j end_compare_49
 	end_not_equals_43:
-	li $t0, 0
+	li $a0, 0
 	end_compare_49:
-	beq $t0, $zero, else_58
+	beq $a0, $zero, else_58
 	lw $t0, 0($sp)
 	move $s2, $t0
 	addi $sp, $sp, -8
@@ -870,12 +867,12 @@ A2I_i2a:
 	lw $t1, 4($sp)
 	li $t0, 0
 	beq $t1, $t0, compare_17
-	addi $t0, $zero, 0
+	addi $t1, $zero, 0
 	j end_compare_61
 	compare_17:
-	addi $t0, $zero, 1
+	addi $t1, $zero, 1
 	end_compare_61:
-	beq $t0, $zero, else_59
+	beq $t1, $zero, else_59
 	li $a0, 2
 	li $v0, 9
 	syscall
@@ -964,12 +961,12 @@ A2I_i2a_aux:
 	lw $t1, 4($sp)
 	li $t0, 0
 	beq $t1, $t0, compare_18
-	addi $t0, $zero, 0
+	addi $t1, $zero, 0
 	j end_compare_62
 	compare_18:
-	addi $t0, $zero, 1
+	addi $t1, $zero, 1
 	end_compare_62:
-	beq $t0, $zero, else_61
+	beq $t1, $zero, else_61
 	li $a0, 1
 	li $v0, 9
 	syscall

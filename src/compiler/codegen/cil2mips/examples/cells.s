@@ -177,12 +177,12 @@ CellularAutomaton_cell_left_neighbor:
 	lw $t1, 4($sp)
 	li $t0, 0
 	beq $t1, $t0, compare_19
-	addi $t0, $zero, 0
+	addi $t1, $zero, 0
 	j end_compare_66
 	compare_19:
-	addi $t0, $zero, 1
+	addi $t1, $zero, 1
 	end_compare_66:
-	beq $t0, $zero, else_62
+	beq $t1, $zero, else_62
 	lw $t0, 0($sp)
 	move $s2, $t0
 	addi $sp, $sp, -8
@@ -250,12 +250,12 @@ CellularAutomaton_cell_right_neighbor:
 	addi $sp, $sp, 12
 	addi $a0, $a0, -1
 	beq $t1, $a0, compare_20
-	addi $t0, $zero, 0
+	addi $t1, $zero, 0
 	j end_compare_67
 	compare_20:
-	addi $t0, $zero, 1
+	addi $t1, $zero, 1
 	end_compare_67:
-	beq $t0, $zero, else_63
+	beq $t1, $zero, else_63
 	lw $t0, 0($sp)
 	move $s2, $t0
 	addi $sp, $sp, -8
@@ -307,21 +307,20 @@ CellularAutomaton_cell_at_next_evolution:
 	lw $ra, 0($sp)
 	lw $s2, 4($sp)
 	addi $sp, $sp, 8
-	move $t0, $a0
-	la $t1, str74
+	la $t0, str74
 	loop_compare_44:
-	lb $s5, 0($t0)
-	lb $s6, 0($t1)
+	lb $s5, 0($a0)
+	lb $s6, 0($t0)
+	addiu $a0, $a0, 1
 	addiu $t0, $t0, 1
-	addiu $t1, $t1, 1
 	bne $s5, $s6, end_not_equals_44
 	bnez $s5, loop_compare_44
-	li $t0, 1
+	li $a0, 1
 	j end_compare_63
 	end_not_equals_44:
-	li $t0, 0
+	li $a0, 0
 	end_compare_63:
-	beq $t0, $zero, else_65
+	beq $a0, $zero, else_65
 	li $t0, 1
 	j endif_65
 else_65:
@@ -344,21 +343,20 @@ endif_65:
 	lw $ra, 4($sp)
 	lw $s2, 8($sp)
 	addi $sp, $sp, 12
-	move $t1, $a0
-	la $t2, str75
+	la $t1, str75
 	loop_compare_45:
-	lb $s5, 0($t1)
-	lb $s6, 0($t2)
+	lb $s5, 0($a0)
+	lb $s6, 0($t1)
+	addiu $a0, $a0, 1
 	addiu $t1, $t1, 1
-	addiu $t2, $t2, 1
 	bne $s5, $s6, end_not_equals_45
 	bnez $s5, loop_compare_45
-	li $t1, 1
+	li $a0, 1
 	j end_compare_64
 	end_not_equals_45:
-	li $t1, 0
+	li $a0, 0
 	end_compare_64:
-	beq $t1, $zero, else_66
+	beq $a0, $zero, else_66
 	li $t1, 1
 	j endif_66
 else_66:
@@ -382,21 +380,20 @@ endif_66:
 	lw $ra, 4($sp)
 	lw $s2, 8($sp)
 	addi $sp, $sp, 12
-	move $t1, $a0
-	la $t2, str76
+	la $t1, str76
 	loop_compare_46:
-	lb $s5, 0($t1)
-	lb $s6, 0($t2)
+	lb $s5, 0($a0)
+	lb $s6, 0($t1)
+	addiu $a0, $a0, 1
 	addiu $t1, $t1, 1
-	addiu $t2, $t2, 1
 	bne $s5, $s6, end_not_equals_46
 	bnez $s5, loop_compare_46
-	li $t1, 1
+	li $a0, 1
 	j end_compare_65
 	end_not_equals_46:
-	li $t1, 0
+	li $a0, 0
 	end_compare_65:
-	beq $t1, $zero, else_67
+	beq $a0, $zero, else_67
 	li $t1, 1
 	j endif_67
 else_67:
