@@ -133,8 +133,8 @@ __init_Main__:
 	li $t0, 2
 	sw $t0, 8($s1)
 	lw $t0, 0($sp)
-	lw $t1, 8($t0)
-	sw $t1, 12($s1)
+	lw $t0, 8($t0)
+	sw $t0, 12($s1)
 	li $t0, 0
 	sw $t0, 16($s1)
 	li $t0, 500
@@ -143,46 +143,46 @@ loop_10:
 	li $t0, 1
 	beq $t0, $zero, end_while_10
 	lw $t0, 0($sp)
-	lw $t1, 12($t0)
-	addi $t1, $t1, 1
-	lw $t0, 0($sp)
-	sw $t1, 12($t0)
+	lw $t0, 12($t0)
+	addi $t0, $t0, 1
+	lw $t1, 0($sp)
+	sw $t0, 12($t1)
 	li $t0, 2
 	lw $t1, 0($sp)
 	sw $t0, 16($t1)
 loop_11:
 	lw $t0, 0($sp)
-	lw $t1, 12($t0)
-	lw $t0, 0($sp)
-	lw $t2, 16($t0)
-	lw $t0, 0($sp)
-	lw $t3, 16($t0)
-	mul $t2, $t2, $t3
-	slt $t1, $t1, $t2
-	beq $t1, $zero, else_69
+	lw $t0, 12($t0)
+	lw $t1, 0($sp)
+	lw $t1, 16($t1)
+	lw $t2, 0($sp)
+	lw $t2, 16($t2)
+	mul $t1, $t1, $t2
+	slt $t0, $t0, $t1
+	beq $t0, $zero, else_69
 	li $t0, 0
 	j endif_69
 else_69:
 	lw $t0, 0($sp)
-	lw $t1, 12($t0)
-	lw $t0, 0($sp)
-	lw $t2, 16($t0)
-	lw $t0, 0($sp)
-	lw $t3, 12($t0)
-	lw $t0, 0($sp)
-	lw $t4, 16($t0)
-	div $t3, $t4
-	mflo $t3
-	mul $t2, $t2, $t3
-	sub $t1, $t1, $t2
-	li $t0, 0
-	beq $t1, $t0, compare_22
-	addi $t1, $zero, 0
+	lw $t0, 12($t0)
+	lw $t1, 0($sp)
+	lw $t1, 16($t1)
+	lw $t2, 0($sp)
+	lw $t2, 12($t2)
+	lw $t3, 0($sp)
+	lw $t3, 16($t3)
+	div $t2, $t3
+	mflo $t2
+	mul $t1, $t1, $t2
+	sub $t0, $t0, $t1
+	li $t1, 0
+	beq $t0, $t1, compare_22
+	addi $t0, $zero, 0
 	j end_compare_69
 	compare_22:
-	addi $t1, $zero, 1
+	addi $t0, $zero, 1
 	end_compare_69:
-	beq $t1, $zero, else_70
+	beq $t0, $zero, else_70
 	li $t0, 0
 	j endif_70
 else_70:
@@ -191,26 +191,26 @@ endif_70:
 endif_69:
 	beq $t0, $zero, end_while_11
 	lw $t0, 0($sp)
-	lw $t1, 16($t0)
-	addi $t1, $t1, 1
-	lw $t0, 0($sp)
-	sw $t1, 16($t0)
+	lw $t0, 16($t0)
+	addi $t0, $t0, 1
+	lw $t1, 0($sp)
+	sw $t0, 16($t1)
 	j loop_11
 end_while_11:
 	la $a0, StaticVoid
 	lw $t0, 0($sp)
-	lw $t1, 12($t0)
+	lw $t0, 12($t0)
+	lw $t1, 0($sp)
+	lw $t1, 16($t1)
+	lw $t2, 0($sp)
+	lw $t2, 16($t2)
+	mul $t1, $t1, $t2
+	slt $t0, $t0, $t1
+	beq $t0, $zero, else_71
 	lw $t0, 0($sp)
-	lw $t2, 16($t0)
-	lw $t0, 0($sp)
-	lw $t3, 16($t0)
-	mul $t2, $t2, $t3
-	slt $t1, $t1, $t2
-	beq $t1, $zero, else_71
-	lw $t0, 0($sp)
-	lw $t1, 12($t0)
-	lw $t0, 0($sp)
-	sw $t1, 8($t0)
+	lw $t0, 12($t0)
+	lw $t1, 0($sp)
+	sw $t0, 8($t1)
 	lw $t0, 0($sp)
 	move $s2, $t0
 	addi $sp, $sp, -12
@@ -220,8 +220,8 @@ end_while_11:
 	addi $sp, $sp, -8
 	sw $s2, 0($sp)
 	lw $t0, 20($sp)
-	lw $t1, 8($t0)
-	sw $t1, 4($sp)
+	lw $t0, 8($t0)
+	sw $t0, 4($sp)
 	lw $s2, 16($sp)
 	jal Main_out_int
 	addi $sp, $sp, 8
@@ -262,42 +262,40 @@ else_71:
 	li $t0, 0
 	move $a0, $t0
 endif_71:
+	lw $t0, 0($sp)
+	lw $t0, 20($t0)
 	lw $t1, 0($sp)
-	lw $t2, 20($t1)
-	lw $t1, 0($sp)
-	lw $t3, 12($t1)
-	slt $t2, $t3, $t2
-	li $t3, 1
-	slt $t2, $t2, $t3
-	beq $t2, $zero, else_72
+	lw $t1, 12($t1)
+	slt $t0, $t1, $t0
+	li $t1, 1
+	slt $t0, $t0, $t1
+	beq $t0, $zero, else_72
 	li $a0, 5
 	li $v0, 9
 	syscall
 	move $s4, $v0
 	la $s3, str101
 	copy_38:
-	lb $t1, 0($s3)
-	sb $t1, 0($s4)
+	lb $t0, 0($s3)
+	sb $t0, 0($s4)
 	addiu $s3, $s3, 1
 	addiu $s4, $s4, 1
-	bnez $t1, copy_38
-	move $t1, $v0
-	move $s2, $t1
-	addi $sp, $sp, -16
-	sw $t0, 0($sp)
-	sw $s1, 4($sp)
-	sw $ra, 8($sp)
-	sw $s2, 12($sp)
+	bnez $t0, copy_38
+	move $t0, $v0
+	move $s2, $t0
+	addi $sp, $sp, -12
+	sw $s1, 0($sp)
+	sw $ra, 4($sp)
+	sw $s2, 8($sp)
 	addi $sp, $sp, -4
 	sw $s2, 0($sp)
-	lw $s2, 16($sp)
+	lw $s2, 12($sp)
 	jal String_abort
 	addi $sp, $sp, 4
-	lw $t0, 0($sp)
-	lw $s1, 4($sp)
-	lw $ra, 8($sp)
-	lw $s2, 12($sp)
-	addi $sp, $sp, 16
+	lw $s1, 0($sp)
+	lw $ra, 4($sp)
+	lw $s2, 8($sp)
+	addi $sp, $sp, 12
 	j endif_72
 else_72:
 	li $a0, 9
@@ -306,13 +304,13 @@ else_72:
 	move $s4, $v0
 	la $s3, str102
 	copy_39:
-	lb $t1, 0($s3)
-	sb $t1, 0($s4)
+	lb $t0, 0($s3)
+	sb $t0, 0($s4)
 	addiu $s3, $s3, 1
 	addiu $s4, $s4, 1
-	bnez $t1, copy_39
-	move $t1, $v0
-	move $a0, $t1
+	bnez $t0, copy_39
+	move $t0, $v0
+	move $a0, $t0
 endif_72:
 	j loop_10
 end_while_10:

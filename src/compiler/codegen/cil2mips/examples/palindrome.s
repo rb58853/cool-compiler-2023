@@ -93,8 +93,8 @@ main:
 	li $v0, 10
 	syscall
 Main_pal:
-	lw $t1, 4($sp)
-	move $s2, $t1
+	lw $t0, 4($sp)
+	move $s2, $t0
 	addi $sp, $sp, -8
 	sw $ra, 0($sp)
 	sw $s2, 4($sp)
@@ -117,8 +117,8 @@ Main_pal:
 	li $t0, 1
 	j endif_78
 else_78:
-	lw $t1, 4($sp)
-	move $s2, $t1
+	lw $t0, 4($sp)
+	move $s2, $t0
 	addi $sp, $sp, -8
 	sw $ra, 0($sp)
 	sw $s2, 4($sp)
@@ -141,8 +141,8 @@ else_78:
 	li $t0, 1
 	j endif_79
 else_79:
-	lw $t1, 4($sp)
-	move $s2, $t1
+	lw $t0, 4($sp)
+	move $s2, $t0
 	addi $sp, $sp, -8
 	sw $ra, 0($sp)
 	sw $s2, 4($sp)
@@ -158,15 +158,15 @@ else_79:
 	lw $ra, 0($sp)
 	lw $s2, 4($sp)
 	addi $sp, $sp, 8
-	lw $t1, 4($sp)
-	move $s2, $t1
+	lw $t0, 4($sp)
+	move $s2, $t0
 	addi $sp, $sp, -8
 	sw $ra, 0($sp)
 	sw $s2, 4($sp)
 	addi $sp, $sp, -12
 	sw $s2, 0($sp)
-	lw $t1, 24($sp)
-	move $s2, $t1
+	lw $t0, 24($sp)
+	move $s2, $t0
 	addi $sp, $sp, -8
 	sw $ra, 0($sp)
 	sw $s2, 4($sp)
@@ -208,8 +208,8 @@ else_79:
 	sw $s2, 4($sp)
 	addi $sp, $sp, -8
 	sw $s2, 0($sp)
-	lw $t1, 20($sp)
-	move $s2, $t1
+	lw $t0, 20($sp)
+	move $s2, $t0
 	addi $sp, $sp, -8
 	sw $ra, 0($sp)
 	sw $s2, 4($sp)
@@ -265,15 +265,15 @@ else_79:
 	sw $s2, 4($sp)
 	addi $sp, $sp, -8
 	sw $s2, 0($sp)
-	lw $t1, 20($sp)
-	move $s2, $t1
+	lw $t0, 20($sp)
+	move $s2, $t0
 	addi $sp, $sp, -8
 	sw $ra, 0($sp)
 	sw $s2, 4($sp)
 	addi $sp, $sp, -12
 	sw $s2, 0($sp)
-	lw $t1, 40($sp)
-	move $s2, $t1
+	lw $t0, 40($sp)
+	move $s2, $t0
 	addi $sp, $sp, -8
 	sw $ra, 0($sp)
 	sw $s2, 4($sp)
@@ -335,8 +335,8 @@ else_79:
 	sw $s2, 4($sp)
 	addi $sp, $sp, -8
 	sw $s2, 0($sp)
-	lw $t1, 20($sp)
-	move $s2, $t1
+	lw $t0, 20($sp)
+	move $s2, $t0
 	addi $sp, $sp, -8
 	sw $ra, 0($sp)
 	sw $s2, 4($sp)
@@ -344,8 +344,8 @@ else_79:
 	sw $s2, 0($sp)
 	li $t0, 1
 	sw $t0, 4($sp)
-	lw $t1, 40($sp)
-	move $s2, $t1
+	lw $t0, 40($sp)
+	move $s2, $t0
 	addi $sp, $sp, -8
 	sw $ra, 0($sp)
 	sw $s2, 4($sp)

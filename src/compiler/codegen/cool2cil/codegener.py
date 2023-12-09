@@ -53,7 +53,11 @@ class TempNames:
                 if name == 'a0' or name[0]=='$': continue
                 id = int(name[5:])
                 TempNames.used_id[id] = False
-
+    
+    def isUsed(temp):
+        if temp[0] == "$" or temp =="a0":
+            return False
+        return TempNames.used_id[int(temp[5:])]
     def free_all():
         TempNames.used_id = [False, False,False, False, False, False, False, False, False]
     
@@ -1459,10 +1463,10 @@ class DivExpression:
         if id.id == env.self_type_name:
             pos = 0 #El SELF_TYPE esta en la posicion  de cada TYPE
             if dest == None:
-               dest = TempNames.get_name() #si es none guardar en un temporal
+               dest = dir_instance #si es none guardar en un temporal
 
             body.add_expr(LoadFromDir(dest=dest,pos=pos,dir=dir_instance))
-            TempNames.free([dir_instance])
+            # TempNames.free([dir_instance])
             return
         
         type = id.get_class_context().type #Este es el type de la clase que tiene el id
@@ -1470,10 +1474,10 @@ class DivExpression:
         if id.id != env.self_name:
             pos = TYPES[type].atrs[id.id]
             if dest == None:
-               dest = TempNames.get_name() #si es none guardar en un temporal
+               dest = dir_instance #si es none guardar en un temporal
 
             body.add_expr(LoadFromDir(dest=dest,pos=pos,dir=dir_instance))
-            TempNames.free([dir_instance])
+            # TempNames.free([dir_instance])
             # TempNames.free([body.current_value()])
             
         #Si no entra al if el ultimo valor(curent value) sera exactamente dir_instance que es self
@@ -1493,12 +1497,12 @@ class DivExpression:
     
     def local_var(vvar, body:Body, scope:dict = {}):
         #Si el scope tiene dos posiciones para ua variable entonces, se ha definido que la variable que se usa para definir a una con su mismo nombre estara en la posicion 1, y la variable nueva creada es la que esta en la posision 0.
-        temp = TempNames.get_name()
+        # temp = TempNames.get_name()
         if isinstance(scope[vvar.id], list):
             body.add_expr(CILAssign(TempNames.get_name(),CILCallLocal(vvar,scope[vvar.id][1])))
         else:
             body.add_expr(CILAssign(TempNames.get_name(),CILCallLocal(vvar,scope[vvar.id])))
-        TempNames.free([temp])
+        # TempNames.free([temp])
     
     def let(let:CoolLet, body:Body, scope:dict = {}):
         body.add_expr(CILCommet(f'#Region Let'))
@@ -1564,6 +1568,10 @@ class DivExpression:
     def block(block:CoolBlockScope, body:Body, scope:dict = {}):
         for e in block.exprs:
             DivExpression(e,body, scope)
+            used_end = TempNames.isUsed(body.current_value())
+            TempNames.free_all()
+            if used_end:
+                body.add_expr(CILAssign(TempNames.get_name(),body.current_value()))
 
     def id_value(e:CoolID,body, scope:dict = {}):
         body.add_expr(CILAssign(TempNames.get_name(),e.id))
@@ -1578,6 +1586,8 @@ class DivExpression:
         else:
             DivExpression.goto_init(f'__init_{e.type}__',body,scope)
             body.add_expr(CILAssign(TempNames.get_name(),'$a0'))
+
+        TempNames.free(body.current_value())    
 
     def _while(_while:CoolWhile, body:Body, context:dict = {}):
         loop = NameLabel(f'loop').get()

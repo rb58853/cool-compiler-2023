@@ -117,8 +117,8 @@ Foo_printh:
 	addi $sp, $sp, -8
 	sw $s2, 0($sp)
 	lw $t0, 16($sp)
-	lw $t1, 8($t0)
-	sw $t1, 4($sp)
+	lw $t0, 8($t0)
+	sw $t0, 4($sp)
 	lw $s2, 12($sp)
 	jal Bazz_out_int
 	addi $sp, $sp, 8
@@ -132,17 +132,17 @@ Foo_doh:
 	#Region Let
 	addi $sp, $sp, -4
 	lw $t0, 4($sp)
-	lw $t1, 8($t0)
-	sw $t1, 0($sp)
+	lw $t0, 8($t0)
+	sw $t0, 0($sp)
 	lw $t0, 4($sp)
-	lw $t1, 8($t0)
-	addi $t1, $t1, 2
-	lw $t0, 4($sp)
-	sw $t1, 8($t0)
-	lw $t1, 0($sp)
+	lw $t0, 8($t0)
+	addi $t0, $t0, 2
+	lw $t1, 4($sp)
+	sw $t0, 8($t1)
+	lw $t0, 0($sp)
 	addi $sp, $sp, 4
 	#End Region Let
-	move $a0, $t1
+	move $a0, $t0
 	jr $ra
 Bar_printh:
 	lw $t0, 0($sp)
@@ -153,8 +153,8 @@ Bar_printh:
 	addi $sp, $sp, -8
 	sw $s2, 0($sp)
 	lw $t0, 16($sp)
-	lw $t1, 8($t0)
-	sw $t1, 4($sp)
+	lw $t0, 8($t0)
+	sw $t0, 4($sp)
 	lw $s2, 12($sp)
 	jal Bazz_out_int
 	addi $sp, $sp, 8
@@ -168,33 +168,33 @@ Bar_doh:
 	#Region Let
 	addi $sp, $sp, -4
 	lw $t0, 4($sp)
-	lw $t1, 8($t0)
-	sw $t1, 0($sp)
+	lw $t0, 8($t0)
+	sw $t0, 0($sp)
 	lw $t0, 4($sp)
-	lw $t1, 8($t0)
-	addi $t1, $t1, 1
-	lw $t0, 4($sp)
-	sw $t1, 8($t0)
-	lw $t1, 0($sp)
+	lw $t0, 8($t0)
+	addi $t0, $t0, 1
+	lw $t1, 4($sp)
+	sw $t0, 8($t1)
+	lw $t0, 0($sp)
 	addi $sp, $sp, 4
 	#End Region Let
-	move $a0, $t1
+	move $a0, $t0
 	jr $ra
 Bar_doh:
 	#Region Let
 	addi $sp, $sp, -4
 	lw $t0, 4($sp)
-	lw $t1, 8($t0)
-	sw $t1, 0($sp)
+	lw $t0, 8($t0)
+	sw $t0, 0($sp)
 	lw $t0, 4($sp)
-	lw $t1, 8($t0)
-	addi $t1, $t1, 2
-	lw $t0, 4($sp)
-	sw $t1, 8($t0)
-	lw $t1, 0($sp)
+	lw $t0, 8($t0)
+	addi $t0, $t0, 2
+	lw $t1, 4($sp)
+	sw $t0, 8($t1)
+	lw $t0, 0($sp)
 	addi $sp, $sp, 4
 	#End Region Let
-	move $a0, $t1
+	move $a0, $t0
 	jr $ra
 Razz_printh:
 	lw $t0, 0($sp)
@@ -205,8 +205,8 @@ Razz_printh:
 	addi $sp, $sp, -8
 	sw $s2, 0($sp)
 	lw $t0, 16($sp)
-	lw $t1, 8($t0)
-	sw $t1, 4($sp)
+	lw $t0, 8($t0)
+	sw $t0, 4($sp)
 	lw $s2, 12($sp)
 	jal Bazz_out_int
 	addi $sp, $sp, 8
@@ -220,33 +220,33 @@ Razz_doh:
 	#Region Let
 	addi $sp, $sp, -4
 	lw $t0, 4($sp)
-	lw $t1, 8($t0)
-	sw $t1, 0($sp)
+	lw $t0, 8($t0)
+	sw $t0, 0($sp)
 	lw $t0, 4($sp)
-	lw $t1, 8($t0)
-	addi $t1, $t1, 1
-	lw $t0, 4($sp)
-	sw $t1, 8($t0)
-	lw $t1, 0($sp)
+	lw $t0, 8($t0)
+	addi $t0, $t0, 1
+	lw $t1, 4($sp)
+	sw $t0, 8($t1)
+	lw $t0, 0($sp)
 	addi $sp, $sp, 4
 	#End Region Let
-	move $a0, $t1
+	move $a0, $t0
 	jr $ra
 Razz_doh:
 	#Region Let
 	addi $sp, $sp, -4
 	lw $t0, 4($sp)
-	lw $t1, 8($t0)
-	sw $t1, 0($sp)
+	lw $t0, 8($t0)
+	sw $t0, 0($sp)
 	lw $t0, 4($sp)
-	lw $t1, 8($t0)
-	addi $t1, $t1, 2
-	lw $t0, 4($sp)
-	sw $t1, 8($t0)
-	lw $t1, 0($sp)
+	lw $t0, 8($t0)
+	addi $t0, $t0, 2
+	lw $t1, 4($sp)
+	sw $t0, 8($t1)
+	lw $t0, 0($sp)
 	addi $sp, $sp, 4
 	#End Region Let
-	move $a0, $t1
+	move $a0, $t0
 	jr $ra
 Bazz_printh:
 	lw $t0, 0($sp)
@@ -257,8 +257,8 @@ Bazz_printh:
 	addi $sp, $sp, -8
 	sw $s2, 0($sp)
 	lw $t0, 16($sp)
-	lw $t1, 8($t0)
-	sw $t1, 4($sp)
+	lw $t0, 8($t0)
+	sw $t0, 4($sp)
 	lw $s2, 12($sp)
 	jal Bazz_out_int
 	addi $sp, $sp, 8
@@ -272,17 +272,17 @@ Bazz_doh:
 	#Region Let
 	addi $sp, $sp, -4
 	lw $t0, 4($sp)
-	lw $t1, 8($t0)
-	sw $t1, 0($sp)
+	lw $t0, 8($t0)
+	sw $t0, 0($sp)
 	lw $t0, 4($sp)
-	lw $t1, 8($t0)
-	addi $t1, $t1, 1
-	lw $t0, 4($sp)
-	sw $t1, 8($t0)
-	lw $t1, 0($sp)
+	lw $t0, 8($t0)
+	addi $t0, $t0, 1
+	lw $t1, 4($sp)
+	sw $t0, 8($t1)
+	lw $t0, 0($sp)
 	addi $sp, $sp, 4
 	#End Region Let
-	move $a0, $t1
+	move $a0, $t0
 	jr $ra
 Main_main:
 	li $a0, 11
@@ -419,64 +419,61 @@ case_2:
 	la $a0, StaticVoid
 	sw $t2, 12($sp)
 case_3:
-	lw $t3, 12($sp)
-	move $t2, $t3
+	lw $t2, 12($sp)
 	j end_case_0
 end_case_0:
 	addi $sp, $sp, 16
 	sw $t2, 12($s1)
 	lw $t2, 0($sp)
 	move $s2, $t2
-	addi $sp, $sp, -24
+	addi $sp, $sp, -20
 	sw $t0, 0($sp)
 	sw $t1, 4($sp)
-	sw $t3, 8($sp)
-	sw $s1, 12($sp)
-	sw $ra, 16($sp)
-	sw $s2, 20($sp)
+	sw $s1, 8($sp)
+	sw $ra, 12($sp)
+	sw $s2, 16($sp)
 	addi $sp, $sp, -4
 	sw $s2, 0($sp)
-	lw $s2, 24($sp)
+	lw $s2, 20($sp)
 	jal Bazz_printh
 	addi $sp, $sp, 4
 	lw $t0, 0($sp)
 	lw $t1, 4($sp)
-	lw $t3, 8($sp)
-	lw $s1, 12($sp)
-	lw $ra, 16($sp)
-	lw $s2, 20($sp)
-	addi $sp, $sp, 24
+	lw $s1, 8($sp)
+	lw $ra, 12($sp)
+	lw $s2, 16($sp)
+	addi $sp, $sp, 20
 	sw $a0, 16($s1)
 	lw $t2, 0($sp)
-	move $t4, $t2
-	lw $t4, 4($t4)
-	lw $t4, 0($t4)
+	move $t3, $t2
+	lw $t3, 4($t3)
+	lw $t3, 0($t3)
 	la $s7, error_case_1
-	li $t5, 100
-	lw $s5, 88($t4)
-	slt $s6, $s5, $t5
+	li $t4, 100
+	lw $s5, 88($t3)
+	slt $s6, $s5, $t4
 	beqz $s6, end_if_temps_9
 	slt $s6, $zero, $s5
 	beqz $s6, end_if_temps_8
-	move $t5, $s5
+	move $t4, $s5
 	la $s7, case_4
 	end_if_temps_8:
 	end_if_temps_9:
-	lw $s5, 80($t4)
-	slt $s6, $s5, $t5
+	lw $s5, 80($t3)
+	slt $s6, $s5, $t4
 	beqz $s6, end_if_temps_11
 	slt $s6, $zero, $s5
 	beqz $s6, end_if_temps_10
-	move $t5, $s5
+	move $t4, $s5
 	la $s7, case_5
 	end_if_temps_10:
 	end_if_temps_11:
-	lw $s5, 84($t4)
-	slt $s6, $s5, $t5
+	lw $s5, 84($t3)
+	slt $s6, $s5, $t4
 	beqz $s6, end_if_temps_13
 	slt $s6, $zero, $s5
 	beqz $s6, end_if_temps_12
-	move $t5, $s5
+	move $t4, $s5
 	la $s7, case_6
 	end_if_temps_12:
 	end_if_temps_13:
@@ -489,180 +486,159 @@ error_case_1:
 		li $v0, 10
 		syscall
 	la $a0, StaticVoid
-	sw $t5, 0($sp)
+	sw $t4, 0($sp)
 case_4:
-	addi $sp, $sp, -32
+	addi $sp, $sp, -28
 	sw $t0, 0($sp)
 	sw $t1, 4($sp)
 	sw $t2, 8($sp)
 	sw $t3, 12($sp)
-	sw $t4, 16($sp)
-	sw $s1, 20($sp)
-	sw $ra, 24($sp)
-	sw $s2, 28($sp)
+	sw $s1, 16($sp)
+	sw $ra, 20($sp)
+	sw $s2, 24($sp)
 	jal __init_Bar__
 	lw $t0, 0($sp)
 	lw $t1, 4($sp)
 	lw $t2, 8($sp)
 	lw $t3, 12($sp)
-	lw $t4, 16($sp)
-	lw $s1, 20($sp)
-	lw $ra, 24($sp)
-	lw $s2, 28($sp)
-	addi $sp, $sp, 32
-	move $t5, $a0
+	lw $s1, 16($sp)
+	lw $ra, 20($sp)
+	lw $s2, 24($sp)
+	addi $sp, $sp, 28
+	move $t4, $a0
 	j end_case_1
 	la $a0, StaticVoid
-	sw $t5, 4($sp)
+	sw $t4, 4($sp)
 case_5:
-	addi $sp, $sp, -32
+	addi $sp, $sp, -28
 	sw $t0, 0($sp)
 	sw $t1, 4($sp)
 	sw $t2, 8($sp)
 	sw $t3, 12($sp)
-	sw $t4, 16($sp)
-	sw $s1, 20($sp)
-	sw $ra, 24($sp)
-	sw $s2, 28($sp)
+	sw $s1, 16($sp)
+	sw $ra, 20($sp)
+	sw $s2, 24($sp)
 	jal __init_Razz__
 	lw $t0, 0($sp)
 	lw $t1, 4($sp)
 	lw $t2, 8($sp)
 	lw $t3, 12($sp)
-	lw $t4, 16($sp)
-	lw $s1, 20($sp)
-	lw $ra, 24($sp)
-	lw $s2, 28($sp)
-	addi $sp, $sp, 32
-	move $t5, $a0
+	lw $s1, 16($sp)
+	lw $ra, 20($sp)
+	lw $s2, 24($sp)
+	addi $sp, $sp, 28
+	move $t4, $a0
 	j end_case_1
 	la $a0, StaticVoid
-	sw $t5, 8($sp)
+	sw $t4, 8($sp)
 case_6:
-	lw $t6, 8($sp)
-	move $t5, $t6
+	lw $t4, 8($sp)
 	j end_case_1
 end_case_1:
 	addi $sp, $sp, 12
-	sw $t5, 20($s1)
-	lw $t5, 0($sp)
-	lw $t7, 20($t5)
-	move $s2, $t7
-	addi $sp, $sp, -36
+	sw $t4, 20($s1)
+	lw $t4, 0($sp)
+	lw $t4, 20($t4)
+	move $s2, $t4
+	addi $sp, $sp, -28
 	sw $t0, 0($sp)
 	sw $t1, 4($sp)
 	sw $t2, 8($sp)
 	sw $t3, 12($sp)
-	sw $t4, 16($sp)
-	sw $t6, 20($sp)
-	sw $s1, 24($sp)
-	sw $ra, 28($sp)
-	sw $s2, 32($sp)
+	sw $s1, 16($sp)
+	sw $ra, 20($sp)
+	sw $s2, 24($sp)
 	addi $sp, $sp, -4
 	sw $s2, 0($sp)
-	lw $s2, 36($sp)
-	move $t5, $s2
-	lw $t5, 4($t5)
-	lw $t5, 40($t5)
-	jal $t5
+	lw $s2, 28($sp)
+	move $t4, $s2
+	lw $t4, 4($t4)
+	lw $t4, 40($t4)
+	jal $t4
 	addi $sp, $sp, 4
 	lw $t0, 0($sp)
 	lw $t1, 4($sp)
 	lw $t2, 8($sp)
 	lw $t3, 12($sp)
-	lw $t4, 16($sp)
-	lw $t6, 20($sp)
-	lw $s1, 24($sp)
-	lw $ra, 28($sp)
-	lw $s2, 32($sp)
-	addi $sp, $sp, 36
-	lw $t5, 0($sp)
-	lw $t7, 12($t5)
-	move $s2, $t7
-	addi $sp, $sp, -36
+	lw $s1, 16($sp)
+	lw $ra, 20($sp)
+	lw $s2, 24($sp)
+	addi $sp, $sp, 28
+	lw $t4, 0($sp)
+	lw $t4, 12($t4)
+	move $s2, $t4
+	addi $sp, $sp, -28
 	sw $t0, 0($sp)
 	sw $t1, 4($sp)
 	sw $t2, 8($sp)
 	sw $t3, 12($sp)
-	sw $t4, 16($sp)
-	sw $t6, 20($sp)
-	sw $s1, 24($sp)
-	sw $ra, 28($sp)
-	sw $s2, 32($sp)
+	sw $s1, 16($sp)
+	sw $ra, 20($sp)
+	sw $s2, 24($sp)
 	addi $sp, $sp, -4
 	sw $s2, 0($sp)
-	lw $s2, 36($sp)
-	move $t5, $s2
-	lw $t5, 4($t5)
-	lw $t5, 40($t5)
-	jal $t5
+	lw $s2, 28($sp)
+	move $t4, $s2
+	lw $t4, 4($t4)
+	lw $t4, 40($t4)
+	jal $t4
 	addi $sp, $sp, 4
 	lw $t0, 0($sp)
 	lw $t1, 4($sp)
 	lw $t2, 8($sp)
 	lw $t3, 12($sp)
-	lw $t4, 16($sp)
-	lw $t6, 20($sp)
-	lw $s1, 24($sp)
-	lw $ra, 28($sp)
-	lw $s2, 32($sp)
-	addi $sp, $sp, 36
+	lw $s1, 16($sp)
+	lw $ra, 20($sp)
+	lw $s2, 24($sp)
+	addi $sp, $sp, 28
 	add $a0, $a0, $a0
-	lw $t5, 0($sp)
-	move $s2, $t5
-	addi $sp, $sp, -36
+	lw $t4, 0($sp)
+	move $s2, $t4
+	addi $sp, $sp, -28
 	sw $t0, 0($sp)
 	sw $t1, 4($sp)
 	sw $t2, 8($sp)
 	sw $t3, 12($sp)
-	sw $t4, 16($sp)
-	sw $t6, 20($sp)
-	sw $s1, 24($sp)
-	sw $ra, 28($sp)
-	sw $s2, 32($sp)
+	sw $s1, 16($sp)
+	sw $ra, 20($sp)
+	sw $s2, 24($sp)
 	addi $sp, $sp, -4
 	sw $s2, 0($sp)
-	lw $s2, 36($sp)
+	lw $s2, 28($sp)
 	jal Foo_doh
 	addi $sp, $sp, 4
 	lw $t0, 0($sp)
 	lw $t1, 4($sp)
 	lw $t2, 8($sp)
 	lw $t3, 12($sp)
-	lw $t4, 16($sp)
-	lw $t6, 20($sp)
-	lw $s1, 24($sp)
-	lw $ra, 28($sp)
-	lw $s2, 32($sp)
-	addi $sp, $sp, 36
+	lw $s1, 16($sp)
+	lw $ra, 20($sp)
+	lw $s2, 24($sp)
+	addi $sp, $sp, 28
 	add $a0, $a0, $a0
-	lw $t5, 0($sp)
-	move $s2, $t5
-	addi $sp, $sp, -36
+	lw $t4, 0($sp)
+	move $s2, $t4
+	addi $sp, $sp, -28
 	sw $t0, 0($sp)
 	sw $t1, 4($sp)
 	sw $t2, 8($sp)
 	sw $t3, 12($sp)
-	sw $t4, 16($sp)
-	sw $t6, 20($sp)
-	sw $s1, 24($sp)
-	sw $ra, 28($sp)
-	sw $s2, 32($sp)
+	sw $s1, 16($sp)
+	sw $ra, 20($sp)
+	sw $s2, 24($sp)
 	addi $sp, $sp, -4
 	sw $s2, 0($sp)
-	lw $s2, 36($sp)
+	lw $s2, 28($sp)
 	jal Foo_printh
 	addi $sp, $sp, 4
 	lw $t0, 0($sp)
 	lw $t1, 4($sp)
 	lw $t2, 8($sp)
 	lw $t3, 12($sp)
-	lw $t4, 16($sp)
-	lw $t6, 20($sp)
-	lw $s1, 24($sp)
-	lw $ra, 28($sp)
-	lw $s2, 32($sp)
-	addi $sp, $sp, 36
+	lw $s1, 16($sp)
+	lw $ra, 20($sp)
+	lw $s2, 24($sp)
+	addi $sp, $sp, 28
 	add $a0, $a0, $a0
 	sw $a0, 24($s1)
 	addi $sp, $sp, 4
@@ -788,64 +764,61 @@ case_9:
 	la $a0, StaticVoid
 	sw $t2, 12($sp)
 case_10:
-	lw $t3, 12($sp)
-	move $t2, $t3
+	lw $t2, 12($sp)
 	j end_case_2
 end_case_2:
 	addi $sp, $sp, 16
 	sw $t2, 12($s1)
 	lw $t2, 0($sp)
 	move $s2, $t2
-	addi $sp, $sp, -24
+	addi $sp, $sp, -20
 	sw $t0, 0($sp)
 	sw $t1, 4($sp)
-	sw $t3, 8($sp)
-	sw $s1, 12($sp)
-	sw $ra, 16($sp)
-	sw $s2, 20($sp)
+	sw $s1, 8($sp)
+	sw $ra, 12($sp)
+	sw $s2, 16($sp)
 	addi $sp, $sp, -4
 	sw $s2, 0($sp)
-	lw $s2, 24($sp)
+	lw $s2, 20($sp)
 	jal Bazz_printh
 	addi $sp, $sp, 4
 	lw $t0, 0($sp)
 	lw $t1, 4($sp)
-	lw $t3, 8($sp)
-	lw $s1, 12($sp)
-	lw $ra, 16($sp)
-	lw $s2, 20($sp)
-	addi $sp, $sp, 24
+	lw $s1, 8($sp)
+	lw $ra, 12($sp)
+	lw $s2, 16($sp)
+	addi $sp, $sp, 20
 	sw $a0, 16($s1)
 	lw $t2, 0($sp)
-	move $t4, $t2
-	lw $t4, 4($t4)
-	lw $t4, 0($t4)
+	move $t3, $t2
+	lw $t3, 4($t3)
+	lw $t3, 0($t3)
 	la $s7, error_case_3
-	li $t5, 100
-	lw $s5, 88($t4)
-	slt $s6, $s5, $t5
+	li $t4, 100
+	lw $s5, 88($t3)
+	slt $s6, $s5, $t4
 	beqz $s6, end_if_temps_23
 	slt $s6, $zero, $s5
 	beqz $s6, end_if_temps_22
-	move $t5, $s5
+	move $t4, $s5
 	la $s7, case_11
 	end_if_temps_22:
 	end_if_temps_23:
-	lw $s5, 80($t4)
-	slt $s6, $s5, $t5
+	lw $s5, 80($t3)
+	slt $s6, $s5, $t4
 	beqz $s6, end_if_temps_25
 	slt $s6, $zero, $s5
 	beqz $s6, end_if_temps_24
-	move $t5, $s5
+	move $t4, $s5
 	la $s7, case_12
 	end_if_temps_24:
 	end_if_temps_25:
-	lw $s5, 84($t4)
-	slt $s6, $s5, $t5
+	lw $s5, 84($t3)
+	slt $s6, $s5, $t4
 	beqz $s6, end_if_temps_27
 	slt $s6, $zero, $s5
 	beqz $s6, end_if_temps_26
-	move $t5, $s5
+	move $t4, $s5
 	la $s7, case_13
 	end_if_temps_26:
 	end_if_temps_27:
@@ -858,203 +831,182 @@ error_case_3:
 		li $v0, 10
 		syscall
 	la $a0, StaticVoid
-	sw $t5, 0($sp)
+	sw $t4, 0($sp)
 case_11:
-	addi $sp, $sp, -32
+	addi $sp, $sp, -28
 	sw $t0, 0($sp)
 	sw $t1, 4($sp)
 	sw $t2, 8($sp)
 	sw $t3, 12($sp)
-	sw $t4, 16($sp)
-	sw $s1, 20($sp)
-	sw $ra, 24($sp)
-	sw $s2, 28($sp)
+	sw $s1, 16($sp)
+	sw $ra, 20($sp)
+	sw $s2, 24($sp)
 	jal __init_Bar__
 	lw $t0, 0($sp)
 	lw $t1, 4($sp)
 	lw $t2, 8($sp)
 	lw $t3, 12($sp)
-	lw $t4, 16($sp)
-	lw $s1, 20($sp)
-	lw $ra, 24($sp)
-	lw $s2, 28($sp)
-	addi $sp, $sp, 32
-	move $t5, $a0
+	lw $s1, 16($sp)
+	lw $ra, 20($sp)
+	lw $s2, 24($sp)
+	addi $sp, $sp, 28
+	move $t4, $a0
 	j end_case_3
 	la $a0, StaticVoid
-	sw $t5, 4($sp)
+	sw $t4, 4($sp)
 case_12:
-	addi $sp, $sp, -32
+	addi $sp, $sp, -28
 	sw $t0, 0($sp)
 	sw $t1, 4($sp)
 	sw $t2, 8($sp)
 	sw $t3, 12($sp)
-	sw $t4, 16($sp)
-	sw $s1, 20($sp)
-	sw $ra, 24($sp)
-	sw $s2, 28($sp)
+	sw $s1, 16($sp)
+	sw $ra, 20($sp)
+	sw $s2, 24($sp)
 	jal __init_Razz__
 	lw $t0, 0($sp)
 	lw $t1, 4($sp)
 	lw $t2, 8($sp)
 	lw $t3, 12($sp)
-	lw $t4, 16($sp)
-	lw $s1, 20($sp)
-	lw $ra, 24($sp)
-	lw $s2, 28($sp)
-	addi $sp, $sp, 32
-	move $t5, $a0
+	lw $s1, 16($sp)
+	lw $ra, 20($sp)
+	lw $s2, 24($sp)
+	addi $sp, $sp, 28
+	move $t4, $a0
 	j end_case_3
 	la $a0, StaticVoid
-	sw $t5, 8($sp)
+	sw $t4, 8($sp)
 case_13:
-	lw $t6, 8($sp)
-	move $t5, $t6
+	lw $t4, 8($sp)
 	j end_case_3
 end_case_3:
 	addi $sp, $sp, 12
-	sw $t5, 20($s1)
-	lw $t5, 0($sp)
-	lw $t7, 20($t5)
-	move $s2, $t7
-	addi $sp, $sp, -36
+	sw $t4, 20($s1)
+	lw $t4, 0($sp)
+	lw $t4, 20($t4)
+	move $s2, $t4
+	addi $sp, $sp, -28
 	sw $t0, 0($sp)
 	sw $t1, 4($sp)
 	sw $t2, 8($sp)
 	sw $t3, 12($sp)
-	sw $t4, 16($sp)
-	sw $t6, 20($sp)
-	sw $s1, 24($sp)
-	sw $ra, 28($sp)
-	sw $s2, 32($sp)
+	sw $s1, 16($sp)
+	sw $ra, 20($sp)
+	sw $s2, 24($sp)
 	addi $sp, $sp, -4
 	sw $s2, 0($sp)
-	lw $s2, 36($sp)
-	move $t5, $s2
-	lw $t5, 4($t5)
-	lw $t5, 40($t5)
-	jal $t5
+	lw $s2, 28($sp)
+	move $t4, $s2
+	lw $t4, 4($t4)
+	lw $t4, 40($t4)
+	jal $t4
 	addi $sp, $sp, 4
 	lw $t0, 0($sp)
 	lw $t1, 4($sp)
 	lw $t2, 8($sp)
 	lw $t3, 12($sp)
-	lw $t4, 16($sp)
-	lw $t6, 20($sp)
-	lw $s1, 24($sp)
-	lw $ra, 28($sp)
-	lw $s2, 32($sp)
-	addi $sp, $sp, 36
-	lw $t5, 0($sp)
-	lw $t7, 12($t5)
-	move $s2, $t7
-	addi $sp, $sp, -36
+	lw $s1, 16($sp)
+	lw $ra, 20($sp)
+	lw $s2, 24($sp)
+	addi $sp, $sp, 28
+	lw $t4, 0($sp)
+	lw $t4, 12($t4)
+	move $s2, $t4
+	addi $sp, $sp, -28
 	sw $t0, 0($sp)
 	sw $t1, 4($sp)
 	sw $t2, 8($sp)
 	sw $t3, 12($sp)
-	sw $t4, 16($sp)
-	sw $t6, 20($sp)
-	sw $s1, 24($sp)
-	sw $ra, 28($sp)
-	sw $s2, 32($sp)
+	sw $s1, 16($sp)
+	sw $ra, 20($sp)
+	sw $s2, 24($sp)
 	addi $sp, $sp, -4
 	sw $s2, 0($sp)
-	lw $s2, 36($sp)
-	move $t5, $s2
-	lw $t5, 4($t5)
-	lw $t5, 40($t5)
-	jal $t5
+	lw $s2, 28($sp)
+	move $t4, $s2
+	lw $t4, 4($t4)
+	lw $t4, 40($t4)
+	jal $t4
 	addi $sp, $sp, 4
 	lw $t0, 0($sp)
 	lw $t1, 4($sp)
 	lw $t2, 8($sp)
 	lw $t3, 12($sp)
-	lw $t4, 16($sp)
-	lw $t6, 20($sp)
-	lw $s1, 24($sp)
-	lw $ra, 28($sp)
-	lw $s2, 32($sp)
-	addi $sp, $sp, 36
+	lw $s1, 16($sp)
+	lw $ra, 20($sp)
+	lw $s2, 24($sp)
+	addi $sp, $sp, 28
 	add $a0, $a0, $a0
-	lw $t5, 0($sp)
-	move $s2, $t5
-	addi $sp, $sp, -36
+	lw $t4, 0($sp)
+	move $s2, $t4
+	addi $sp, $sp, -28
 	sw $t0, 0($sp)
 	sw $t1, 4($sp)
 	sw $t2, 8($sp)
 	sw $t3, 12($sp)
-	sw $t4, 16($sp)
-	sw $t6, 20($sp)
-	sw $s1, 24($sp)
-	sw $ra, 28($sp)
-	sw $s2, 32($sp)
+	sw $s1, 16($sp)
+	sw $ra, 20($sp)
+	sw $s2, 24($sp)
 	addi $sp, $sp, -4
 	sw $s2, 0($sp)
-	lw $s2, 36($sp)
+	lw $s2, 28($sp)
 	jal Foo_doh
 	addi $sp, $sp, 4
 	lw $t0, 0($sp)
 	lw $t1, 4($sp)
 	lw $t2, 8($sp)
 	lw $t3, 12($sp)
-	lw $t4, 16($sp)
-	lw $t6, 20($sp)
-	lw $s1, 24($sp)
-	lw $ra, 28($sp)
-	lw $s2, 32($sp)
-	addi $sp, $sp, 36
+	lw $s1, 16($sp)
+	lw $ra, 20($sp)
+	lw $s2, 24($sp)
+	addi $sp, $sp, 28
 	add $a0, $a0, $a0
-	lw $t5, 0($sp)
-	move $s2, $t5
-	addi $sp, $sp, -36
+	lw $t4, 0($sp)
+	move $s2, $t4
+	addi $sp, $sp, -28
 	sw $t0, 0($sp)
 	sw $t1, 4($sp)
 	sw $t2, 8($sp)
 	sw $t3, 12($sp)
-	sw $t4, 16($sp)
-	sw $t6, 20($sp)
-	sw $s1, 24($sp)
-	sw $ra, 28($sp)
-	sw $s2, 32($sp)
+	sw $s1, 16($sp)
+	sw $ra, 20($sp)
+	sw $s2, 24($sp)
 	addi $sp, $sp, -4
 	sw $s2, 0($sp)
-	lw $s2, 36($sp)
+	lw $s2, 28($sp)
 	jal Foo_printh
 	addi $sp, $sp, 4
 	lw $t0, 0($sp)
 	lw $t1, 4($sp)
 	lw $t2, 8($sp)
 	lw $t3, 12($sp)
-	lw $t4, 16($sp)
-	lw $t6, 20($sp)
-	lw $s1, 24($sp)
-	lw $ra, 28($sp)
-	lw $s2, 32($sp)
-	addi $sp, $sp, 36
+	lw $s1, 16($sp)
+	lw $ra, 20($sp)
+	lw $s2, 24($sp)
+	addi $sp, $sp, 28
 	add $a0, $a0, $a0
 	sw $a0, 24($s1)
-	lw $t5, 0($sp)
-	move $t7, $t5
-	lw $t7, 4($t7)
-	lw $t7, 0($t7)
+	lw $t4, 0($sp)
+	move $t5, $t4
+	lw $t5, 4($t5)
+	lw $t5, 0($t5)
 	la $s7, error_case_4
-	li $t8, 100
-	lw $s5, 88($t7)
-	slt $s6, $s5, $t8
+	li $t6, 100
+	lw $s5, 88($t5)
+	slt $s6, $s5, $t6
 	beqz $s6, end_if_temps_29
 	slt $s6, $zero, $s5
 	beqz $s6, end_if_temps_28
-	move $t8, $s5
+	move $t6, $s5
 	la $s7, case_14
 	end_if_temps_28:
 	end_if_temps_29:
-	lw $s5, 84($t7)
-	slt $s6, $s5, $t8
+	lw $s5, 84($t5)
+	slt $s6, $s5, $t6
 	beqz $s6, end_if_temps_31
 	slt $s6, $zero, $s5
 	beqz $s6, end_if_temps_30
-	move $t8, $s5
+	move $t6, $s5
 	la $s7, case_15
 	end_if_temps_30:
 	end_if_temps_31:
@@ -1067,20 +1019,18 @@ error_case_4:
 		li $v0, 10
 		syscall
 	la $a0, StaticVoid
-	sw $t8, 0($sp)
+	sw $t6, 0($sp)
 case_14:
-	addi $sp, $sp, -44
+	addi $sp, $sp, -36
 	sw $t0, 0($sp)
 	sw $t1, 4($sp)
 	sw $t2, 8($sp)
 	sw $t3, 12($sp)
 	sw $t4, 16($sp)
 	sw $t5, 20($sp)
-	sw $t6, 24($sp)
-	sw $t7, 28($sp)
-	sw $s1, 32($sp)
-	sw $ra, 36($sp)
-	sw $s2, 40($sp)
+	sw $s1, 24($sp)
+	sw $ra, 28($sp)
+	sw $s2, 32($sp)
 	jal __init_Bar__
 	lw $t0, 0($sp)
 	lw $t1, 4($sp)
@@ -1088,42 +1038,36 @@ case_14:
 	lw $t3, 12($sp)
 	lw $t4, 16($sp)
 	lw $t5, 20($sp)
-	lw $t6, 24($sp)
-	lw $t7, 28($sp)
-	lw $s1, 32($sp)
-	lw $ra, 36($sp)
-	lw $s2, 40($sp)
-	addi $sp, $sp, 44
-	move $t8, $a0
+	lw $s1, 24($sp)
+	lw $ra, 28($sp)
+	lw $s2, 32($sp)
+	addi $sp, $sp, 36
+	move $t6, $a0
 	j end_case_4
 	la $a0, StaticVoid
-	sw $t8, 4($sp)
+	sw $t6, 4($sp)
 case_15:
-	lw $t9, 4($sp)
-	move $t8, $t9
+	lw $t6, 4($sp)
 	j end_case_4
 end_case_4:
 	addi $sp, $sp, 8
-	sw $t8, 28($s1)
-	lw $t8, 0($sp)
-	lw $t10, 20($t8)
-	move $s2, $t10
-	addi $sp, $sp, -48
+	sw $t6, 28($s1)
+	lw $t6, 0($sp)
+	lw $t6, 20($t6)
+	move $s2, $t6
+	addi $sp, $sp, -36
 	sw $t0, 0($sp)
 	sw $t1, 4($sp)
 	sw $t2, 8($sp)
 	sw $t3, 12($sp)
 	sw $t4, 16($sp)
 	sw $t5, 20($sp)
-	sw $t6, 24($sp)
-	sw $t7, 28($sp)
-	sw $t9, 32($sp)
-	sw $s1, 36($sp)
-	sw $ra, 40($sp)
-	sw $s2, 44($sp)
+	sw $s1, 24($sp)
+	sw $ra, 28($sp)
+	sw $s2, 32($sp)
 	addi $sp, $sp, -4
 	sw $s2, 0($sp)
-	lw $s2, 48($sp)
+	lw $s2, 36($sp)
 	jal Bazz_doh
 	addi $sp, $sp, 4
 	lw $t0, 0($sp)
@@ -1132,36 +1076,30 @@ end_case_4:
 	lw $t3, 12($sp)
 	lw $t4, 16($sp)
 	lw $t5, 20($sp)
-	lw $t6, 24($sp)
-	lw $t7, 28($sp)
-	lw $t9, 32($sp)
-	lw $s1, 36($sp)
-	lw $ra, 40($sp)
-	lw $s2, 44($sp)
-	addi $sp, $sp, 48
-	lw $t8, 0($sp)
-	lw $t10, 12($t8)
-	move $s2, $t10
-	addi $sp, $sp, -48
+	lw $s1, 24($sp)
+	lw $ra, 28($sp)
+	lw $s2, 32($sp)
+	addi $sp, $sp, 36
+	lw $t6, 0($sp)
+	lw $t6, 12($t6)
+	move $s2, $t6
+	addi $sp, $sp, -36
 	sw $t0, 0($sp)
 	sw $t1, 4($sp)
 	sw $t2, 8($sp)
 	sw $t3, 12($sp)
 	sw $t4, 16($sp)
 	sw $t5, 20($sp)
-	sw $t6, 24($sp)
-	sw $t7, 28($sp)
-	sw $t9, 32($sp)
-	sw $s1, 36($sp)
-	sw $ra, 40($sp)
-	sw $s2, 44($sp)
+	sw $s1, 24($sp)
+	sw $ra, 28($sp)
+	sw $s2, 32($sp)
 	addi $sp, $sp, -4
 	sw $s2, 0($sp)
-	lw $s2, 48($sp)
-	move $t8, $s2
-	lw $t8, 4($t8)
-	lw $t8, 40($t8)
-	jal $t8
+	lw $s2, 36($sp)
+	move $t6, $s2
+	lw $t6, 4($t6)
+	lw $t6, 40($t6)
+	jal $t6
 	addi $sp, $sp, 4
 	lw $t0, 0($sp)
 	lw $t1, 4($sp)
@@ -1169,37 +1107,31 @@ end_case_4:
 	lw $t3, 12($sp)
 	lw $t4, 16($sp)
 	lw $t5, 20($sp)
-	lw $t6, 24($sp)
-	lw $t7, 28($sp)
-	lw $t9, 32($sp)
-	lw $s1, 36($sp)
-	lw $ra, 40($sp)
-	lw $s2, 44($sp)
-	addi $sp, $sp, 48
+	lw $s1, 24($sp)
+	lw $ra, 28($sp)
+	lw $s2, 32($sp)
+	addi $sp, $sp, 36
 	add $a0, $a0, $a0
-	lw $t8, 0($sp)
-	lw $t10, 28($t8)
-	move $s2, $t10
-	addi $sp, $sp, -48
+	lw $t6, 0($sp)
+	lw $t6, 28($t6)
+	move $s2, $t6
+	addi $sp, $sp, -36
 	sw $t0, 0($sp)
 	sw $t1, 4($sp)
 	sw $t2, 8($sp)
 	sw $t3, 12($sp)
 	sw $t4, 16($sp)
 	sw $t5, 20($sp)
-	sw $t6, 24($sp)
-	sw $t7, 28($sp)
-	sw $t9, 32($sp)
-	sw $s1, 36($sp)
-	sw $ra, 40($sp)
-	sw $s2, 44($sp)
+	sw $s1, 24($sp)
+	sw $ra, 28($sp)
+	sw $s2, 32($sp)
 	addi $sp, $sp, -4
 	sw $s2, 0($sp)
-	lw $s2, 48($sp)
-	move $t8, $s2
-	lw $t8, 4($t8)
-	lw $t8, 40($t8)
-	jal $t8
+	lw $s2, 36($sp)
+	move $t6, $s2
+	lw $t6, 4($t6)
+	lw $t6, 40($t6)
+	jal $t6
 	addi $sp, $sp, 4
 	lw $t0, 0($sp)
 	lw $t1, 4($sp)
@@ -1207,32 +1139,26 @@ end_case_4:
 	lw $t3, 12($sp)
 	lw $t4, 16($sp)
 	lw $t5, 20($sp)
-	lw $t6, 24($sp)
-	lw $t7, 28($sp)
-	lw $t9, 32($sp)
-	lw $s1, 36($sp)
-	lw $ra, 40($sp)
-	lw $s2, 44($sp)
-	addi $sp, $sp, 48
+	lw $s1, 24($sp)
+	lw $ra, 28($sp)
+	lw $s2, 32($sp)
+	addi $sp, $sp, 36
 	add $a0, $a0, $a0
-	lw $t8, 0($sp)
-	move $s2, $t8
-	addi $sp, $sp, -48
+	lw $t6, 0($sp)
+	move $s2, $t6
+	addi $sp, $sp, -36
 	sw $t0, 0($sp)
 	sw $t1, 4($sp)
 	sw $t2, 8($sp)
 	sw $t3, 12($sp)
 	sw $t4, 16($sp)
 	sw $t5, 20($sp)
-	sw $t6, 24($sp)
-	sw $t7, 28($sp)
-	sw $t9, 32($sp)
-	sw $s1, 36($sp)
-	sw $ra, 40($sp)
-	sw $s2, 44($sp)
+	sw $s1, 24($sp)
+	sw $ra, 28($sp)
+	sw $s2, 32($sp)
 	addi $sp, $sp, -4
 	sw $s2, 0($sp)
-	lw $s2, 48($sp)
+	lw $s2, 36($sp)
 	jal Razz_doh
 	addi $sp, $sp, 4
 	lw $t0, 0($sp)
@@ -1241,32 +1167,26 @@ end_case_4:
 	lw $t3, 12($sp)
 	lw $t4, 16($sp)
 	lw $t5, 20($sp)
-	lw $t6, 24($sp)
-	lw $t7, 28($sp)
-	lw $t9, 32($sp)
-	lw $s1, 36($sp)
-	lw $ra, 40($sp)
-	lw $s2, 44($sp)
-	addi $sp, $sp, 48
+	lw $s1, 24($sp)
+	lw $ra, 28($sp)
+	lw $s2, 32($sp)
+	addi $sp, $sp, 36
 	add $a0, $a0, $a0
-	lw $t8, 0($sp)
-	move $s2, $t8
-	addi $sp, $sp, -48
+	lw $t6, 0($sp)
+	move $s2, $t6
+	addi $sp, $sp, -36
 	sw $t0, 0($sp)
 	sw $t1, 4($sp)
 	sw $t2, 8($sp)
 	sw $t3, 12($sp)
 	sw $t4, 16($sp)
 	sw $t5, 20($sp)
-	sw $t6, 24($sp)
-	sw $t7, 28($sp)
-	sw $t9, 32($sp)
-	sw $s1, 36($sp)
-	sw $ra, 40($sp)
-	sw $s2, 44($sp)
+	sw $s1, 24($sp)
+	sw $ra, 28($sp)
+	sw $s2, 32($sp)
 	addi $sp, $sp, -4
 	sw $s2, 0($sp)
-	lw $s2, 48($sp)
+	lw $s2, 36($sp)
 	jal Razz_printh
 	addi $sp, $sp, 4
 	lw $t0, 0($sp)
@@ -1275,33 +1195,27 @@ end_case_4:
 	lw $t3, 12($sp)
 	lw $t4, 16($sp)
 	lw $t5, 20($sp)
-	lw $t6, 24($sp)
-	lw $t7, 28($sp)
-	lw $t9, 32($sp)
-	lw $s1, 36($sp)
-	lw $ra, 40($sp)
-	lw $s2, 44($sp)
-	addi $sp, $sp, 48
+	lw $s1, 24($sp)
+	lw $ra, 28($sp)
+	lw $s2, 32($sp)
+	addi $sp, $sp, 36
 	add $a0, $a0, $a0
 	sw $a0, 32($s1)
-	lw $t8, 0($sp)
-	move $s2, $t8
-	addi $sp, $sp, -48
+	lw $t6, 0($sp)
+	move $s2, $t6
+	addi $sp, $sp, -36
 	sw $t0, 0($sp)
 	sw $t1, 4($sp)
 	sw $t2, 8($sp)
 	sw $t3, 12($sp)
 	sw $t4, 16($sp)
 	sw $t5, 20($sp)
-	sw $t6, 24($sp)
-	sw $t7, 28($sp)
-	sw $t9, 32($sp)
-	sw $s1, 36($sp)
-	sw $ra, 40($sp)
-	sw $s2, 44($sp)
+	sw $s1, 24($sp)
+	sw $ra, 28($sp)
+	sw $s2, 32($sp)
 	addi $sp, $sp, -4
 	sw $s2, 0($sp)
-	lw $s2, 48($sp)
+	lw $s2, 36($sp)
 	jal Bar_doh
 	addi $sp, $sp, 4
 	lw $t0, 0($sp)
@@ -1310,32 +1224,26 @@ end_case_4:
 	lw $t3, 12($sp)
 	lw $t4, 16($sp)
 	lw $t5, 20($sp)
-	lw $t6, 24($sp)
-	lw $t7, 28($sp)
-	lw $t9, 32($sp)
-	lw $s1, 36($sp)
-	lw $ra, 40($sp)
-	lw $s2, 44($sp)
-	addi $sp, $sp, 48
+	lw $s1, 24($sp)
+	lw $ra, 28($sp)
+	lw $s2, 32($sp)
+	addi $sp, $sp, 36
 	sw $a0, 36($s1)
-	lw $t8, 0($sp)
-	move $s2, $t8
-	addi $sp, $sp, -48
+	lw $t6, 0($sp)
+	move $s2, $t6
+	addi $sp, $sp, -36
 	sw $t0, 0($sp)
 	sw $t1, 4($sp)
 	sw $t2, 8($sp)
 	sw $t3, 12($sp)
 	sw $t4, 16($sp)
 	sw $t5, 20($sp)
-	sw $t6, 24($sp)
-	sw $t7, 28($sp)
-	sw $t9, 32($sp)
-	sw $s1, 36($sp)
-	sw $ra, 40($sp)
-	sw $s2, 44($sp)
+	sw $s1, 24($sp)
+	sw $ra, 28($sp)
+	sw $s2, 32($sp)
 	addi $sp, $sp, -4
 	sw $s2, 0($sp)
-	lw $s2, 48($sp)
+	lw $s2, 36($sp)
 	jal Bar_printh
 	addi $sp, $sp, 4
 	lw $t0, 0($sp)
@@ -1344,13 +1252,10 @@ end_case_4:
 	lw $t3, 12($sp)
 	lw $t4, 16($sp)
 	lw $t5, 20($sp)
-	lw $t6, 24($sp)
-	lw $t7, 28($sp)
-	lw $t9, 32($sp)
-	lw $s1, 36($sp)
-	lw $ra, 40($sp)
-	lw $s2, 44($sp)
-	addi $sp, $sp, 48
+	lw $s1, 24($sp)
+	lw $ra, 28($sp)
+	lw $s2, 32($sp)
+	addi $sp, $sp, 36
 	sw $a0, 40($s1)
 	addi $sp, $sp, 4
 	move $a0, $s1
@@ -1475,64 +1380,61 @@ case_18:
 	la $a0, StaticVoid
 	sw $t2, 12($sp)
 case_19:
-	lw $t3, 12($sp)
-	move $t2, $t3
+	lw $t2, 12($sp)
 	j end_case_5
 end_case_5:
 	addi $sp, $sp, 16
 	sw $t2, 12($s1)
 	lw $t2, 0($sp)
 	move $s2, $t2
-	addi $sp, $sp, -24
+	addi $sp, $sp, -20
 	sw $t0, 0($sp)
 	sw $t1, 4($sp)
-	sw $t3, 8($sp)
-	sw $s1, 12($sp)
-	sw $ra, 16($sp)
-	sw $s2, 20($sp)
+	sw $s1, 8($sp)
+	sw $ra, 12($sp)
+	sw $s2, 16($sp)
 	addi $sp, $sp, -4
 	sw $s2, 0($sp)
-	lw $s2, 24($sp)
+	lw $s2, 20($sp)
 	jal Bazz_printh
 	addi $sp, $sp, 4
 	lw $t0, 0($sp)
 	lw $t1, 4($sp)
-	lw $t3, 8($sp)
-	lw $s1, 12($sp)
-	lw $ra, 16($sp)
-	lw $s2, 20($sp)
-	addi $sp, $sp, 24
+	lw $s1, 8($sp)
+	lw $ra, 12($sp)
+	lw $s2, 16($sp)
+	addi $sp, $sp, 20
 	sw $a0, 16($s1)
 	lw $t2, 0($sp)
-	move $t4, $t2
-	lw $t4, 4($t4)
-	lw $t4, 0($t4)
+	move $t3, $t2
+	lw $t3, 4($t3)
+	lw $t3, 0($t3)
 	la $s7, error_case_6
-	li $t5, 100
-	lw $s5, 88($t4)
-	slt $s6, $s5, $t5
+	li $t4, 100
+	lw $s5, 88($t3)
+	slt $s6, $s5, $t4
 	beqz $s6, end_if_temps_41
 	slt $s6, $zero, $s5
 	beqz $s6, end_if_temps_40
-	move $t5, $s5
+	move $t4, $s5
 	la $s7, case_20
 	end_if_temps_40:
 	end_if_temps_41:
-	lw $s5, 80($t4)
-	slt $s6, $s5, $t5
+	lw $s5, 80($t3)
+	slt $s6, $s5, $t4
 	beqz $s6, end_if_temps_43
 	slt $s6, $zero, $s5
 	beqz $s6, end_if_temps_42
-	move $t5, $s5
+	move $t4, $s5
 	la $s7, case_21
 	end_if_temps_42:
 	end_if_temps_43:
-	lw $s5, 84($t4)
-	slt $s6, $s5, $t5
+	lw $s5, 84($t3)
+	slt $s6, $s5, $t4
 	beqz $s6, end_if_temps_45
 	slt $s6, $zero, $s5
 	beqz $s6, end_if_temps_44
-	move $t5, $s5
+	move $t4, $s5
 	la $s7, case_22
 	end_if_temps_44:
 	end_if_temps_45:
@@ -1545,203 +1447,182 @@ error_case_6:
 		li $v0, 10
 		syscall
 	la $a0, StaticVoid
-	sw $t5, 0($sp)
+	sw $t4, 0($sp)
 case_20:
-	addi $sp, $sp, -32
+	addi $sp, $sp, -28
 	sw $t0, 0($sp)
 	sw $t1, 4($sp)
 	sw $t2, 8($sp)
 	sw $t3, 12($sp)
-	sw $t4, 16($sp)
-	sw $s1, 20($sp)
-	sw $ra, 24($sp)
-	sw $s2, 28($sp)
+	sw $s1, 16($sp)
+	sw $ra, 20($sp)
+	sw $s2, 24($sp)
 	jal __init_Bar__
 	lw $t0, 0($sp)
 	lw $t1, 4($sp)
 	lw $t2, 8($sp)
 	lw $t3, 12($sp)
-	lw $t4, 16($sp)
-	lw $s1, 20($sp)
-	lw $ra, 24($sp)
-	lw $s2, 28($sp)
-	addi $sp, $sp, 32
-	move $t5, $a0
+	lw $s1, 16($sp)
+	lw $ra, 20($sp)
+	lw $s2, 24($sp)
+	addi $sp, $sp, 28
+	move $t4, $a0
 	j end_case_6
 	la $a0, StaticVoid
-	sw $t5, 4($sp)
+	sw $t4, 4($sp)
 case_21:
-	addi $sp, $sp, -32
+	addi $sp, $sp, -28
 	sw $t0, 0($sp)
 	sw $t1, 4($sp)
 	sw $t2, 8($sp)
 	sw $t3, 12($sp)
-	sw $t4, 16($sp)
-	sw $s1, 20($sp)
-	sw $ra, 24($sp)
-	sw $s2, 28($sp)
+	sw $s1, 16($sp)
+	sw $ra, 20($sp)
+	sw $s2, 24($sp)
 	jal __init_Razz__
 	lw $t0, 0($sp)
 	lw $t1, 4($sp)
 	lw $t2, 8($sp)
 	lw $t3, 12($sp)
-	lw $t4, 16($sp)
-	lw $s1, 20($sp)
-	lw $ra, 24($sp)
-	lw $s2, 28($sp)
-	addi $sp, $sp, 32
-	move $t5, $a0
+	lw $s1, 16($sp)
+	lw $ra, 20($sp)
+	lw $s2, 24($sp)
+	addi $sp, $sp, 28
+	move $t4, $a0
 	j end_case_6
 	la $a0, StaticVoid
-	sw $t5, 8($sp)
+	sw $t4, 8($sp)
 case_22:
-	lw $t6, 8($sp)
-	move $t5, $t6
+	lw $t4, 8($sp)
 	j end_case_6
 end_case_6:
 	addi $sp, $sp, 12
-	sw $t5, 20($s1)
-	lw $t5, 0($sp)
-	lw $t7, 20($t5)
-	move $s2, $t7
-	addi $sp, $sp, -36
+	sw $t4, 20($s1)
+	lw $t4, 0($sp)
+	lw $t4, 20($t4)
+	move $s2, $t4
+	addi $sp, $sp, -28
 	sw $t0, 0($sp)
 	sw $t1, 4($sp)
 	sw $t2, 8($sp)
 	sw $t3, 12($sp)
-	sw $t4, 16($sp)
-	sw $t6, 20($sp)
-	sw $s1, 24($sp)
-	sw $ra, 28($sp)
-	sw $s2, 32($sp)
+	sw $s1, 16($sp)
+	sw $ra, 20($sp)
+	sw $s2, 24($sp)
 	addi $sp, $sp, -4
 	sw $s2, 0($sp)
-	lw $s2, 36($sp)
-	move $t5, $s2
-	lw $t5, 4($t5)
-	lw $t5, 40($t5)
-	jal $t5
+	lw $s2, 28($sp)
+	move $t4, $s2
+	lw $t4, 4($t4)
+	lw $t4, 40($t4)
+	jal $t4
 	addi $sp, $sp, 4
 	lw $t0, 0($sp)
 	lw $t1, 4($sp)
 	lw $t2, 8($sp)
 	lw $t3, 12($sp)
-	lw $t4, 16($sp)
-	lw $t6, 20($sp)
-	lw $s1, 24($sp)
-	lw $ra, 28($sp)
-	lw $s2, 32($sp)
-	addi $sp, $sp, 36
-	lw $t5, 0($sp)
-	lw $t7, 12($t5)
-	move $s2, $t7
-	addi $sp, $sp, -36
+	lw $s1, 16($sp)
+	lw $ra, 20($sp)
+	lw $s2, 24($sp)
+	addi $sp, $sp, 28
+	lw $t4, 0($sp)
+	lw $t4, 12($t4)
+	move $s2, $t4
+	addi $sp, $sp, -28
 	sw $t0, 0($sp)
 	sw $t1, 4($sp)
 	sw $t2, 8($sp)
 	sw $t3, 12($sp)
-	sw $t4, 16($sp)
-	sw $t6, 20($sp)
-	sw $s1, 24($sp)
-	sw $ra, 28($sp)
-	sw $s2, 32($sp)
+	sw $s1, 16($sp)
+	sw $ra, 20($sp)
+	sw $s2, 24($sp)
 	addi $sp, $sp, -4
 	sw $s2, 0($sp)
-	lw $s2, 36($sp)
-	move $t5, $s2
-	lw $t5, 4($t5)
-	lw $t5, 40($t5)
-	jal $t5
+	lw $s2, 28($sp)
+	move $t4, $s2
+	lw $t4, 4($t4)
+	lw $t4, 40($t4)
+	jal $t4
 	addi $sp, $sp, 4
 	lw $t0, 0($sp)
 	lw $t1, 4($sp)
 	lw $t2, 8($sp)
 	lw $t3, 12($sp)
-	lw $t4, 16($sp)
-	lw $t6, 20($sp)
-	lw $s1, 24($sp)
-	lw $ra, 28($sp)
-	lw $s2, 32($sp)
-	addi $sp, $sp, 36
+	lw $s1, 16($sp)
+	lw $ra, 20($sp)
+	lw $s2, 24($sp)
+	addi $sp, $sp, 28
 	add $a0, $a0, $a0
-	lw $t5, 0($sp)
-	move $s2, $t5
-	addi $sp, $sp, -36
+	lw $t4, 0($sp)
+	move $s2, $t4
+	addi $sp, $sp, -28
 	sw $t0, 0($sp)
 	sw $t1, 4($sp)
 	sw $t2, 8($sp)
 	sw $t3, 12($sp)
-	sw $t4, 16($sp)
-	sw $t6, 20($sp)
-	sw $s1, 24($sp)
-	sw $ra, 28($sp)
-	sw $s2, 32($sp)
+	sw $s1, 16($sp)
+	sw $ra, 20($sp)
+	sw $s2, 24($sp)
 	addi $sp, $sp, -4
 	sw $s2, 0($sp)
-	lw $s2, 36($sp)
+	lw $s2, 28($sp)
 	jal Foo_doh
 	addi $sp, $sp, 4
 	lw $t0, 0($sp)
 	lw $t1, 4($sp)
 	lw $t2, 8($sp)
 	lw $t3, 12($sp)
-	lw $t4, 16($sp)
-	lw $t6, 20($sp)
-	lw $s1, 24($sp)
-	lw $ra, 28($sp)
-	lw $s2, 32($sp)
-	addi $sp, $sp, 36
+	lw $s1, 16($sp)
+	lw $ra, 20($sp)
+	lw $s2, 24($sp)
+	addi $sp, $sp, 28
 	add $a0, $a0, $a0
-	lw $t5, 0($sp)
-	move $s2, $t5
-	addi $sp, $sp, -36
+	lw $t4, 0($sp)
+	move $s2, $t4
+	addi $sp, $sp, -28
 	sw $t0, 0($sp)
 	sw $t1, 4($sp)
 	sw $t2, 8($sp)
 	sw $t3, 12($sp)
-	sw $t4, 16($sp)
-	sw $t6, 20($sp)
-	sw $s1, 24($sp)
-	sw $ra, 28($sp)
-	sw $s2, 32($sp)
+	sw $s1, 16($sp)
+	sw $ra, 20($sp)
+	sw $s2, 24($sp)
 	addi $sp, $sp, -4
 	sw $s2, 0($sp)
-	lw $s2, 36($sp)
+	lw $s2, 28($sp)
 	jal Foo_printh
 	addi $sp, $sp, 4
 	lw $t0, 0($sp)
 	lw $t1, 4($sp)
 	lw $t2, 8($sp)
 	lw $t3, 12($sp)
-	lw $t4, 16($sp)
-	lw $t6, 20($sp)
-	lw $s1, 24($sp)
-	lw $ra, 28($sp)
-	lw $s2, 32($sp)
-	addi $sp, $sp, 36
+	lw $s1, 16($sp)
+	lw $ra, 20($sp)
+	lw $s2, 24($sp)
+	addi $sp, $sp, 28
 	add $a0, $a0, $a0
 	sw $a0, 24($s1)
-	lw $t5, 0($sp)
-	move $t7, $t5
-	lw $t7, 4($t7)
-	lw $t7, 0($t7)
+	lw $t4, 0($sp)
+	move $t5, $t4
+	lw $t5, 4($t5)
+	lw $t5, 0($t5)
 	la $s7, error_case_7
-	li $t8, 100
-	lw $s5, 88($t7)
-	slt $s6, $s5, $t8
+	li $t6, 100
+	lw $s5, 88($t5)
+	slt $s6, $s5, $t6
 	beqz $s6, end_if_temps_47
 	slt $s6, $zero, $s5
 	beqz $s6, end_if_temps_46
-	move $t8, $s5
+	move $t6, $s5
 	la $s7, case_23
 	end_if_temps_46:
 	end_if_temps_47:
-	lw $s5, 84($t7)
-	slt $s6, $s5, $t8
+	lw $s5, 84($t5)
+	slt $s6, $s5, $t6
 	beqz $s6, end_if_temps_49
 	slt $s6, $zero, $s5
 	beqz $s6, end_if_temps_48
-	move $t8, $s5
+	move $t6, $s5
 	la $s7, case_24
 	end_if_temps_48:
 	end_if_temps_49:
@@ -1754,20 +1635,18 @@ error_case_7:
 		li $v0, 10
 		syscall
 	la $a0, StaticVoid
-	sw $t8, 0($sp)
+	sw $t6, 0($sp)
 case_23:
-	addi $sp, $sp, -44
+	addi $sp, $sp, -36
 	sw $t0, 0($sp)
 	sw $t1, 4($sp)
 	sw $t2, 8($sp)
 	sw $t3, 12($sp)
 	sw $t4, 16($sp)
 	sw $t5, 20($sp)
-	sw $t6, 24($sp)
-	sw $t7, 28($sp)
-	sw $s1, 32($sp)
-	sw $ra, 36($sp)
-	sw $s2, 40($sp)
+	sw $s1, 24($sp)
+	sw $ra, 28($sp)
+	sw $s2, 32($sp)
 	jal __init_Bar__
 	lw $t0, 0($sp)
 	lw $t1, 4($sp)
@@ -1775,42 +1654,36 @@ case_23:
 	lw $t3, 12($sp)
 	lw $t4, 16($sp)
 	lw $t5, 20($sp)
-	lw $t6, 24($sp)
-	lw $t7, 28($sp)
-	lw $s1, 32($sp)
-	lw $ra, 36($sp)
-	lw $s2, 40($sp)
-	addi $sp, $sp, 44
-	move $t8, $a0
+	lw $s1, 24($sp)
+	lw $ra, 28($sp)
+	lw $s2, 32($sp)
+	addi $sp, $sp, 36
+	move $t6, $a0
 	j end_case_7
 	la $a0, StaticVoid
-	sw $t8, 4($sp)
+	sw $t6, 4($sp)
 case_24:
-	lw $t9, 4($sp)
-	move $t8, $t9
+	lw $t6, 4($sp)
 	j end_case_7
 end_case_7:
 	addi $sp, $sp, 8
-	sw $t8, 28($s1)
-	lw $t8, 0($sp)
-	lw $t10, 20($t8)
-	move $s2, $t10
-	addi $sp, $sp, -48
+	sw $t6, 28($s1)
+	lw $t6, 0($sp)
+	lw $t6, 20($t6)
+	move $s2, $t6
+	addi $sp, $sp, -36
 	sw $t0, 0($sp)
 	sw $t1, 4($sp)
 	sw $t2, 8($sp)
 	sw $t3, 12($sp)
 	sw $t4, 16($sp)
 	sw $t5, 20($sp)
-	sw $t6, 24($sp)
-	sw $t7, 28($sp)
-	sw $t9, 32($sp)
-	sw $s1, 36($sp)
-	sw $ra, 40($sp)
-	sw $s2, 44($sp)
+	sw $s1, 24($sp)
+	sw $ra, 28($sp)
+	sw $s2, 32($sp)
 	addi $sp, $sp, -4
 	sw $s2, 0($sp)
-	lw $s2, 48($sp)
+	lw $s2, 36($sp)
 	jal Bazz_doh
 	addi $sp, $sp, 4
 	lw $t0, 0($sp)
@@ -1819,36 +1692,30 @@ end_case_7:
 	lw $t3, 12($sp)
 	lw $t4, 16($sp)
 	lw $t5, 20($sp)
-	lw $t6, 24($sp)
-	lw $t7, 28($sp)
-	lw $t9, 32($sp)
-	lw $s1, 36($sp)
-	lw $ra, 40($sp)
-	lw $s2, 44($sp)
-	addi $sp, $sp, 48
-	lw $t8, 0($sp)
-	lw $t10, 12($t8)
-	move $s2, $t10
-	addi $sp, $sp, -48
+	lw $s1, 24($sp)
+	lw $ra, 28($sp)
+	lw $s2, 32($sp)
+	addi $sp, $sp, 36
+	lw $t6, 0($sp)
+	lw $t6, 12($t6)
+	move $s2, $t6
+	addi $sp, $sp, -36
 	sw $t0, 0($sp)
 	sw $t1, 4($sp)
 	sw $t2, 8($sp)
 	sw $t3, 12($sp)
 	sw $t4, 16($sp)
 	sw $t5, 20($sp)
-	sw $t6, 24($sp)
-	sw $t7, 28($sp)
-	sw $t9, 32($sp)
-	sw $s1, 36($sp)
-	sw $ra, 40($sp)
-	sw $s2, 44($sp)
+	sw $s1, 24($sp)
+	sw $ra, 28($sp)
+	sw $s2, 32($sp)
 	addi $sp, $sp, -4
 	sw $s2, 0($sp)
-	lw $s2, 48($sp)
-	move $t8, $s2
-	lw $t8, 4($t8)
-	lw $t8, 40($t8)
-	jal $t8
+	lw $s2, 36($sp)
+	move $t6, $s2
+	lw $t6, 4($t6)
+	lw $t6, 40($t6)
+	jal $t6
 	addi $sp, $sp, 4
 	lw $t0, 0($sp)
 	lw $t1, 4($sp)
@@ -1856,37 +1723,31 @@ end_case_7:
 	lw $t3, 12($sp)
 	lw $t4, 16($sp)
 	lw $t5, 20($sp)
-	lw $t6, 24($sp)
-	lw $t7, 28($sp)
-	lw $t9, 32($sp)
-	lw $s1, 36($sp)
-	lw $ra, 40($sp)
-	lw $s2, 44($sp)
-	addi $sp, $sp, 48
+	lw $s1, 24($sp)
+	lw $ra, 28($sp)
+	lw $s2, 32($sp)
+	addi $sp, $sp, 36
 	add $a0, $a0, $a0
-	lw $t8, 0($sp)
-	lw $t10, 28($t8)
-	move $s2, $t10
-	addi $sp, $sp, -48
+	lw $t6, 0($sp)
+	lw $t6, 28($t6)
+	move $s2, $t6
+	addi $sp, $sp, -36
 	sw $t0, 0($sp)
 	sw $t1, 4($sp)
 	sw $t2, 8($sp)
 	sw $t3, 12($sp)
 	sw $t4, 16($sp)
 	sw $t5, 20($sp)
-	sw $t6, 24($sp)
-	sw $t7, 28($sp)
-	sw $t9, 32($sp)
-	sw $s1, 36($sp)
-	sw $ra, 40($sp)
-	sw $s2, 44($sp)
+	sw $s1, 24($sp)
+	sw $ra, 28($sp)
+	sw $s2, 32($sp)
 	addi $sp, $sp, -4
 	sw $s2, 0($sp)
-	lw $s2, 48($sp)
-	move $t8, $s2
-	lw $t8, 4($t8)
-	lw $t8, 40($t8)
-	jal $t8
+	lw $s2, 36($sp)
+	move $t6, $s2
+	lw $t6, 4($t6)
+	lw $t6, 40($t6)
+	jal $t6
 	addi $sp, $sp, 4
 	lw $t0, 0($sp)
 	lw $t1, 4($sp)
@@ -1894,32 +1755,26 @@ end_case_7:
 	lw $t3, 12($sp)
 	lw $t4, 16($sp)
 	lw $t5, 20($sp)
-	lw $t6, 24($sp)
-	lw $t7, 28($sp)
-	lw $t9, 32($sp)
-	lw $s1, 36($sp)
-	lw $ra, 40($sp)
-	lw $s2, 44($sp)
-	addi $sp, $sp, 48
+	lw $s1, 24($sp)
+	lw $ra, 28($sp)
+	lw $s2, 32($sp)
+	addi $sp, $sp, 36
 	add $a0, $a0, $a0
-	lw $t8, 0($sp)
-	move $s2, $t8
-	addi $sp, $sp, -48
+	lw $t6, 0($sp)
+	move $s2, $t6
+	addi $sp, $sp, -36
 	sw $t0, 0($sp)
 	sw $t1, 4($sp)
 	sw $t2, 8($sp)
 	sw $t3, 12($sp)
 	sw $t4, 16($sp)
 	sw $t5, 20($sp)
-	sw $t6, 24($sp)
-	sw $t7, 28($sp)
-	sw $t9, 32($sp)
-	sw $s1, 36($sp)
-	sw $ra, 40($sp)
-	sw $s2, 44($sp)
+	sw $s1, 24($sp)
+	sw $ra, 28($sp)
+	sw $s2, 32($sp)
 	addi $sp, $sp, -4
 	sw $s2, 0($sp)
-	lw $s2, 48($sp)
+	lw $s2, 36($sp)
 	jal Razz_doh
 	addi $sp, $sp, 4
 	lw $t0, 0($sp)
@@ -1928,32 +1783,26 @@ end_case_7:
 	lw $t3, 12($sp)
 	lw $t4, 16($sp)
 	lw $t5, 20($sp)
-	lw $t6, 24($sp)
-	lw $t7, 28($sp)
-	lw $t9, 32($sp)
-	lw $s1, 36($sp)
-	lw $ra, 40($sp)
-	lw $s2, 44($sp)
-	addi $sp, $sp, 48
+	lw $s1, 24($sp)
+	lw $ra, 28($sp)
+	lw $s2, 32($sp)
+	addi $sp, $sp, 36
 	add $a0, $a0, $a0
-	lw $t8, 0($sp)
-	move $s2, $t8
-	addi $sp, $sp, -48
+	lw $t6, 0($sp)
+	move $s2, $t6
+	addi $sp, $sp, -36
 	sw $t0, 0($sp)
 	sw $t1, 4($sp)
 	sw $t2, 8($sp)
 	sw $t3, 12($sp)
 	sw $t4, 16($sp)
 	sw $t5, 20($sp)
-	sw $t6, 24($sp)
-	sw $t7, 28($sp)
-	sw $t9, 32($sp)
-	sw $s1, 36($sp)
-	sw $ra, 40($sp)
-	sw $s2, 44($sp)
+	sw $s1, 24($sp)
+	sw $ra, 28($sp)
+	sw $s2, 32($sp)
 	addi $sp, $sp, -4
 	sw $s2, 0($sp)
-	lw $s2, 48($sp)
+	lw $s2, 36($sp)
 	jal Razz_printh
 	addi $sp, $sp, 4
 	lw $t0, 0($sp)
@@ -1962,13 +1811,10 @@ end_case_7:
 	lw $t3, 12($sp)
 	lw $t4, 16($sp)
 	lw $t5, 20($sp)
-	lw $t6, 24($sp)
-	lw $t7, 28($sp)
-	lw $t9, 32($sp)
-	lw $s1, 36($sp)
-	lw $ra, 40($sp)
-	lw $s2, 44($sp)
-	addi $sp, $sp, 48
+	lw $s1, 24($sp)
+	lw $ra, 28($sp)
+	lw $s2, 32($sp)
+	addi $sp, $sp, 36
 	add $a0, $a0, $a0
 	sw $a0, 32($s1)
 	addi $sp, $sp, 4
@@ -2094,33 +1940,30 @@ case_27:
 	la $a0, StaticVoid
 	sw $t2, 12($sp)
 case_28:
-	lw $t3, 12($sp)
-	move $t2, $t3
+	lw $t2, 12($sp)
 	j end_case_8
 end_case_8:
 	addi $sp, $sp, 16
 	sw $t2, 12($s1)
 	lw $t2, 0($sp)
 	move $s2, $t2
-	addi $sp, $sp, -24
+	addi $sp, $sp, -20
 	sw $t0, 0($sp)
 	sw $t1, 4($sp)
-	sw $t3, 8($sp)
-	sw $s1, 12($sp)
-	sw $ra, 16($sp)
-	sw $s2, 20($sp)
+	sw $s1, 8($sp)
+	sw $ra, 12($sp)
+	sw $s2, 16($sp)
 	addi $sp, $sp, -4
 	sw $s2, 0($sp)
-	lw $s2, 24($sp)
+	lw $s2, 20($sp)
 	jal Bazz_printh
 	addi $sp, $sp, 4
 	lw $t0, 0($sp)
 	lw $t1, 4($sp)
-	lw $t3, 8($sp)
-	lw $s1, 12($sp)
-	lw $ra, 16($sp)
-	lw $s2, 20($sp)
-	addi $sp, $sp, 24
+	lw $s1, 8($sp)
+	lw $ra, 12($sp)
+	lw $s2, 16($sp)
+	addi $sp, $sp, 20
 	sw $a0, 16($s1)
 	addi $sp, $sp, 4
 	move $a0, $s1

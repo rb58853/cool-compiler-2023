@@ -140,8 +140,8 @@ List_cons:
 	sw $s2, 4($sp)
 	addi $sp, $sp, -12
 	sw $s2, 0($sp)
-	lw $t1, 24($sp)
-	sw $t1, 4($sp)
+	lw $t0, 24($sp)
+	sw $t0, 4($sp)
 	lw $t0, 20($sp)
 	sw $t0, 8($sp)
 	lw $s2, 16($sp)
@@ -169,8 +169,8 @@ Cons_cons:
 	sw $s2, 4($sp)
 	addi $sp, $sp, -12
 	sw $s2, 0($sp)
-	lw $t1, 24($sp)
-	sw $t1, 4($sp)
+	lw $t0, 24($sp)
+	sw $t0, 4($sp)
 	lw $t0, 20($sp)
 	sw $t0, 8($sp)
 	lw $s2, 16($sp)
@@ -189,27 +189,27 @@ Cons_isNil:
 	jr $ra
 Cons_head:
 	lw $t0, 0($sp)
-	lw $t1, 8($t0)
-	move $a0, $t1
+	lw $t0, 8($t0)
+	move $a0, $t0
 	jr $ra
 Cons_tail:
 	lw $t0, 0($sp)
-	lw $t1, 12($t0)
-	move $a0, $t1
+	lw $t0, 12($t0)
+	move $a0, $t0
 	jr $ra
 Cons_init:
-	lw $t1, 4($sp)
-	lw $t0, 0($sp)
-	sw $t1, 8($t0)
-	lw $t1, 8($sp)
-	lw $t0, 0($sp)
-	sw $t1, 12($t0)
+	lw $t0, 4($sp)
+	lw $t1, 0($sp)
+	sw $t0, 8($t1)
+	lw $t0, 8($sp)
+	lw $t1, 0($sp)
+	sw $t0, 12($t1)
 	lw $t0, 0($sp)
 	move $a0, $t0
 	jr $ra
 Main_print_list:
-	lw $t1, 4($sp)
-	move $s2, $t1
+	lw $t0, 4($sp)
+	move $s2, $t0
 	addi $sp, $sp, -8
 	sw $ra, 0($sp)
 	sw $s2, 4($sp)
@@ -260,8 +260,8 @@ else_68:
 	sw $s2, 4($sp)
 	addi $sp, $sp, -8
 	sw $s2, 0($sp)
-	lw $t1, 20($sp)
-	move $s2, $t1
+	lw $t0, 20($sp)
+	move $s2, $t0
 	addi $sp, $sp, -8
 	sw $ra, 0($sp)
 	sw $s2, 4($sp)
@@ -316,8 +316,8 @@ else_68:
 	sw $s2, 4($sp)
 	addi $sp, $sp, -8
 	sw $s2, 0($sp)
-	lw $t1, 20($sp)
-	move $s2, $t1
+	lw $t0, 20($sp)
+	move $s2, $t0
 	addi $sp, $sp, -8
 	sw $ra, 0($sp)
 	sw $s2, 4($sp)
@@ -439,8 +439,8 @@ Main_main:
 	sw $a0, 8($t0)
 loop_9:
 	lw $t0, 0($sp)
-	lw $t1, 8($t0)
-	move $s2, $t1
+	lw $t0, 8($t0)
+	move $s2, $t0
 	addi $sp, $sp, -8
 	sw $ra, 0($sp)
 	sw $s2, 4($sp)
@@ -466,8 +466,8 @@ loop_9:
 	addi $sp, $sp, -8
 	sw $s2, 0($sp)
 	lw $t0, 16($sp)
-	lw $t1, 8($t0)
-	sw $t1, 4($sp)
+	lw $t0, 8($t0)
+	sw $t0, 4($sp)
 	lw $s2, 12($sp)
 	jal Main_print_list
 	addi $sp, $sp, 8
@@ -475,8 +475,8 @@ loop_9:
 	lw $s2, 4($sp)
 	addi $sp, $sp, 8
 	lw $t0, 0($sp)
-	lw $t1, 8($t0)
-	move $s2, $t1
+	lw $t0, 8($t0)
+	move $s2, $t0
 	addi $sp, $sp, -8
 	sw $ra, 0($sp)
 	sw $s2, 4($sp)

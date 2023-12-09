@@ -86,9 +86,9 @@ main:
 	li $v0, 10
 	syscall
 CellularAutomaton_init:
-	lw $t1, 4($sp)
-	lw $t0, 0($sp)
-	sw $t1, 8($t0)
+	lw $t0, 4($sp)
+	lw $t1, 0($sp)
+	sw $t0, 8($t1)
 	lw $t0, 0($sp)
 	move $a0, $t0
 	jr $ra
@@ -101,8 +101,8 @@ CellularAutomaton_print:
 	addi $sp, $sp, -8
 	sw $s2, 0($sp)
 	lw $t0, 16($sp)
-	lw $t1, 8($t0)
-	move $s2, $t1
+	lw $t0, 8($t0)
+	move $s2, $t0
 	addi $sp, $sp, -8
 	sw $ra, 0($sp)
 	sw $s2, 4($sp)
@@ -139,8 +139,8 @@ CellularAutomaton_print:
 	jr $ra
 CellularAutomaton_num_cells:
 	lw $t0, 0($sp)
-	lw $t1, 8($t0)
-	move $s2, $t1
+	lw $t0, 8($t0)
+	move $s2, $t0
 	addi $sp, $sp, -8
 	sw $ra, 0($sp)
 	sw $s2, 4($sp)
@@ -155,15 +155,15 @@ CellularAutomaton_num_cells:
 	jr $ra
 CellularAutomaton_cell:
 	lw $t0, 0($sp)
-	lw $t1, 8($t0)
-	move $s2, $t1
+	lw $t0, 8($t0)
+	move $s2, $t0
 	addi $sp, $sp, -8
 	sw $ra, 0($sp)
 	sw $s2, 4($sp)
 	addi $sp, $sp, -12
 	sw $s2, 0($sp)
-	lw $t1, 24($sp)
-	sw $t1, 4($sp)
+	lw $t0, 24($sp)
+	sw $t0, 4($sp)
 	li $t0, 1
 	sw $t0, 8($sp)
 	lw $s2, 16($sp)
@@ -174,15 +174,15 @@ CellularAutomaton_cell:
 	addi $sp, $sp, 8
 	jr $ra
 CellularAutomaton_cell_left_neighbor:
-	lw $t1, 4($sp)
-	li $t0, 0
-	beq $t1, $t0, compare_19
-	addi $t1, $zero, 0
+	lw $t0, 4($sp)
+	li $t1, 0
+	beq $t0, $t1, compare_19
+	addi $t0, $zero, 0
 	j end_compare_66
 	compare_19:
-	addi $t1, $zero, 1
+	addi $t0, $zero, 1
 	end_compare_66:
-	beq $t1, $zero, else_62
+	beq $t0, $zero, else_62
 	lw $t0, 0($sp)
 	move $s2, $t0
 	addi $sp, $sp, -8
@@ -220,9 +220,9 @@ else_62:
 	sw $s2, 4($sp)
 	addi $sp, $sp, -8
 	sw $s2, 0($sp)
-	lw $t1, 20($sp)
-	addi $t1, $t1, -1
-	sw $t1, 4($sp)
+	lw $t0, 20($sp)
+	addi $t0, $t0, -1
+	sw $t0, 4($sp)
 	lw $s2, 12($sp)
 	jal CellularAutomaton_cell
 	addi $sp, $sp, 8
@@ -232,11 +232,11 @@ else_62:
 endif_62:
 	jr $ra
 CellularAutomaton_cell_right_neighbor:
-	lw $t1, 4($sp)
-	lw $t0, 0($sp)
-	move $s2, $t0
+	lw $t0, 4($sp)
+	lw $t1, 0($sp)
+	move $s2, $t1
 	addi $sp, $sp, -12
-	sw $t1, 0($sp)
+	sw $t0, 0($sp)
 	sw $ra, 4($sp)
 	sw $s2, 8($sp)
 	addi $sp, $sp, -4
@@ -244,18 +244,18 @@ CellularAutomaton_cell_right_neighbor:
 	lw $s2, 12($sp)
 	jal CellularAutomaton_num_cells
 	addi $sp, $sp, 4
-	lw $t1, 0($sp)
+	lw $t0, 0($sp)
 	lw $ra, 4($sp)
 	lw $s2, 8($sp)
 	addi $sp, $sp, 12
 	addi $a0, $a0, -1
-	beq $t1, $a0, compare_20
-	addi $t1, $zero, 0
+	beq $t0, $a0, compare_20
+	addi $t0, $zero, 0
 	j end_compare_67
 	compare_20:
-	addi $t1, $zero, 1
+	addi $t0, $zero, 1
 	end_compare_67:
-	beq $t1, $zero, else_63
+	beq $t0, $zero, else_63
 	lw $t0, 0($sp)
 	move $s2, $t0
 	addi $sp, $sp, -8
@@ -280,9 +280,9 @@ else_63:
 	sw $s2, 4($sp)
 	addi $sp, $sp, -8
 	sw $s2, 0($sp)
-	lw $t1, 20($sp)
-	addi $t1, $t1, 1
-	sw $t1, 4($sp)
+	lw $t0, 20($sp)
+	addi $t0, $t0, 1
+	sw $t0, 4($sp)
 	lw $s2, 12($sp)
 	jal CellularAutomaton_cell
 	addi $sp, $sp, 8
@@ -299,8 +299,8 @@ CellularAutomaton_cell_at_next_evolution:
 	sw $s2, 4($sp)
 	addi $sp, $sp, -8
 	sw $s2, 0($sp)
-	lw $t1, 20($sp)
-	sw $t1, 4($sp)
+	lw $t0, 20($sp)
+	sw $t0, 4($sp)
 	lw $s2, 12($sp)
 	jal CellularAutomaton_cell
 	addi $sp, $sp, 8
@@ -334,8 +334,8 @@ endif_65:
 	sw $s2, 8($sp)
 	addi $sp, $sp, -8
 	sw $s2, 0($sp)
-	lw $t2, 24($sp)
-	sw $t2, 4($sp)
+	lw $t1, 24($sp)
+	sw $t1, 4($sp)
 	lw $s2, 16($sp)
 	jal CellularAutomaton_cell_left_neighbor
 	addi $sp, $sp, 8
@@ -371,8 +371,8 @@ endif_66:
 	sw $s2, 8($sp)
 	addi $sp, $sp, -8
 	sw $s2, 0($sp)
-	lw $t2, 24($sp)
-	sw $t2, 4($sp)
+	lw $t1, 24($sp)
+	sw $t1, 4($sp)
 	lw $s2, 16($sp)
 	jal CellularAutomaton_cell_right_neighbor
 	addi $sp, $sp, 8
@@ -474,12 +474,12 @@ CellularAutomaton_evolve:
 	move $t0, $v0
 	sw $t0, 0($sp)
 loop_7:
-	lw $t1, 8($sp)
-	lw $t2, 4($sp)
-	slt $t1, $t1, $t2
-	beq $t1, $zero, end_while_7
-	lw $t1, 0($sp)
-	move $s2, $t1
+	lw $t0, 8($sp)
+	lw $t1, 4($sp)
+	slt $t0, $t0, $t1
+	beq $t0, $zero, end_while_7
+	lw $t0, 0($sp)
+	move $s2, $t0
 	addi $sp, $sp, -8
 	sw $ra, 0($sp)
 	sw $s2, 4($sp)
@@ -492,8 +492,8 @@ loop_7:
 	sw $s2, 4($sp)
 	addi $sp, $sp, -8
 	sw $s2, 0($sp)
-	lw $t1, 40($sp)
-	sw $t1, 4($sp)
+	lw $t0, 40($sp)
+	sw $t0, 4($sp)
 	lw $s2, 12($sp)
 	jal CellularAutomaton_cell_at_next_evolution
 	addi $sp, $sp, 8
@@ -508,15 +508,15 @@ loop_7:
 	lw $s2, 4($sp)
 	addi $sp, $sp, 8
 	sw $a0, 0($sp)
-	lw $t1, 8($sp)
-	addi $t1, $t1, 1
-	sw $t1, 8($sp)
+	lw $t0, 8($sp)
+	addi $t0, $t0, 1
+	sw $t0, 8($sp)
 	j loop_7
 end_while_7:
 	la $a0, StaticVoid
-	lw $t1, 0($sp)
-	lw $t0, 12($sp)
-	sw $t1, 8($t0)
+	lw $t0, 0($sp)
+	lw $t1, 12($sp)
+	sw $t0, 8($t1)
 	lw $t0, 12($sp)
 	addi $sp, $sp, 4
 	#End Region Let
@@ -566,8 +566,8 @@ Main_main:
 	lw $t0, 0($sp)
 	sw $a0, 8($t0)
 	lw $t0, 0($sp)
-	lw $t1, 8($t0)
-	move $s2, $t1
+	lw $t0, 8($t0)
+	move $s2, $t0
 	addi $sp, $sp, -8
 	sw $ra, 0($sp)
 	sw $s2, 4($sp)
@@ -588,12 +588,12 @@ Main_main:
 	sw $t0, 0($sp)
 loop_8:
 	li $t0, 0
-	lw $t2, 0($sp)
-	slt $t0, $t0, $t2
+	lw $t1, 0($sp)
+	slt $t0, $t0, $t1
 	beq $t0, $zero, end_while_8
 	lw $t0, 4($sp)
-	lw $t1, 8($t0)
-	move $s2, $t1
+	lw $t0, 8($t0)
+	move $s2, $t0
 	addi $sp, $sp, -8
 	sw $ra, 0($sp)
 	sw $s2, 4($sp)
@@ -609,8 +609,8 @@ loop_8:
 	lw $s2, 4($sp)
 	addi $sp, $sp, 8
 	lw $t0, 4($sp)
-	lw $t1, 8($t0)
-	move $s2, $t1
+	lw $t0, 8($t0)
+	move $s2, $t0
 	addi $sp, $sp, -8
 	sw $ra, 0($sp)
 	sw $s2, 4($sp)
@@ -625,9 +625,9 @@ loop_8:
 	lw $ra, 0($sp)
 	lw $s2, 4($sp)
 	addi $sp, $sp, 8
-	lw $t1, 0($sp)
-	addi $t1, $t1, -1
-	sw $t1, 0($sp)
+	lw $t0, 0($sp)
+	addi $t0, $t0, -1
+	sw $t0, 0($sp)
 	j loop_8
 end_while_8:
 	la $a0, StaticVoid

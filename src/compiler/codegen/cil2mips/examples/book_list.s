@@ -141,12 +141,12 @@ main:
 	li $v0, 10
 	syscall
 Book_initBook:
-	lw $t1, 4($sp)
-	lw $t0, 0($sp)
-	sw $t1, 8($t0)
-	lw $t1, 8($sp)
-	lw $t0, 0($sp)
-	sw $t1, 12($t0)
+	lw $t0, 4($sp)
+	lw $t1, 0($sp)
+	sw $t0, 8($t1)
+	lw $t0, 8($sp)
+	lw $t1, 0($sp)
+	sw $t0, 12($t1)
 	lw $t0, 0($sp)
 	move $a0, $t0
 	jr $ra
@@ -184,8 +184,8 @@ Book_print:
 	addi $sp, $sp, -8
 	sw $s2, 0($sp)
 	lw $t0, 16($sp)
-	lw $t1, 8($t0)
-	sw $t1, 4($sp)
+	lw $t0, 8($t0)
+	sw $t0, 4($sp)
 	lw $s2, 12($sp)
 	move $t0, $s2
 	lw $t0, 4($t0)
@@ -256,8 +256,8 @@ Book_print:
 	addi $sp, $sp, -8
 	sw $s2, 0($sp)
 	lw $t0, 16($sp)
-	lw $t1, 12($t0)
-	sw $t1, 4($sp)
+	lw $t0, 12($t0)
+	sw $t0, 4($sp)
 	lw $s2, 12($sp)
 	move $t0, $s2
 	lw $t0, 4($t0)
@@ -299,12 +299,12 @@ Book_print:
 	move $a0, $t0
 	jr $ra
 Article_initBook:
-	lw $t1, 4($sp)
-	lw $t0, 0($sp)
-	sw $t1, 8($t0)
-	lw $t1, 8($sp)
-	lw $t0, 0($sp)
-	sw $t1, 12($t0)
+	lw $t0, 4($sp)
+	lw $t1, 0($sp)
+	sw $t0, 8($t1)
+	lw $t0, 8($sp)
+	lw $t1, 0($sp)
+	sw $t0, 12($t1)
 	lw $t0, 0($sp)
 	move $a0, $t0
 	jr $ra
@@ -316,19 +316,19 @@ Article_initArticle:
 	sw $s2, 4($sp)
 	addi $sp, $sp, -12
 	sw $s2, 0($sp)
-	lw $t1, 24($sp)
-	sw $t1, 4($sp)
-	lw $t1, 28($sp)
-	sw $t1, 8($sp)
+	lw $t0, 24($sp)
+	sw $t0, 4($sp)
+	lw $t0, 28($sp)
+	sw $t0, 8($sp)
 	lw $s2, 16($sp)
 	jal Article_initBook
 	addi $sp, $sp, 12
 	lw $ra, 0($sp)
 	lw $s2, 4($sp)
 	addi $sp, $sp, 8
-	lw $t1, 12($sp)
-	lw $t0, 0($sp)
-	sw $t1, 16($t0)
+	lw $t0, 12($sp)
+	lw $t1, 0($sp)
+	sw $t0, 16($t1)
 	lw $t0, 0($sp)
 	move $a0, $t0
 	jr $ra
@@ -379,8 +379,8 @@ Article_print:
 	addi $sp, $sp, -8
 	sw $s2, 0($sp)
 	lw $t0, 16($sp)
-	lw $t1, 16($t0)
-	sw $t1, 4($sp)
+	lw $t0, 16($t0)
+	sw $t0, 4($sp)
 	lw $s2, 12($sp)
 	move $t0, $s2
 	lw $t0, 4($t0)
@@ -450,15 +450,15 @@ BookList_cons:
 	addi $sp, $sp, 8
 	move $t0, $a0
 	sw $t0, 0($sp)
-	lw $t1, 0($sp)
-	move $s2, $t1
+	lw $t0, 0($sp)
+	move $s2, $t0
 	addi $sp, $sp, -8
 	sw $ra, 0($sp)
 	sw $s2, 4($sp)
 	addi $sp, $sp, -12
 	sw $s2, 0($sp)
-	lw $t1, 28($sp)
-	sw $t1, 4($sp)
+	lw $t0, 28($sp)
+	sw $t0, 4($sp)
 	lw $t0, 24($sp)
 	sw $t0, 8($sp)
 	lw $s2, 16($sp)
@@ -548,15 +548,15 @@ Cons_cons:
 	addi $sp, $sp, 8
 	move $t0, $a0
 	sw $t0, 0($sp)
-	lw $t1, 0($sp)
-	move $s2, $t1
+	lw $t0, 0($sp)
+	move $s2, $t0
 	addi $sp, $sp, -8
 	sw $ra, 0($sp)
 	sw $s2, 4($sp)
 	addi $sp, $sp, -12
 	sw $s2, 0($sp)
-	lw $t1, 28($sp)
-	sw $t1, 4($sp)
+	lw $t0, 28($sp)
+	sw $t0, 4($sp)
 	lw $t0, 24($sp)
 	sw $t0, 8($sp)
 	lw $s2, 16($sp)
@@ -576,29 +576,29 @@ Cons_isNil:
 	move $a0, $t0
 	jr $ra
 Cons_init:
-	lw $t1, 4($sp)
-	lw $t0, 0($sp)
-	sw $t1, 8($t0)
-	lw $t1, 8($sp)
-	lw $t0, 0($sp)
-	sw $t1, 12($t0)
+	lw $t0, 4($sp)
+	lw $t1, 0($sp)
+	sw $t0, 8($t1)
+	lw $t0, 8($sp)
+	lw $t1, 0($sp)
+	sw $t0, 12($t1)
 	lw $t0, 0($sp)
 	move $a0, $t0
 	jr $ra
 Cons_car:
 	lw $t0, 0($sp)
-	lw $t1, 8($t0)
-	move $a0, $t1
+	lw $t0, 8($t0)
+	move $a0, $t0
 	jr $ra
 Cons_cdr:
 	lw $t0, 0($sp)
-	lw $t1, 12($t0)
-	move $a0, $t1
+	lw $t0, 12($t0)
+	move $a0, $t0
 	jr $ra
 Cons_print_list:
 	lw $t0, 0($sp)
-	lw $t1, 8($t0)
-	move $s2, $t1
+	lw $t0, 8($t0)
+	move $s2, $t0
 	addi $sp, $sp, -8
 	sw $ra, 0($sp)
 	sw $s2, 4($sp)
@@ -712,25 +712,23 @@ case_30:
 	j end_case_9
 end_case_9:
 	addi $sp, $sp, 8
-	lw $t1, 0($sp)
-	lw $t2, 12($t1)
-	move $s2, $t2
-	addi $sp, $sp, -12
-	sw $t0, 0($sp)
-	sw $ra, 4($sp)
-	sw $s2, 8($sp)
+	lw $t0, 0($sp)
+	lw $t0, 12($t0)
+	move $s2, $t0
+	addi $sp, $sp, -8
+	sw $ra, 0($sp)
+	sw $s2, 4($sp)
 	addi $sp, $sp, -4
 	sw $s2, 0($sp)
-	lw $s2, 12($sp)
-	move $t1, $s2
-	lw $t1, 4($t1)
-	lw $t1, 52($t1)
-	jal $t1
-	addi $sp, $sp, 4
-	lw $t0, 0($sp)
-	lw $ra, 4($sp)
 	lw $s2, 8($sp)
-	addi $sp, $sp, 12
+	move $t0, $s2
+	lw $t0, 4($t0)
+	lw $t0, 52($t0)
+	jal $t0
+	addi $sp, $sp, 4
+	lw $ra, 0($sp)
+	lw $s2, 4($sp)
+	addi $sp, $sp, 8
 	jr $ra
 Nil_cons:
 	#Region Let
@@ -744,15 +742,15 @@ Nil_cons:
 	addi $sp, $sp, 8
 	move $t0, $a0
 	sw $t0, 0($sp)
-	lw $t1, 0($sp)
-	move $s2, $t1
+	lw $t0, 0($sp)
+	move $s2, $t0
 	addi $sp, $sp, -8
 	sw $ra, 0($sp)
 	sw $s2, 4($sp)
 	addi $sp, $sp, -12
 	sw $s2, 0($sp)
-	lw $t1, 28($sp)
-	sw $t1, 4($sp)
+	lw $t0, 28($sp)
+	sw $t0, 4($sp)
 	lw $t0, 24($sp)
 	sw $t0, 8($sp)
 	lw $s2, 16($sp)
@@ -955,8 +953,8 @@ Main_main:
 	sw $s2, 4($sp)
 	addi $sp, $sp, -8
 	sw $s2, 0($sp)
-	lw $t1, 20($sp)
-	sw $t1, 4($sp)
+	lw $t0, 20($sp)
+	sw $t0, 4($sp)
 	lw $s2, 12($sp)
 	move $t0, $s2
 	lw $t0, 4($t0)
@@ -972,8 +970,8 @@ Main_main:
 	sw $s2, 4($sp)
 	addi $sp, $sp, -8
 	sw $s2, 0($sp)
-	lw $t1, 16($sp)
-	sw $t1, 4($sp)
+	lw $t0, 16($sp)
+	sw $t0, 4($sp)
 	lw $s2, 12($sp)
 	move $t0, $s2
 	lw $t0, 4($t0)
@@ -986,8 +984,8 @@ Main_main:
 	lw $t0, 8($sp)
 	sw $a0, 8($t0)
 	lw $t0, 8($sp)
-	lw $t1, 8($t0)
-	move $s2, $t1
+	lw $t0, 8($t0)
+	move $s2, $t0
 	addi $sp, $sp, -8
 	sw $ra, 0($sp)
 	sw $s2, 4($sp)
