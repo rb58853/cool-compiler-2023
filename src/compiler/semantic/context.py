@@ -382,6 +382,8 @@ class CaseContex(LetContext):
         left:expr = case.case
         cases:dict[CoolID:expr] = case.cases_list
         case.context = self.create_context_child()
+        case.context.type = "case"
+        # case.context.cclass = None
         
         if not left.validate(): return False
         for key in cases.keys():

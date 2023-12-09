@@ -30,7 +30,7 @@ def test_all_cases():
         equals = True
         if len(errors) == len(parser.errors):
             for e0,e1 in zip(errors,parser.errors):
-                if e0.replace('\n', ''):#.replace(' ','') != str(e1).replace(' ',''):
+                if e0.replace('\n', '').replace(' ','') != str(e1).replace(' ',''):
                     equals = False
                     break    
 
@@ -41,7 +41,7 @@ def test_all_cases():
                 print(Fore.RED)
                 print(f'\n######################### {case} #############################')
 
-                print('----------------------LEXER ERRORS---------------------------')
+                print('----------------------PARSER ERRORS---------------------------')
                 for e in parser.errors:
                     print(e)
                 print ("\n---------------------EXPECTED ERRORS:-------------------------")

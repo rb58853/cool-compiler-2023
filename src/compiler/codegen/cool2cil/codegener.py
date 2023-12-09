@@ -9,6 +9,7 @@ from compiler.AST.ast import CoolProgram, CoolClass, Feature, expr, IntNode, Coo
 4. El registro $s4 se usa en operaciones para guardar strings, no debera usarlo en otro ambito dado que cuando se guarda un string este registro sera manipulado
 5. El registro $s5 y $s6 se usan para comparacion de strings, si usted usa este registro debe tratarlo cuidadosamente xq una exprsion `=` los sobreescribe
 6. El registro $s7 se usa en isVoid. Si esta expresion es usada, este reistro es sobreescrito.
+7. El registro $s5, $s6 y$s7 se usa para comparar tipos estatico en el case, en la parte izquierda del case no se usa operaciones de igualdad, si se comparan dos cases se compara la salida, en ese momento los registros s5 y s6 ya no son usados por el case. Pasa igual con $s7
 '''
 #esto es para usar operaciones con valores inmediatos, por ejemplo addi $s0, $1, 5 . Las constantes solo admiten 16 bytes. Valor default = False
 USE_i = True
@@ -19,8 +20,8 @@ WORD = 4
 
 TYPE_LENGTH= {'Int':4, 'Bool':4, 'String':4,}
 TYPES = {}
-TYPES_INHERITS = {}
-TYPES_INHERITS_INDEX = {}
+TYPES_INHERITS = {'Int': 0, 'String': 4, 'Bool': 8} #estos son casos especiales desde los que no se puede heredar
+TYPES_INHERITS_INDEX = {'Int': 0, 'String': 1, 'Bool': 2}
 #Lo siguiente sirve para saber si se redefinio algun metodo basico como copy(), en caso se hacerse entonces se usa el mismo
 
 class TempNames:
@@ -82,8 +83,9 @@ class Data:
     
     def free():
         Data.body = [
-                    'abort: .asciiz "Abort called from class "',
-                    'substring_error: .asciiz "error substring is out of range."',
+                    'abort: .asciiz "Abort called from class"',
+                    'case_error: .asciiz "error case not have dinamyc type"',
+                    'substring_error: .asciiz "error substring is out of range"',
                     'String: .asciiz "String"',
                     'Bool: .asciiz "Bool"',
                     'Int: .asciiz "Int"',
@@ -99,14 +101,14 @@ class CILProgram():
         self.types:dict[str,CILType] = {}  # Lista de CILType
         self.methods:list[CILMethod] = []
         self.set_types(program)
+        self.full_inherits_types()
         self.generate_methods(program)
         self.generate_init_types()
-        self.full_inherits_types()
         self.full_data()
 
     def full_inherits_types(self):
-        pos = 0
-        index = 0
+        pos = 12 #los tres primeros son las costantes desde las cuales no se puede heredar
+        index = 3 
         for type in TYPES:
             TYPES_INHERITS[type] = pos
             TYPES_INHERITS_INDEX[type] = index
@@ -201,7 +203,7 @@ class CILType():
                 inheritance_length(count+1, cclass.inherit_class)
 
             self.inherit_types[TYPES_INHERITS_INDEX[cclass.type]] = count
-        inheritance_length(0,self.cclass)
+        inheritance_length(1,self.cclass)
 
     def add_methods_redefined_base(self, cclass: CoolClass, cclass_origin:CoolClass):
         '''Agrega los metodos base redefinidos para el caso que sea necsario llamar la redefinicion o no'''
@@ -280,7 +282,7 @@ class BaseType(CILType):
         if self.name == env.object_type_name:
             cclass = bases.ObjectClass.cclass()
 
-        inheritance_length(0,cclass)
+        inheritance_length(1,cclass)
 
     def full(self):
         if self.name == 'IO':
@@ -966,6 +968,165 @@ class CILUminus(CILExpr):
             f'subu {dest} $zero {dest}'
             ]    
 
+class CaseError(CILExpr):
+    def __init__(self) -> None:
+        super().__init__()
+    def __str__(self) -> str:
+        return "runtime error in case"
+    def to_mips(self):
+        return [
+            'la $a0, case_error',  #texto del abort en la seccion de data
+            'li $v0, 4',           #El 4 es para imprimir string
+	        'syscall',             #llamanda al sistema
+            '\tli $v0, 10',         #Codigo para cerrar el programa
+            '\tsyscall'
+        ]    
+
+class MipsExpr(CILExpr):
+    def __init__(self) -> None:
+        super().__init__()
+
+    def to_mips(self):
+        return []
+
+class SetInt(MipsExpr):
+    def __init__(self, dest, value:int) -> None:
+        """Recibe un destino `dest` y le asigna el valor entero `value`"""
+        super().__init__()
+        self.dest = dest
+        self.value = value
+
+    def __str__(self) -> str:
+        return f"{self.dest} = {self.value}"
+    
+    def to_mips(self):
+        if self.dest[0] !='$':
+            self.dest = f'$t{self.dest[5:]}'
+        return [f'li {self.dest}, {self.value}']    
+
+class LessCompareTemps(MipsExpr):
+    def __init__(self, temp1, temp2, dest) -> None:
+        '''Se le pasan dos temporales y un destino, compara temp1 < temp2 y guarda el resultado en el destino'''
+        super().__init__()
+        self.temp1 = temp1 #parte izquierda
+        self.temp2 = temp2 #parte derecha
+        self.dest = dest
+
+    def __str__(self) -> str:
+        return f'{self.dest} = {self.temp1} < {self.temp2}'
+    
+    def to_mips(self):
+        if self.dest[0] != "$":
+            self.dest = f'$t{self.dest[5:]}'
+        if self.temp1[0] != "$":
+            self.temp1 = f'$t{self.temp1[5:]}'
+        if self.temp2[0] != "$":
+            self.temp2 = f'$t{self.temp2[5:]}'        
+
+        return [f'slt {self.dest}, {self.temp1}, {self.temp2}']
+
+class MoveMips(MipsExpr):
+    def __init__(self, temp1, temp2) -> None:
+        '''recibe dos temporales, mueve el valor de `temp2` a `temp1`'''
+        super().__init__()
+        self.dest = temp1
+        self.temp1 = temp1
+        self.temp2 = temp2
+    def __str__(self) -> str:
+        return f"{self.temp1} = {self.temp2}"
+    def to_mips(self):
+        if self.temp1[0] != "$":
+            self.temp1 = f'$t{self.temp1[5:]}'
+        if self.temp2[0] != "$":
+            self.temp2 = f'$t{self.temp2[5:]}'        
+        
+        return [f'move {self.temp1}, {self.temp2}']
+    
+class BlockMips(MipsExpr):
+    def __init__(self, exprs:list) -> None:
+        '''Recibe una lista de expresiones de mips, esto sera su resultado'''
+        super().__init__()
+        self.block = exprs
+    def __str__(self) -> str:
+        result = ""
+        for e in self.block:
+            result += f'{e}\n'
+        return result
+    
+    def to_mips(self):
+        lines = []
+        for e in self.block:
+            for line in e.to_mips():
+                lines.append(line)
+
+        return lines  
+
+class IfMips(MipsExpr):
+    def __init__(self, condition, body:MipsExpr) -> None:
+        '''Recibe una condicion, evalua el `dest`(resultado) de esta condicion, si es 1 hace la accion del `body` '''
+        super().__init__()
+        self.condition = condition
+        self.body = body
+        # self.dest = body.dest
+        self.label = NameLabel("end_if_temps").get()
+
+    def __str__(self) -> str:
+        return f'if {self.condition}: {self.body}'
+    
+    def to_mips(self):
+        value_condition = self.condition.dest
+        condition = self.condition
+        if value_condition[0] != "$":
+             value_condition= f'$t{value_condition[5:]}'
+
+        lines = [line for line in condition.to_mips()]
+        lines.append(f'beqz {value_condition}, {self.label}')
+        for line in self.body.to_mips():
+            lines.append(line)
+        lines.append(f'{self.label}:')    
+
+        return lines
+                
+class PlusPlus(MipsExpr):
+    def __init__(self, dest, plus = 1 ) -> None:
+        '''Recibe un temporal y aumenta su valor en `plus`, el valor default es 1'''
+        super().__init__()
+        self.plus = plus
+        self.dest = dest
+
+    def __str__(self) -> str:
+        return f'{self.dest}+={self.plus}'
+    
+    def to_mips(self):
+        if self.dest[0] != "$":
+            self.dest = f'$t{self.dest[5:]}'
+        return [f'addi {self.dest}, {self.dest}, {self.plus}']
+
+class SetLabel(MipsExpr):
+    def __init__(self, dest, label) -> None:
+        '''Recibe un destino donde guardar la direccion de la etiqueta y una etiqueta que guardara aqui'''
+        super().__init__()    
+        self.label = label
+        self.dest = dest
+    def __str__(self) -> str:
+        return f'{self.dest} = Label({self.label})'
+    
+    def to_mips(self):
+        if self.dest[0] !='$':
+            self.dest = f'$t{self.dest[5:]}'
+        return [f'la {self.dest}, {self.label}']
+
+class JumpMips(MipsExpr):
+    def __init__(self, dest) -> None:
+        """Recibe un destino al cual saltar"""
+        super().__init__()
+        self.dest = dest
+    def __str__(self) -> str:
+        return f'jump to {self.dest}'
+    
+    def to_mips(self):
+        return [f'j {self.dest}']
+       
 ################################################## PROCESADOR DE COOL ###########################################################
 class Body:
     def __init__(self) -> None:
@@ -1022,6 +1183,7 @@ class IsType:
     def _not(e): return isinstance(e,CoolNot)
     def uminus(e): return isinstance(e,CoolUminus)
     def isvoid(e): return isinstance(e,CoolIsVoid)
+    def case(e): return isinstance(e,CoolCase)
     # def out_string(e): return isinstance(e.callable) and 
 
 class DivExpression:
@@ -1033,8 +1195,6 @@ class DivExpression:
         if IsType.atr(e):
             #Aqui entrara solo en casos que se necesite hacer get
             DivExpression.get_atr(e,body, scope) 
-        # if IsType.id(e):
-            # DivExpression.id_value(e,body) 
         if IsType.local(e):
             DivExpression.local_var(e,body, scope) 
         if IsType.let(e):
@@ -1067,6 +1227,8 @@ class DivExpression:
             DivExpression.uminus(e,body,scope)
         if IsType.isvoid(e):
             DivExpression.isVoid(e,body,scope)
+        if IsType.case(e):
+            DivExpression.case(e,body,scope)
         if e is None:
             DivExpression.void(e,body,scope)        
     
@@ -1203,6 +1365,7 @@ class DivExpression:
             if was_call:
                 TempNames.free([temp])
         else:
+            was_call = False
             #En caso de ser string hay que usar el comparador de strings
             if isinstance(logicar.left, CoolString):
                 #en caso de ser un string constante solo hace falta cargarlo
@@ -1210,7 +1373,6 @@ class DivExpression:
             else:    
                 #en caso contrario hay que dividir la expresion
                 DivExpression(logicar.left,body,scope)
-                was_call = False
                 if body.current_value() =='$a0':
                     #si es el retorno de una funcion hay que guardar uno en un temporal
                     temp = TempNames.get_name()
@@ -1410,9 +1572,6 @@ class DivExpression:
         else:
             DivExpression.goto_init(f'__init_{e.type}__',body,scope)
             body.add_expr(CILAssign(TempNames.get_name(),'$a0'))
-
-    def case(case:CoolCase, scope:dict = {}):
-        pass
 
     def _while(_while:CoolWhile, body:Body, context:dict = {}):
         loop = NameLabel(f'loop').get()
@@ -1682,3 +1841,75 @@ class DivExpression:
                 else:
                     scope[key] -= (len(used_temps)*4)
         # body.add_expr(FromA0())
+
+    def case(case:CoolCase,  body:Body, scope:dict = {}):
+        cases = case.cases_list
+        e = case.case
+        if e.get_type() == env.string_type_name or \
+        e.get_type() == env.bool_type_name or \
+        e.get_type() == env.int_type_name:
+            return
+        
+        cases_types =[c.type for c in cases.keys()] #los tipos de la parte izuierda de los case es estatico
+        DivExpression(e, body, scope) #Procesa la expresion e del case
+        labels = [NameLabel('case').get() for c in cases_types]
+        label_error = NameLabel('error_case').get()
+        label_end = NameLabel('end_case').get()
+
+        temp = TempNames.get_name()
+        body.add_expr(CILAssign(temp, body.current_value())) #guarda el resultado de procesar e en un temporal
+
+        body.add_expr(LoadFromDir(temp,4,temp)) #guarda en temp su parte estatica que esta en la posicion 4 de su instancia
+        body.add_expr(LoadFromDir(temp,0,temp)) #guarda en temp sus referencias de herencia que esta en la posicion 0 de su parte estatica
+
+        temp0 = TempNames.get_name() #guardar el mejor valor
+        s5 = "$s5" #guardar el valor actual de distancia
+        s6 = "$s6" #guardar la comparacion entre el actual y el mejor
+        s7 = "$s7" #guardar el index al cual de entrar
+
+        body.add_expr(SetLabel(s7, label_error)) #pone la etiqueta error en s7
+        body.add_expr(SetInt(temp0,100)) #Pone valor -1 en temp0
+        
+        #por cada uno de los tipos estaticos del case guarda su distancia y la compara con temp0
+        for c,label in zip(cases_types,labels):
+            body.add_expr(LoadFromDir(s5,TYPES_INHERITS[c], temp)) #guarda en s5 el valor actual de distancia
+            #TODO quitar el 100 de temp0 y crear un comportamiento diferente al priincipio            
+            
+            #compara la distancia hacia el otro tipo con la menor distancia actual, si se cumple que s5< temp0 y que s5>0, guarda s5 en temp0, es decir que la distanca es menor que la actual
+            expression = IfMips(LessCompareTemps(s5,temp0, s6),
+                           IfMips(LessCompareTemps('$zero',s5, s6),
+                                  BlockMips( [MoveMips(temp0,s5),SetLabel(s7, label)])
+                                  )
+                            )
+            body.add_expr(expression)
+            # for line in expression.to_mips():
+            #         print(f'{line}\n')
+        
+
+        TempNames.free([temp, temp0]) #liberar ambos temporales que ya cumplieron su funcion
+        temp = TempNames.get_name()
+        #A partir de este momento se sale del analisis izquierdo del case, los registros s5,s6 y s7 pueden ser sobreescritos     
+        
+        case_scope = {} 
+        for var in scope.keys():
+            #esto inicializa cada variable del scope anterior en su posicion anterior, se hace esto para usar el scope recursivo
+            case_scope[var] = scope[var]
+
+        #TODO hay que ocultar los valores sobreescritos en el case, asi como ver como es la sobreescritura, supongo que sea general
+        
+        body.add_expr(JumpMips(s7))
+        body.add_expr(Label(label_error))
+        body.add_expr(CaseError())
+        # body.add_expr(GOTO(label_end))
+        
+        
+        for e, label in zip (cases.values(), labels):
+            body.add_expr(Label(label))
+            DivExpression(e,body, case_scope)
+            body.add_expr(MoveMips(temp,body.current_value()))
+            TempNames.free([body.current_value()])
+            body.add_expr(GOTO(label_end))
+
+        body.add_expr(Label(label_end))
+        body.add_expr(MoveMips(temp,temp)) #esta linea es para que se sepa el retorno del case
+

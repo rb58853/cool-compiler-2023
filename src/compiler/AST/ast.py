@@ -106,6 +106,10 @@ class Node(PlotNode):
     def set_father(parent, childs:list):
         for child in childs:
             child.father = parent
+
+            if child.name == 'case':
+               #La expresion del case sera hija de donde se use y no del propio case
+               child.case.father = parent     
             # child.context = parent.context
     
     def get_contex_from_father(self):

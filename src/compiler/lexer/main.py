@@ -30,7 +30,7 @@ def test_all_cases():
         equals = True
         if len(errors) == len(lexer.errors):
             for e0,e1 in zip(errors,lexer.errors):
-                if e0.replace('\n', '').replace(' ','') != str(e1).replace(' ',''):
+                if e0.replace('\n', '').replace(' ','') != str(e1).replace(' ','').replace('\n', ''):
                     equals = False
                     break    
 
