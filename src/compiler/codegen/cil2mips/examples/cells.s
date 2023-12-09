@@ -1,10 +1,12 @@
 .data
-abort: .asciiz "error abort from "
+abort: .asciiz "Abort called from class "
 substring_error: .asciiz "error substring is out of range."
 String: .asciiz "String"
 Bool: .asciiz "Bool"
 Int: .asciiz "Int"
 Void: .asciiz "Void"
+string_space: .space 1024
+newline: .asciiz "\n"
 CellularAutomaton: .asciiz "CellularAutomaton"
 Main: .asciiz "Main"
 str3: .asciiz "\n"
@@ -16,7 +18,7 @@ str8: .asciiz "."
 str9: .asciiz ""
 str10: .asciiz "         X         "
 str2: .asciiz ""
-StaticVoid: .word Void
+StaticVoid: .word Void, 4
 StaticIO: .word StaticObject, 8, IO_type_name, IO_abort, IO_copy, IO_out_string, IO_out_int, IO_in_string, IO_in_int
 
 StaticObject: .word StaticVoid, 8, Object_type_name, Object_abort, Object_copy
@@ -103,7 +105,7 @@ CellularAutomaton_cell:
 	sw $s2, 0($sp)
 	lw $t1, 20($sp)
 	sw $t1, 4($sp)
-	li $t0 1
+	li $t0, 1
 	sw $t0, 8($sp)
 	jal substr
 	addi $sp, $sp, 12
@@ -112,7 +114,7 @@ CellularAutomaton_cell:
 	jr $ra
 CellularAutomaton_cell_left_neighbor:
 	lw $t1, 4($sp)
-	li $t0 0
+	li $t0, 0
 	beq $t1, $t0, compare_0
 	addi $t0, $zero, 0
 	j end_compare_3
@@ -187,7 +189,7 @@ CellularAutomaton_cell_right_neighbor:
 	sw $ra, 0($sp)
 	addi $sp, $sp, -8
 	sw $s2, 0($sp)
-	li $t0 0
+	li $t0, 0
 	sw $t0, 4($sp)
 	jal CellularAutomaton_cell
 	addi $sp, $sp, 8
@@ -223,24 +225,25 @@ CellularAutomaton_cell_at_next_evolution:
 	addi $sp, $sp, 8
 	lw $ra, 0($sp)
 	addi $sp, $sp, 4
-	la $t0, str4
+	move $t0, $a0
+	la $t1, str4
 	loop_compare_0:
-	lb $s5, 0($a0)
-	lb $s6, 0($t0)
-	addiu $a0, $a0, 1
+	lb $s5, 0($t0)
+	lb $s6, 0($t1)
 	addiu $t0, $t0, 1
+	addiu $t1, $t1, 1
 	bne $s5, $s6, end_not_equals_0
 	bnez $s5, loop_compare_0
-	li $a0, 1
+	li $t0, 1
 	j end_compare_0
 	end_not_equals_0:
-	li $a0, 0
+	li $t0, 0
 	end_compare_0:
-	beq $a0, $zero, else_3
-	li $t0 1
+	beq $t0, $zero, else_3
+	li $t0, 1
 	j endif_3
 else_3:
-	li $t0 0
+	li $t0, 0
 endif_3:
 	lw $t1, 0($sp)
 	move $s2, $t1
@@ -256,24 +259,25 @@ endif_3:
 	lw $t0, 0($sp)
 	lw $ra, 4($sp)
 	addi $sp, $sp, 8
-	la $t1, str5
+	move $t1, $a0
+	la $t2, str5
 	loop_compare_1:
-	lb $s5, 0($a0)
-	lb $s6, 0($t1)
-	addiu $a0, $a0, 1
+	lb $s5, 0($t1)
+	lb $s6, 0($t2)
 	addiu $t1, $t1, 1
+	addiu $t2, $t2, 1
 	bne $s5, $s6, end_not_equals_1
 	bnez $s5, loop_compare_1
-	li $a0, 1
+	li $t1, 1
 	j end_compare_1
 	end_not_equals_1:
-	li $a0, 0
+	li $t1, 0
 	end_compare_1:
-	beq $a0, $zero, else_4
-	li $t1 1
+	beq $t1, $zero, else_4
+	li $t1, 1
 	j endif_4
 else_4:
-	li $t1 0
+	li $t1, 0
 endif_4:
 	add $t2, $t0, $t1
 	lw $t0, 0($sp)
@@ -290,27 +294,28 @@ endif_4:
 	lw $t2, 0($sp)
 	lw $ra, 4($sp)
 	addi $sp, $sp, 8
-	la $t0, str6
+	move $t0, $a0
+	la $t1, str6
 	loop_compare_2:
-	lb $s5, 0($a0)
-	lb $s6, 0($t0)
-	addiu $a0, $a0, 1
+	lb $s5, 0($t0)
+	lb $s6, 0($t1)
 	addiu $t0, $t0, 1
+	addiu $t1, $t1, 1
 	bne $s5, $s6, end_not_equals_2
 	bnez $s5, loop_compare_2
-	li $a0, 1
+	li $t0, 1
 	j end_compare_2
 	end_not_equals_2:
-	li $a0, 0
+	li $t0, 0
 	end_compare_2:
-	beq $a0, $zero, else_5
-	li $t0 1
+	beq $t0, $zero, else_5
+	li $t0, 1
 	j endif_5
 else_5:
-	li $t0 0
+	li $t0, 0
 endif_5:
 	add $t1, $t2, $t0
-	li $t0 1
+	li $t0, 1
 	beq $t1, $t0, compare_2
 	addi $t0, $zero, 0
 	j end_compare_5
@@ -350,7 +355,7 @@ endif_2:
 CellularAutomaton_evolve:
 	#Region Let
 	addi $sp, $sp, -4
-	li $t0 0
+	li $t0, 0
 	sw $t0, 0($sp)
 	#Region Let
 	addi $sp, $sp, -4
@@ -477,10 +482,10 @@ Main_main:
 	addi $sp, $sp, 4
 	#Region Let
 	addi $sp, $sp, -4
-	li $t0 20
+	li $t0, 20
 	sw $t0, 0($sp)
 loop_1:
-	li $t0 0
+	li $t0, 0
 	lw $t2, 0($sp)
 	slt $t1, $t0, $t2
 	beq $t1, $zero, end_while_1
@@ -532,6 +537,8 @@ __init_CellularAutomaton__:
 	sw $t0, 0($s1)
 	la $t0, StaticCellularAutomaton
 	sw $t0, 4($s1)
+	addi $sp, $sp, -4
+	sw $s1, 0($sp)
 	li $a0, 1
 	li $v0, 9
 	syscall
@@ -545,6 +552,7 @@ __init_CellularAutomaton__:
 	bnez $t0, copy_5
 	move $t0, $v0
 	sw $t0, 8($s1)
+	addi $sp, $sp, 4
 	move $a0, $s1
 	jr $ra
 __init_Main__:
@@ -556,8 +564,11 @@ __init_Main__:
 	sw $t0, 0($s1)
 	la $t0, StaticMain
 	sw $t0, 4($s1)
+	addi $sp, $sp, -4
+	sw $s1, 0($sp)
 	la $a0, StaticVoid
 	sw $a0, 8($s1)
+	addi $sp, $sp, 4
 	move $a0, $s1
 	jr $ra
 __init_IO__:
@@ -581,8 +592,37 @@ IO_out_int:
 	lw $a0, 0($sp)
 	jr $ra
 IO_in_int:
+	li $v0, 5
+	syscall
+	move $a0, $v0
 	jr $ra
 IO_in_string:
+li $v0, 8
+la $a0, string_space
+li $a1, 1024
+syscall
+	move $t0, $a0
+	addi $t1, $zero, -1
+	length_in_string_0:
+	lb $t2, 0($t0)
+	addi $t0, $t0, 1
+	addi $t1, $t1, 1
+	bnez $t2, length_in_string_0
+	move $t3, $t1
+addi $t3, $t0, -2
+sb $zero, 0($t3)
+move $t0, $a0
+addi $a0, $t1, 1
+li $v0, 9
+syscall
+move $t1, $v0
+copy_in_0:
+lb $t3, 0($t0)
+sb $t3, 0($t1)
+addi $t0, 1
+addi $t1, 1
+	bnez $t3, copy_in_0
+move $a0, $v0
 	jr $ra
 IO_type_name:
 	lw $t0, 0($sp)
@@ -631,8 +671,37 @@ CellularAutomaton_out_int:
 	lw $a0, 0($sp)
 	jr $ra
 CellularAutomaton_in_int:
+	li $v0, 5
+	syscall
+	move $a0, $v0
 	jr $ra
 CellularAutomaton_in_string:
+li $v0, 8
+la $a0, string_space
+li $a1, 1024
+syscall
+	move $t0, $a0
+	addi $t1, $zero, -1
+	length_in_string_1:
+	lb $t2, 0($t0)
+	addi $t0, $t0, 1
+	addi $t1, $t1, 1
+	bnez $t2, length_in_string_1
+	move $t3, $t1
+addi $t3, $t0, -2
+sb $zero, 0($t3)
+move $t0, $a0
+addi $a0, $t1, 1
+li $v0, 9
+syscall
+move $t1, $v0
+copy_in_1:
+lb $t3, 0($t0)
+sb $t3, 0($t1)
+addi $t0, 1
+addi $t1, 1
+	bnez $t3, copy_in_1
+move $a0, $v0
 	jr $ra
 CellularAutomaton_type_name:
 	lw $t0, 0($sp)
@@ -677,6 +746,33 @@ Int_type_name:
 Bool_type_name:
 	la $a0, Bool
 	jr $ra
+String_abort:
+	la $a0, abort
+	li $v0, 4
+	syscall
+	la $a0, String
+	li $v0, 4
+	syscall
+	li $v0, 10
+	syscall
+Int_abort:
+	la $a0, abort
+	li $v0, 4
+	syscall
+	la $a0, Int
+	li $v0, 4
+	syscall
+	li $v0, 10
+	syscall
+Bool_abort:
+	la $a0, abort
+	li $v0, 4
+	syscall
+	la $a0, Bool
+	li $v0, 4
+	syscall
+	li $v0, 10
+	syscall
 length:
 	lw $t0, 0($sp)
 	addi $t1, $zero, -1

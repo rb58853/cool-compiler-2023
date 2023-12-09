@@ -8,8 +8,8 @@ Void: .asciiz "Void"
 string_space: .space 1024
 newline: .asciiz "\n"
 Main: .asciiz "Main"
-str1: .asciiz "\ns.substr(0, 1):"
-str2: .asciiz "\ns.substr(s.length() - 1, 1):"
+str1: .asciiz " = "
+str2: .asciiz " true\n"
 str3: .asciiz "enter a string\n"
 str4: .asciiz "\nthat was a palindrome\n"
 str5: .asciiz "\nthat was not a palindrome\n"
@@ -40,8 +40,9 @@ Main_pal:
 	addi $sp, $sp, 4
 	lw $ra, 0($sp)
 	addi $sp, $sp, 4
-	li $t0, 0
-	beq $a0, $t0, compare_0
+	move $t0, $a0
+	li $t1, 0
+	beq $t0, $t1, compare_0
 	addi $t0, $zero, 0
 	j end_compare_1
 	compare_0:
@@ -61,8 +62,9 @@ else_0:
 	addi $sp, $sp, 4
 	lw $ra, 0($sp)
 	addi $sp, $sp, 4
-	li $t0, 1
-	beq $a0, $t0, compare_1
+	move $t0, $a0
+	li $t1, 1
+	beq $t0, $t1, compare_1
 	addi $t0, $zero, 0
 	j end_compare_2
 	compare_1:
@@ -86,56 +88,48 @@ else_1:
 	addi $sp, $sp, 12
 	lw $ra, 0($sp)
 	addi $sp, $sp, 4
-	lw $t1, 4($sp)
-	move $s2, $t1
-	addi $sp, $sp, -4
-	sw $ra, 0($sp)
+	move $t0, $a0
+	lw $t2, 4($sp)
+	move $s2, $t2
+	addi $sp, $sp, -8
+	sw $t0, 0($sp)
+	sw $ra, 4($sp)
 	addi $sp, $sp, -12
 	sw $s2, 0($sp)
-	li $t0, 0
-	sw $t0, 4($sp)
-	li $t0, 1
-	sw $t0, 8($sp)
+	lw $t2, 24($sp)
+	move $s2, $t2
+	addi $sp, $sp, -8
+	sw $t0, 0($sp)
+	sw $ra, 4($sp)
+	addi $sp, $sp, -4
+	sw $s2, 0($sp)
+	jal length
+	addi $sp, $sp, 4
+	lw $t0, 0($sp)
+	lw $ra, 4($sp)
+	addi $sp, $sp, 8
+	addi $t1, $a0, -1
+	sw $t1, 4($sp)
+	li $t1, 1
+	sw $t1, 8($sp)
 	jal substr
 	addi $sp, $sp, 12
-	lw $ra, 0($sp)
-	addi $sp, $sp, 4
+	lw $t0, 0($sp)
+	lw $ra, 4($sp)
+	addi $sp, $sp, 8
 	loop_compare_0:
-	lb $s5, 0($a0)
+	lb $s5, 0($t0)
 	lb $s6, 0($a0)
-	addiu $a0, $a0, 1
+	addiu $t0, $t0, 1
 	addiu $a0, $a0, 1
 	bne $s5, $s6, end_not_equals_0
 	bnez $s5, loop_compare_0
-	li $a0, 1
+	li $t0, 1
 	j end_compare_0
 	end_not_equals_0:
-	li $a0, 0
+	li $t0, 0
 	end_compare_0:
-	beq $a0, $zero, else_2
-	lw $t0, 0($sp)
-	move $s2, $t0
-	addi $sp, $sp, -4
-	sw $ra, 0($sp)
-	addi $sp, $sp, -8
-	sw $s2, 0($sp)
-	li $a0, 18
-	li $v0, 9
-	syscall
-	move $s4, $v0
-	la $s3, str1
-	copy_0:
-	lb $t0, 0($s3)
-	sb $t0, 0($s4)
-	addiu $s3, $s3, 1
-	addiu $s4, $s4, 1
-	bnez $t0, copy_0
-	move $t0, $v0
-	sw $t0, 4($sp)
-	jal Main_out_string
-	addi $sp, $sp, 8
-	lw $ra, 0($sp)
-	addi $sp, $sp, 4
+	beq $t0, $zero, else_2
 	lw $t0, 0($sp)
 	move $s2, $t0
 	addi $sp, $sp, -4
@@ -167,17 +161,17 @@ else_1:
 	sw $ra, 0($sp)
 	addi $sp, $sp, -8
 	sw $s2, 0($sp)
-	li $a0, 31
+	li $a0, 4
 	li $v0, 9
 	syscall
 	move $s4, $v0
-	la $s3, str2
-	copy_1:
+	la $s3, str1
+	copy_0:
 	lb $t0, 0($s3)
 	sb $t0, 0($s4)
 	addiu $s3, $s3, 1
 	addiu $s4, $s4, 1
-	bnez $t0, copy_1
+	bnez $t0, copy_0
 	move $t0, $v0
 	sw $t0, 4($sp)
 	jal Main_out_string
@@ -215,6 +209,29 @@ else_1:
 	lw $ra, 0($sp)
 	addi $sp, $sp, 4
 	sw $a0, 4($sp)
+	jal Main_out_string
+	addi $sp, $sp, 8
+	lw $ra, 0($sp)
+	addi $sp, $sp, 4
+	lw $t0, 0($sp)
+	move $s2, $t0
+	addi $sp, $sp, -4
+	sw $ra, 0($sp)
+	addi $sp, $sp, -8
+	sw $s2, 0($sp)
+	li $a0, 8
+	li $v0, 9
+	syscall
+	move $s4, $v0
+	la $s3, str2
+	copy_1:
+	lb $t0, 0($s3)
+	sb $t0, 0($s4)
+	addiu $s3, $s3, 1
+	addiu $s4, $s4, 1
+	bnez $t0, copy_1
+	move $t0, $v0
+	sw $t0, 4($sp)
 	jal Main_out_string
 	addi $sp, $sp, 8
 	lw $ra, 0($sp)
@@ -409,6 +426,28 @@ li $v0, 8
 la $a0, string_space
 li $a1, 1024
 syscall
+	move $t0, $a0
+	addi $t1, $zero, -1
+	length_in_string_0:
+	lb $t2, 0($t0)
+	addi $t0, $t0, 1
+	addi $t1, $t1, 1
+	bnez $t2, length_in_string_0
+	move $t3, $t1
+addi $t3, $t0, -2
+sb $zero, 0($t3)
+move $t0, $a0
+addi $a0, $t1, 1
+li $v0, 9
+syscall
+move $t1, $v0
+copy_in_0:
+lb $t3, 0($t0)
+sb $t3, 0($t1)
+addi $t0, 1
+addi $t1, 1
+	bnez $t3, copy_in_0
+move $a0, $v0
 	jr $ra
 IO_type_name:
 	lw $t0, 0($sp)
@@ -466,6 +505,28 @@ li $v0, 8
 la $a0, string_space
 li $a1, 1024
 syscall
+	move $t0, $a0
+	addi $t1, $zero, -1
+	length_in_string_1:
+	lb $t2, 0($t0)
+	addi $t0, $t0, 1
+	addi $t1, $t1, 1
+	bnez $t2, length_in_string_1
+	move $t3, $t1
+addi $t3, $t0, -2
+sb $zero, 0($t3)
+move $t0, $a0
+addi $a0, $t1, 1
+li $v0, 9
+syscall
+move $t1, $v0
+copy_in_1:
+lb $t3, 0($t0)
+sb $t3, 0($t1)
+addi $t0, 1
+addi $t1, 1
+	bnez $t3, copy_in_1
+move $a0, $v0
 	jr $ra
 Main_type_name:
 	lw $t0, 0($sp)

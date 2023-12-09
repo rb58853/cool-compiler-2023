@@ -1132,11 +1132,25 @@ class DivExpression:
     def logicar_eq(logicar:Logicar, body:Body, scope:dict = {}):
         if logicar.left.get_type() != env.string_type_name:
             DivExpression(logicar.left,body,scope)
+            was_call = False
+            if body.current_value() =='$a0':
+                    #si es el retorno de una funcion hay que guardar uno en un temporal
+                    temp = TempNames.get_name()
+                    body.add_expr(CILAssign(temp,'$a0'))
+                    was_call = True
+                    
             left_value = body.current_value()
             DivExpression(logicar.right,body,scope)
             rigth_value = body.current_value()
             TempNames.free([left_value,rigth_value])
-            body.add_expr(CILAssign(TempNames.get_name(),CILLogicalOP(left_value,rigth_value,logicar.op)))
+            temp1 = TempNames.get_name()
+            body.add_expr(CILAssign(temp1,CILLogicalOP(left_value,rigth_value,logicar.op)))
+            
+            #TODO ERROR antes cuando no se liberaba temp1 funcionaba
+            TempNames.free([temp1])
+            
+            if was_call:
+                TempNames.free([temp])
         else:
             #En caso de ser string hay que usar el comparador de strings
             if isinstance(logicar.left, CoolString):
@@ -1145,6 +1159,13 @@ class DivExpression:
             else:    
                 #en caso contrario hay que dividir la expresion
                 DivExpression(logicar.left,body,scope)
+                was_call = False
+                if body.current_value() =='$a0':
+                    #si es el retorno de una funcion hay que guardar uno en un temporal
+                    temp = TempNames.get_name()
+                    body.add_expr(CILAssign(temp,'$a0'))
+                    was_call = True
+
                 left_value = body.current_value()
             
             if isinstance(logicar.right, CoolString):
@@ -1155,8 +1176,12 @@ class DivExpression:
                 DivExpression(logicar.right,body,scope)
                 rigth_value = body.current_value()
 
+            # temp = TempNames.get_name()
+            # body.add_expr(CILAssign(temp,CILogicalString(left_value,rigth_value,'=')))
             body.add_expr(CILogicalString(left_value,rigth_value,'='))
             TempNames.free([left_value,rigth_value])
+            if was_call:
+                TempNames.free([temp])
 
     def logicar_not_eq(logicar:Logicar, body:Body, scope:dict = {}):
         if (IsType.int(logicar.left)) and (IsType.int(logicar.right)):

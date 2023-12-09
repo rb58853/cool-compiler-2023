@@ -7,10 +7,11 @@ class Main inherits IO {
 	else if s.substr(0, 1) = s.substr(s.length() - 1, 1)
 	then
 	 {
-		out_string("\ns.substr(0, 1):");
 		out_string(s.substr(0, 1));
-		out_string("\ns.substr(s.length() - 1, 1):");
+		out_string(" = ");
 		out_string(s.substr(s.length() - 1, 1));
+		out_string(" true\n");
+
 
 		pal(s.substr(1, s.length() -2));
 	 }

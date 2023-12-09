@@ -8,18 +8,18 @@ Void: .asciiz "Void"
 string_space: .space 1024
 newline: .asciiz "\n"
 Main: .asciiz "Main"
-str1: .asciiz " len(s) = "
+str1: .asciiz "in_string()"
 str2: .asciiz "\n"
-str3: .asciiz " len(s0) = "
-str4: .asciiz "\ns == s0:"
-str5: .asciiz "true"
-str6: .asciiz "false"
+str3: .asciiz " == "
+str4: .asciiz " true"
+str5: .asciiz " == "
+str6: .asciiz " false"
 StaticVoid: .word Void, 4
 StaticIO: .word StaticObject, 8, IO_type_name, IO_abort, IO_copy, IO_out_string, IO_out_int, IO_in_string, IO_in_int
 
 StaticObject: .word StaticVoid, 8, Object_type_name, Object_abort, Object_copy
 
-StaticMain: .word StaticIO, 8, Main_type_name, Main_abort, Main_copy, Main_out_string, Main_out_int, Main_in_string, Main_in_int, Main_main
+StaticMain: .word StaticIO, 8, Main_type_name, Main_abort, Main_copy, Main_out_string, Main_out_int, Main_in_string, Main_in_int, Main_f1, Main_f2, Main_main
 
 .text
 .globl main
@@ -30,51 +30,18 @@ main:
 	jal Main_main
 	li $v0, 10
 	syscall
+Main_f1:
+	li $t0, 1
+	move $a0, $t0
+	jr $ra
+Main_f2:
+	li $t0, 2
+	move $a0, $t0
+	jr $ra
 Main_main:
 	#Region Let
 	addi $sp, $sp, -4
-	lw $t0, 4($sp)
-	move $s2, $t0
-	addi $sp, $sp, -4
-	sw $ra, 0($sp)
-	addi $sp, $sp, -4
-	sw $s2, 0($sp)
-	jal Main_in_string
-	addi $sp, $sp, 4
-	lw $ra, 0($sp)
-	addi $sp, $sp, 4
-	sw $a0, 0($sp)
-	addi $sp, $sp, -4
-	lw $t0, 8($sp)
-	move $s2, $t0
-	addi $sp, $sp, -4
-	sw $ra, 0($sp)
-	addi $sp, $sp, -4
-	sw $s2, 0($sp)
-	jal Main_in_string
-	addi $sp, $sp, 4
-	lw $ra, 0($sp)
-	addi $sp, $sp, 4
-	sw $a0, 0($sp)
-	lw $t0, 8($sp)
-	move $s2, $t0
-	addi $sp, $sp, -4
-	sw $ra, 0($sp)
-	addi $sp, $sp, -8
-	sw $s2, 0($sp)
-	lw $t1, 16($sp)
-	sw $t1, 4($sp)
-	jal Main_out_string
-	addi $sp, $sp, 8
-	lw $ra, 0($sp)
-	addi $sp, $sp, 4
-	lw $t0, 8($sp)
-	move $s2, $t0
-	addi $sp, $sp, -4
-	sw $ra, 0($sp)
-	addi $sp, $sp, -8
-	sw $s2, 0($sp)
-	li $a0, 11
+	li $a0, 12
 	li $v0, 9
 	syscall
 	move $s4, $v0
@@ -86,33 +53,8 @@ Main_main:
 	addiu $s4, $s4, 1
 	bnez $t0, copy_0
 	move $t0, $v0
-	sw $t0, 4($sp)
-	jal Main_out_string
-	addi $sp, $sp, 8
-	lw $ra, 0($sp)
-	addi $sp, $sp, 4
-	lw $t0, 8($sp)
-	move $s2, $t0
-	addi $sp, $sp, -4
-	sw $ra, 0($sp)
-	addi $sp, $sp, -8
-	sw $s2, 0($sp)
-	lw $t1, 16($sp)
-	move $s2, $t1
-	addi $sp, $sp, -4
-	sw $ra, 0($sp)
-	addi $sp, $sp, -4
-	sw $s2, 0($sp)
-	jal length
-	addi $sp, $sp, 4
-	lw $ra, 0($sp)
-	addi $sp, $sp, 4
-	sw $a0, 4($sp)
-	jal Main_out_int
-	addi $sp, $sp, 8
-	lw $ra, 0($sp)
-	addi $sp, $sp, 4
-	lw $t0, 8($sp)
+	sw $t0, 0($sp)
+	lw $t0, 4($sp)
 	move $s2, $t0
 	addi $sp, $sp, -4
 	sw $ra, 0($sp)
@@ -135,25 +77,82 @@ Main_main:
 	addi $sp, $sp, 8
 	lw $ra, 0($sp)
 	addi $sp, $sp, 4
-	lw $t0, 8($sp)
+	lw $t1, 0($sp)
+	move $s2, $t1
+	addi $sp, $sp, -4
+	sw $ra, 0($sp)
+	addi $sp, $sp, -12
+	sw $s2, 0($sp)
+	li $t0, 0
+	sw $t0, 4($sp)
+	li $t0, 1
+	sw $t0, 8($sp)
+	jal substr
+	addi $sp, $sp, 12
+	lw $ra, 0($sp)
+	addi $sp, $sp, 4
+	move $t0, $a0
+	lw $t2, 0($sp)
+	move $s2, $t2
+	addi $sp, $sp, -8
+	sw $t0, 0($sp)
+	sw $ra, 4($sp)
+	addi $sp, $sp, -12
+	sw $s2, 0($sp)
+	li $t1, 0
+	sw $t1, 4($sp)
+	li $t1, 1
+	sw $t1, 8($sp)
+	jal substr
+	addi $sp, $sp, 12
+	lw $t0, 0($sp)
+	lw $ra, 4($sp)
+	addi $sp, $sp, 8
+	loop_compare_0:
+	lb $s5, 0($t0)
+	lb $s6, 0($a0)
+	addiu $t0, $t0, 1
+	addiu $a0, $a0, 1
+	bne $s5, $s6, end_not_equals_0
+	bnez $s5, loop_compare_0
+	li $t0, 1
+	j end_compare_0
+	end_not_equals_0:
+	li $t0, 0
+	end_compare_0:
+	beq $t0, $zero, else_0
+	lw $t0, 4($sp)
 	move $s2, $t0
 	addi $sp, $sp, -4
 	sw $ra, 0($sp)
 	addi $sp, $sp, -8
 	sw $s2, 0($sp)
 	lw $t1, 12($sp)
-	sw $t1, 4($sp)
+	move $s2, $t1
+	addi $sp, $sp, -4
+	sw $ra, 0($sp)
+	addi $sp, $sp, -12
+	sw $s2, 0($sp)
+	li $t0, 0
+	sw $t0, 4($sp)
+	li $t0, 1
+	sw $t0, 8($sp)
+	jal substr
+	addi $sp, $sp, 12
+	lw $ra, 0($sp)
+	addi $sp, $sp, 4
+	sw $a0, 4($sp)
 	jal Main_out_string
 	addi $sp, $sp, 8
 	lw $ra, 0($sp)
 	addi $sp, $sp, 4
-	lw $t0, 8($sp)
+	lw $t0, 4($sp)
 	move $s2, $t0
 	addi $sp, $sp, -4
 	sw $ra, 0($sp)
 	addi $sp, $sp, -8
 	sw $s2, 0($sp)
-	li $a0, 12
+	li $a0, 5
 	li $v0, 9
 	syscall
 	move $s4, $v0
@@ -170,7 +169,7 @@ Main_main:
 	addi $sp, $sp, 8
 	lw $ra, 0($sp)
 	addi $sp, $sp, 4
-	lw $t0, 8($sp)
+	lw $t0, 4($sp)
 	move $s2, $t0
 	addi $sp, $sp, -4
 	sw $ra, 0($sp)
@@ -180,24 +179,28 @@ Main_main:
 	move $s2, $t1
 	addi $sp, $sp, -4
 	sw $ra, 0($sp)
-	addi $sp, $sp, -4
+	addi $sp, $sp, -12
 	sw $s2, 0($sp)
-	jal length
-	addi $sp, $sp, 4
+	li $t0, 0
+	sw $t0, 4($sp)
+	li $t0, 1
+	sw $t0, 8($sp)
+	jal substr
+	addi $sp, $sp, 12
 	lw $ra, 0($sp)
 	addi $sp, $sp, 4
 	sw $a0, 4($sp)
-	jal Main_out_int
+	jal Main_out_string
 	addi $sp, $sp, 8
 	lw $ra, 0($sp)
 	addi $sp, $sp, 4
-	lw $t0, 8($sp)
+	lw $t0, 4($sp)
 	move $s2, $t0
 	addi $sp, $sp, -4
 	sw $ra, 0($sp)
 	addi $sp, $sp, -8
 	sw $s2, 0($sp)
-	li $a0, 11
+	li $a0, 6
 	li $v0, 9
 	syscall
 	move $s4, $v0
@@ -214,22 +217,34 @@ Main_main:
 	addi $sp, $sp, 8
 	lw $ra, 0($sp)
 	addi $sp, $sp, 4
-	lw $t1, 4($sp)
-	lw $t2, 0($sp)
-	loop_compare_0:
-	lb $s5, 0($t1)
-	lb $s6, 0($t2)
-	addiu $t1, $t1, 1
-	addiu $t2, $t2, 1
-	bne $s5, $s6, end_not_equals_0
-	bnez $s5, loop_compare_0
-	li $t1, 1
-	j end_compare_0
-	end_not_equals_0:
-	li $t1, 0
-	end_compare_0:
-	beq $t1, $zero, else_0
-	lw $t0, 8($sp)
+	j endif_0
+else_0:
+	lw $t0, 4($sp)
+	move $s2, $t0
+	addi $sp, $sp, -4
+	sw $ra, 0($sp)
+	addi $sp, $sp, -8
+	sw $s2, 0($sp)
+	lw $t1, 12($sp)
+	move $s2, $t1
+	addi $sp, $sp, -4
+	sw $ra, 0($sp)
+	addi $sp, $sp, -12
+	sw $s2, 0($sp)
+	li $t0, 0
+	sw $t0, 4($sp)
+	li $t0, 1
+	sw $t0, 8($sp)
+	jal substr
+	addi $sp, $sp, 12
+	lw $ra, 0($sp)
+	addi $sp, $sp, 4
+	sw $a0, 4($sp)
+	jal Main_out_string
+	addi $sp, $sp, 8
+	lw $ra, 0($sp)
+	addi $sp, $sp, 4
+	lw $t0, 4($sp)
 	move $s2, $t0
 	addi $sp, $sp, -4
 	sw $ra, 0($sp)
@@ -252,15 +267,38 @@ Main_main:
 	addi $sp, $sp, 8
 	lw $ra, 0($sp)
 	addi $sp, $sp, 4
-	j endif_0
-else_0:
-	lw $t0, 8($sp)
+	lw $t0, 4($sp)
 	move $s2, $t0
 	addi $sp, $sp, -4
 	sw $ra, 0($sp)
 	addi $sp, $sp, -8
 	sw $s2, 0($sp)
-	li $a0, 6
+	lw $t1, 12($sp)
+	move $s2, $t1
+	addi $sp, $sp, -4
+	sw $ra, 0($sp)
+	addi $sp, $sp, -12
+	sw $s2, 0($sp)
+	li $t0, 0
+	sw $t0, 4($sp)
+	li $t0, 1
+	sw $t0, 8($sp)
+	jal substr
+	addi $sp, $sp, 12
+	lw $ra, 0($sp)
+	addi $sp, $sp, 4
+	sw $a0, 4($sp)
+	jal Main_out_string
+	addi $sp, $sp, 8
+	lw $ra, 0($sp)
+	addi $sp, $sp, 4
+	lw $t0, 4($sp)
+	move $s2, $t0
+	addi $sp, $sp, -4
+	sw $ra, 0($sp)
+	addi $sp, $sp, -8
+	sw $s2, 0($sp)
+	li $a0, 7
 	li $v0, 9
 	syscall
 	move $s4, $v0
@@ -278,7 +316,7 @@ else_0:
 	lw $ra, 0($sp)
 	addi $sp, $sp, 4
 endif_0:
-	addi $sp, $sp, 8
+	addi $sp, $sp, 4
 	#End Region Let
 	jr $ra
 __init_Main__:

@@ -5,12 +5,14 @@ String: .asciiz "String"
 Bool: .asciiz "Bool"
 Int: .asciiz "Int"
 Void: .asciiz "Void"
+string_space: .space 1024
+newline: .asciiz "\n"
 Main: .asciiz "Main"
 str1: .asciiz "2 is trivially prime.\n"
 str2: .asciiz " is prime.\n"
 str3: .asciiz "halt"
 str4: .asciiz "continue"
-StaticVoid: .word Void
+StaticVoid: .word Void, 4
 StaticIO: .word StaticObject, 8, IO_type_name, IO_abort, IO_copy, IO_out_string, IO_out_int, IO_in_string, IO_in_int
 
 StaticObject: .word StaticVoid, 8, Object_type_name, Object_abort, Object_copy
@@ -267,8 +269,37 @@ IO_out_int:
 	lw $a0, 0($sp)
 	jr $ra
 IO_in_int:
+	li $v0, 5
+	syscall
+	move $a0, $v0
 	jr $ra
 IO_in_string:
+li $v0, 8
+la $a0, string_space
+li $a1, 1024
+syscall
+	move $t0, $a0
+	addi $t1, $zero, -1
+	length_in_string_0:
+	lb $t2, 0($t0)
+	addi $t0, $t0, 1
+	addi $t1, $t1, 1
+	bnez $t2, length_in_string_0
+	move $t3, $t1
+addi $t3, $t0, -2
+sb $zero, 0($t3)
+move $t0, $a0
+addi $a0, $t1, 1
+li $v0, 9
+syscall
+move $t1, $v0
+copy_in_0:
+lb $t3, 0($t0)
+sb $t3, 0($t1)
+addi $t0, 1
+addi $t1, 1
+	bnez $t3, copy_in_0
+move $a0, $v0
 	jr $ra
 IO_type_name:
 	lw $t0, 0($sp)
@@ -317,8 +348,37 @@ Main_out_int:
 	lw $a0, 0($sp)
 	jr $ra
 Main_in_int:
+	li $v0, 5
+	syscall
+	move $a0, $v0
 	jr $ra
 Main_in_string:
+li $v0, 8
+la $a0, string_space
+li $a1, 1024
+syscall
+	move $t0, $a0
+	addi $t1, $zero, -1
+	length_in_string_1:
+	lb $t2, 0($t0)
+	addi $t0, $t0, 1
+	addi $t1, $t1, 1
+	bnez $t2, length_in_string_1
+	move $t3, $t1
+addi $t3, $t0, -2
+sb $zero, 0($t3)
+move $t0, $a0
+addi $a0, $t1, 1
+li $v0, 9
+syscall
+move $t1, $v0
+copy_in_1:
+lb $t3, 0($t0)
+sb $t3, 0($t1)
+addi $t0, 1
+addi $t1, 1
+	bnez $t3, copy_in_1
+move $a0, $v0
 	jr $ra
 Main_type_name:
 	lw $t0, 0($sp)

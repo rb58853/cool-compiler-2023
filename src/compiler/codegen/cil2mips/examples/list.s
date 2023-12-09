@@ -1,16 +1,18 @@
 .data
-abort: .asciiz "error abort from "
+abort: .asciiz "Abort called from class "
 substring_error: .asciiz "error substring is out of range."
 String: .asciiz "String"
 Bool: .asciiz "Bool"
 Int: .asciiz "Int"
 Void: .asciiz "Void"
+string_space: .space 1024
+newline: .asciiz "\n"
 List: .asciiz "List"
 Cons: .asciiz "Cons"
 Main: .asciiz "Main"
 str1: .asciiz "\n"
 str2: .asciiz " "
-StaticVoid: .word Void
+StaticVoid: .word Void, 4
 StaticIO: .word StaticObject, 8, IO_type_name, IO_abort, IO_copy, IO_out_string, IO_out_int, IO_in_string, IO_in_int
 
 StaticObject: .word StaticVoid, 8, Object_type_name, Object_abort, Object_copy
@@ -31,7 +33,7 @@ main:
 	li $v0, 10
 	syscall
 List_isNil:
-	li $t0 1
+	li $t0, 1
 	move $a0, $t0
 	jr $ra
 List_head:
@@ -45,7 +47,7 @@ List_head:
 	addi $sp, $sp, 4
 	lw $ra, 0($sp)
 	addi $sp, $sp, 4
-	li $t0 0
+	li $t0, 0
 	move $a0, $t0
 	jr $ra
 List_tail:
@@ -111,7 +113,7 @@ Cons_cons:
 	addi $sp, $sp, 4
 	jr $ra
 Cons_isNil:
-	li $t0 0
+	li $t0, 0
 	move $a0, $t0
 	jr $ra
 Cons_head:
@@ -259,7 +261,7 @@ Main_main:
 	sw $ra, 0($sp)
 	addi $sp, $sp, -8
 	sw $s2, 0($sp)
-	li $t0 1
+	li $t0, 1
 	sw $t0, 4($sp)
 	move $t0, $s2
 	lw $t0, 4($t0)
@@ -273,7 +275,7 @@ Main_main:
 	sw $ra, 0($sp)
 	addi $sp, $sp, -8
 	sw $s2, 0($sp)
-	li $t0 2
+	li $t0, 2
 	sw $t0, 4($sp)
 	move $t0, $s2
 	lw $t0, 4($t0)
@@ -287,7 +289,7 @@ Main_main:
 	sw $ra, 0($sp)
 	addi $sp, $sp, -8
 	sw $s2, 0($sp)
-	li $t0 3
+	li $t0, 3
 	sw $t0, 4($sp)
 	move $t0, $s2
 	lw $t0, 4($t0)
@@ -301,7 +303,7 @@ Main_main:
 	sw $ra, 0($sp)
 	addi $sp, $sp, -8
 	sw $s2, 0($sp)
-	li $t0 4
+	li $t0, 4
 	sw $t0, 4($sp)
 	move $t0, $s2
 	lw $t0, 4($t0)
@@ -315,7 +317,7 @@ Main_main:
 	sw $ra, 0($sp)
 	addi $sp, $sp, -8
 	sw $s2, 0($sp)
-	li $t0 5
+	li $t0, 5
 	sw $t0, 4($sp)
 	move $t0, $s2
 	lw $t0, 4($t0)
@@ -386,6 +388,9 @@ __init_List__:
 	sw $t0, 0($s1)
 	la $t0, StaticList
 	sw $t0, 4($s1)
+	addi $sp, $sp, -4
+	sw $s1, 0($sp)
+	addi $sp, $sp, 4
 	move $a0, $s1
 	jr $ra
 __init_Cons__:
@@ -397,10 +402,13 @@ __init_Cons__:
 	sw $t0, 0($s1)
 	la $t0, StaticCons
 	sw $t0, 4($s1)
-	li $t0 0
+	addi $sp, $sp, -4
+	sw $s1, 0($sp)
+	li $t0, 0
 	sw $t0, 8($s1)
 	la $a0, StaticVoid
 	sw $a0, 12($s1)
+	addi $sp, $sp, 4
 	move $a0, $s1
 	jr $ra
 __init_Main__:
@@ -412,8 +420,11 @@ __init_Main__:
 	sw $t0, 0($s1)
 	la $t0, StaticMain
 	sw $t0, 4($s1)
+	addi $sp, $sp, -4
+	sw $s1, 0($sp)
 	la $a0, StaticVoid
 	sw $a0, 8($s1)
+	addi $sp, $sp, 4
 	move $a0, $s1
 	jr $ra
 __init_IO__:
@@ -437,8 +448,37 @@ IO_out_int:
 	lw $a0, 0($sp)
 	jr $ra
 IO_in_int:
+	li $v0, 5
+	syscall
+	move $a0, $v0
 	jr $ra
 IO_in_string:
+li $v0, 8
+la $a0, string_space
+li $a1, 1024
+syscall
+	move $t0, $a0
+	addi $t1, $zero, -1
+	length_in_string_0:
+	lb $t2, 0($t0)
+	addi $t0, $t0, 1
+	addi $t1, $t1, 1
+	bnez $t2, length_in_string_0
+	move $t3, $t1
+addi $t3, $t0, -2
+sb $zero, 0($t3)
+move $t0, $a0
+addi $a0, $t1, 1
+li $v0, 9
+syscall
+move $t1, $v0
+copy_in_0:
+lb $t3, 0($t0)
+sb $t3, 0($t1)
+addi $t0, 1
+addi $t1, 1
+	bnez $t3, copy_in_0
+move $a0, $v0
 	jr $ra
 IO_type_name:
 	lw $t0, 0($sp)
@@ -521,8 +561,37 @@ Main_out_int:
 	lw $a0, 0($sp)
 	jr $ra
 Main_in_int:
+	li $v0, 5
+	syscall
+	move $a0, $v0
 	jr $ra
 Main_in_string:
+li $v0, 8
+la $a0, string_space
+li $a1, 1024
+syscall
+	move $t0, $a0
+	addi $t1, $zero, -1
+	length_in_string_1:
+	lb $t2, 0($t0)
+	addi $t0, $t0, 1
+	addi $t1, $t1, 1
+	bnez $t2, length_in_string_1
+	move $t3, $t1
+addi $t3, $t0, -2
+sb $zero, 0($t3)
+move $t0, $a0
+addi $a0, $t1, 1
+li $v0, 9
+syscall
+move $t1, $v0
+copy_in_1:
+lb $t3, 0($t0)
+sb $t3, 0($t1)
+addi $t0, 1
+addi $t1, 1
+	bnez $t3, copy_in_1
+move $a0, $v0
 	jr $ra
 Main_type_name:
 	lw $t0, 0($sp)
@@ -550,6 +619,33 @@ Int_type_name:
 Bool_type_name:
 	la $a0, Bool
 	jr $ra
+String_abort:
+	la $a0, abort
+	li $v0, 4
+	syscall
+	la $a0, String
+	li $v0, 4
+	syscall
+	li $v0, 10
+	syscall
+Int_abort:
+	la $a0, abort
+	li $v0, 4
+	syscall
+	la $a0, Int
+	li $v0, 4
+	syscall
+	li $v0, 10
+	syscall
+Bool_abort:
+	la $a0, abort
+	li $v0, 4
+	syscall
+	la $a0, Bool
+	li $v0, 4
+	syscall
+	li $v0, 10
+	syscall
 length:
 	lw $t0, 0($sp)
 	addi $t1, $zero, -1
