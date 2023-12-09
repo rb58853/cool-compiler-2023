@@ -1533,18 +1533,13 @@ class DivExpression:
                     let_scope[var] += WORD
                 
             
-            # if vvar.value is not None:
-            if True:
-                DivExpression(vvar.value, body, scope = let_scope)
-                temp = body.current_value()
-                if isinstance(let_scope[vvar.id],list):
-                    body.add_expr(StoreLocal(vvar.id, value = body.current_value(), pos= let_scope[vvar.id][0]))
-                else:
-                    body.add_expr(StoreLocal(vvar.id, value = body.current_value(), pos= let_scope[vvar.id]))
-                TempNames.free([temp])    
+            DivExpression(vvar.value, body, scope = let_scope)
+            temp = body.current_value()
+            if isinstance(let_scope[vvar.id],list):
+                body.add_expr(StoreLocal(vvar.id, value = body.current_value(), pos= let_scope[vvar.id][0]))
             else:
-                
-                pass #este es el caso de una instancia de clase, hay que analizarlo
+                body.add_expr(StoreLocal(vvar.id, value = body.current_value(), pos= let_scope[vvar.id]))
+            TempNames.free([temp])    
             
             #Cuando la variable ya salga de su definicion, del cuerpo del let, hay que eliminar la tupla y dejarlo solo en el valor como entero
             if isinstance(let_scope[vvar.id], list):
@@ -1894,7 +1889,13 @@ class DivExpression:
         for var in scope.keys():
             #esto inicializa cada variable del scope anterior en su posicion anterior, se hace esto para usar el scope recursivo
             case_scope[var] = scope[var]
-
+        
+        #Reservar pila para las variables de la parte izquierda del case
+        body.add_expr(ReserveSTACK(len(cases)*4))
+        for var in case_scope:
+            #mover la posicion de cada una de las variables que estan en el scope
+            case_scope[var] += len(cases)*4
+                      
         #TODO hay que ocultar los valores sobreescritos en el case, asi como ver como es la sobreescritura, supongo que sea general
         
         body.add_expr(JumpMips(s7))
@@ -1902,14 +1903,26 @@ class DivExpression:
         body.add_expr(CaseError())
         # body.add_expr(GOTO(label_end))
         
-        
-        for e, label in zip (cases.values(), labels):
+        pos = 0        
+        for left, right, label in zip (cases.keys(),cases.values(), labels):
+            #Definir la parte izquierda de la rama actual del case, la rama que esta analizando
+            case_scope[left.id] = pos #guardar su posicion en pila en el scope
+            pos+=4
+            DivExpression(None,body,case_scope) #el valor de la parte izquierda es none
+            temp = TempNames.get_name()
+            body.add_expr(StoreLocal(left.id, value = temp, pos= case_scope[left.id]))
+            TempNames.free([temp])
+
             body.add_expr(Label(label))
-            DivExpression(e,body, case_scope)
+            DivExpression(right,body, case_scope)
             body.add_expr(MoveMips(temp,body.current_value()))
             TempNames.free([body.current_value()])
             body.add_expr(GOTO(label_end))
 
         body.add_expr(Label(label_end))
+        
+        body.add_expr(FreeStack(len(cases)*4))#liberar la pila usada para los case
+        
+        
         body.add_expr(MoveMips(temp,temp)) #esta linea es para que se sepa el retorno del case
 

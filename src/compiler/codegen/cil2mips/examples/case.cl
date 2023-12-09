@@ -7,14 +7,19 @@ class F inherits C {};
 class G inherits F {};
 
 class Main inherits IO{
-    a:A <- new A;
+    instance:A <- new A;
     exit:String <- "error";
+    
+    
     main(): IO
     { 
         {
-            a<- new B;
+            instance <- new B;
+            
+            -- let x:B in
+            --     out_string(x.type_name());
 
-            case a of
+            case instance of
             int:Int => exit <-"Int";
             string:String => exit <-"String";
             bool:Bool => exit <-"Bool";
