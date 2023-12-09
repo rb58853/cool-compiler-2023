@@ -1,6 +1,7 @@
 .data
-abort: .asciiz "Abort called from class "
-substring_error: .asciiz "error substring is out of range."
+abort: .asciiz "Abort called from class"
+case_error: .asciiz "error case not have dinamyc type"
+substring_error: .asciiz "error substring is out of range"
 String: .asciiz "String"
 Bool: .asciiz "Bool"
 Int: .asciiz "Int"
@@ -13,15 +14,25 @@ Main: .asciiz "Main"
 str1: .asciiz "\n"
 str2: .asciiz " "
 StaticVoid: .word Void, 4
-StaticIO: .word StaticObject, 8, IO_type_name, IO_abort, IO_copy, IO_out_string, IO_out_int, IO_in_string, IO_in_int
+StaticObject: .word Object_inherits, 8, Object_type_name, Object_abort, Object_copy
 
-StaticObject: .word StaticVoid, 8, Object_type_name, Object_abort, Object_copy
+StaticIO: .word IO_inherits, 8, IO_type_name, IO_abort, IO_copy, IO_out_string, IO_out_int, IO_in_string, IO_in_int
 
-StaticList: .word StaticObject, 8, List_type_name, List_abort, List_copy, List_isNil, List_head, List_tail, List_cons
+StaticList: .word List_inherits, 8, List_type_name, List_abort, List_copy, List_isNil, List_head, List_tail, List_cons
 
-StaticCons: .word StaticList, 16, Cons_type_name, Cons_abort, Cons_copy, Cons_isNil, Cons_head, Cons_tail, Cons_cons, Cons_init
+StaticCons: .word Cons_inherits, 16, Cons_type_name, Cons_abort, Cons_copy, Cons_isNil, Cons_head, Cons_tail, Cons_cons, Cons_init
 
-StaticMain: .word StaticIO, 12, Main_type_name, Main_abort, Main_copy, Main_out_string, Main_out_int, Main_in_string, Main_in_int, Main_print_list, Main_main
+StaticMain: .word Main_inherits, 12, Main_type_name, Main_abort, Main_copy, Main_out_string, Main_out_int, Main_in_string, Main_in_int, Main_print_list, Main_main
+
+Object_inherits: .word -1, -1, -1, 1, -1, -1, -1, -1
+
+IO_inherits: .word -1, -1, -1, -1, 1, -1, -1, -1
+
+List_inherits: .word -1, -1, -1, 2, -1, 1, -1, -1
+
+Cons_inherits: .word -1, -1, -1, 3, -1, 2, 1, -1
+
+Main_inherits: .word -1, -1, -1, 3, 2, -1, -1, 1
 
 .text
 .globl main
@@ -33,8 +44,7 @@ main:
 	li $v0, 10
 	syscall
 List_isNil:
-	lui $t0 000000
-	ori $t0 0x0001
+	li $t0, 1
 	move $a0, $t0
 	jr $ra
 List_head:
@@ -51,8 +61,7 @@ List_head:
 	lw $ra, 0($sp)
 	lw $s2, 4($sp)
 	addi $sp, $sp, 8
-	lui $t0 000000
-	ori $t0 0x0000
+	li $t0, 0
 	move $a0, $t0
 	jr $ra
 List_tail:
@@ -131,8 +140,7 @@ Cons_cons:
 	addi $sp, $sp, 8
 	jr $ra
 Cons_isNil:
-	lui $t0 000000
-	ori $t0 0x0000
+	li $t0, 0
 	move $a0, $t0
 	jr $ra
 Cons_head:
@@ -304,8 +312,7 @@ Main_main:
 	sw $s2, 4($sp)
 	addi $sp, $sp, -8
 	sw $s2, 0($sp)
-	lui $t0 000000
-	ori $t0 0x0001
+	li $t0, 1
 	sw $t0, 4($sp)
 	lw $s2, 12($sp)
 	move $t0, $s2
@@ -322,8 +329,7 @@ Main_main:
 	sw $s2, 4($sp)
 	addi $sp, $sp, -8
 	sw $s2, 0($sp)
-	lui $t0 000000
-	ori $t0 0x0002
+	li $t0, 2
 	sw $t0, 4($sp)
 	lw $s2, 12($sp)
 	move $t0, $s2
@@ -340,8 +346,7 @@ Main_main:
 	sw $s2, 4($sp)
 	addi $sp, $sp, -8
 	sw $s2, 0($sp)
-	lui $t0 000000
-	ori $t0 0x0003
+	li $t0, 3
 	sw $t0, 4($sp)
 	lw $s2, 12($sp)
 	move $t0, $s2
@@ -358,8 +363,7 @@ Main_main:
 	sw $s2, 4($sp)
 	addi $sp, $sp, -8
 	sw $s2, 0($sp)
-	lui $t0 000000
-	ori $t0 0x0004
+	li $t0, 4
 	sw $t0, 4($sp)
 	lw $s2, 12($sp)
 	move $t0, $s2
@@ -376,8 +380,7 @@ Main_main:
 	sw $s2, 4($sp)
 	addi $sp, $sp, -8
 	sw $s2, 0($sp)
-	lui $t0 000000
-	ori $t0 0x0005
+	li $t0, 5
 	sw $t0, 4($sp)
 	lw $s2, 12($sp)
 	move $t0, $s2
@@ -475,8 +478,7 @@ __init_Cons__:
 	sw $t0, 4($s1)
 	addi $sp, $sp, -4
 	sw $s1, 0($sp)
-	lui $t0 000000
-	ori $t0 0x0000
+	li $t0, 0
 	sw $t0, 8($s1)
 	la $a0, StaticVoid
 	sw $a0, 12($s1)
@@ -507,6 +509,23 @@ __init_IO__:
 	sw $t0, 4($v0) 
 	move $a0, $v0
 	jr $ra
+Object_type_name:
+	lw $t0, 0($sp)
+	lw $t1, 0($t0)
+	move $a0, $t1
+	jr $ra
+Object_copy:
+	jr $ra
+Object_abort:
+	la $a0, abort
+	li $v0, 4
+	syscall
+	lw $t0, 0($sp)
+	lw $a0, 0($t0)
+	li $v0, 4
+	syscall
+	li $v0, 10
+	syscall
 IO_out_string:
 	lw $a0, 4($sp)
 	li $v0, 4
@@ -560,23 +579,6 @@ IO_type_name:
 IO_copy:
 	jr $ra
 IO_abort:
-	la $a0, abort
-	li $v0, 4
-	syscall
-	lw $t0, 0($sp)
-	lw $a0, 0($t0)
-	li $v0, 4
-	syscall
-	li $v0, 10
-	syscall
-Object_type_name:
-	lw $t0, 0($sp)
-	lw $t1, 0($t0)
-	move $a0, $t1
-	jr $ra
-Object_copy:
-	jr $ra
-Object_abort:
 	la $a0, abort
 	li $v0, 4
 	syscall

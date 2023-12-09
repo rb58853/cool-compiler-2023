@@ -1895,6 +1895,8 @@ class DivExpression:
         for var in case_scope:
             #mover la posicion de cada una de las variables que estan en el scope
             case_scope[var] += len(cases)*4
+            pass  
+
                       
         #TODO hay que ocultar los valores sobreescritos en el case, asi como ver como es la sobreescritura, supongo que sea general
         
