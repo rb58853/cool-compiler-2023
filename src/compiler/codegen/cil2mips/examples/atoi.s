@@ -1,6 +1,7 @@
 .data
-abort: .asciiz "Abort called from class "
-substring_error: .asciiz "error substring is out of range."
+abort: .asciiz "Abort called from class"
+case_error: .asciiz "error case not have dinamyc type"
+substring_error: .asciiz "error substring is out of range"
 String: .asciiz "String"
 Bool: .asciiz "Bool"
 Int: .asciiz "Int"
@@ -9,43 +10,87 @@ string_space: .space 1024
 newline: .asciiz "\n"
 A2I: .asciiz "A2I"
 Main: .asciiz "Main"
-str1: .asciiz "0"
-str2: .asciiz "1"
-str3: .asciiz "2"
-str4: .asciiz "3"
-str5: .asciiz "4"
-str6: .asciiz "5"
-str7: .asciiz "6"
-str8: .asciiz "7"
-str9: .asciiz "8"
-str10: .asciiz "9"
-str11: .asciiz "0"
-str12: .asciiz "1"
-str13: .asciiz "2"
-str14: .asciiz "3"
-str15: .asciiz "4"
-str16: .asciiz "5"
-str17: .asciiz "6"
-str18: .asciiz "7"
-str19: .asciiz "8"
-str20: .asciiz "9"
-str21: .asciiz ""
-str22: .asciiz "-"
-str23: .asciiz "+"
-str24: .asciiz "0"
-str25: .asciiz "-"
-str26: .asciiz ""
-str27: .asciiz "678987"
-str28: .asciiz " == "
-str29: .asciiz "\n"
+str34: .asciiz "0"
+str35: .asciiz "1"
+str36: .asciiz "2"
+str37: .asciiz "3"
+str38: .asciiz "4"
+str39: .asciiz "5"
+str40: .asciiz "6"
+str41: .asciiz "7"
+str42: .asciiz "8"
+str43: .asciiz "9"
+str44: .asciiz "0"
+str45: .asciiz "1"
+str46: .asciiz "2"
+str47: .asciiz "3"
+str48: .asciiz "4"
+str49: .asciiz "5"
+str50: .asciiz "6"
+str51: .asciiz "7"
+str52: .asciiz "8"
+str53: .asciiz "9"
+str54: .asciiz ""
+str55: .asciiz "-"
+str56: .asciiz "+"
+str57: .asciiz "0"
+str58: .asciiz "-"
+str59: .asciiz ""
+str60: .asciiz "678987"
+str61: .asciiz " == "
+str62: .asciiz "\n"
 StaticVoid: .word Void, 4
-StaticIO: .word StaticObject, 8, IO_type_name, IO_abort, IO_copy, IO_out_string, IO_out_int, IO_in_string, IO_in_int
+StaticObject: .word Object_inherits, 8, Object_type_name, Object_abort, Object_copy
 
-StaticObject: .word StaticVoid, 8, Object_type_name, Object_abort, Object_copy
+StaticIO: .word IO_inherits, 8, IO_type_name, IO_abort, IO_copy, IO_out_string, IO_out_int, IO_in_string, IO_in_int
 
-StaticA2I: .word StaticObject, 8, A2I_type_name, A2I_abort, A2I_copy, A2I_c2i, A2I_i2c, A2I_a2i, A2I_a2i_aux, A2I_i2a, A2I_i2a_aux
+StaticGraph: .word Graph_inherits, 16, Graph_type_name, Graph_abort, Graph_copy, Graph_add_vertice, Graph_print_E, Graph_print_V
 
-StaticMain: .word StaticIO, 8, Main_type_name, Main_abort, Main_copy, Main_out_string, Main_out_int, Main_in_string, Main_in_int, Main_main
+StaticVertice: .word Vertice_inherits, 16, Vertice_type_name, Vertice_abort, Vertice_copy, Vertice_out_string, Vertice_out_int, Vertice_in_string, Vertice_in_int, Vertice_outgoing, Vertice_number, Vertice_init, Vertice_add_out, Vertice_print
+
+StaticEdge: .word Edge_inherits, 20, Edge_type_name, Edge_abort, Edge_copy, Edge_out_string, Edge_out_int, Edge_in_string, Edge_in_int, Edge_init, Edge_print
+
+StaticEList: .word EList_inherits, 12, EList_type_name, EList_abort, EList_copy, EList_out_string, EList_out_int, EList_in_string, EList_in_int, EList_isNil, EList_head, EList_tail, EList_cons, EList_append, EList_print
+
+StaticECons: .word ECons_inherits, 16, ECons_type_name, ECons_abort, ECons_copy, ECons_out_string, ECons_out_int, ECons_in_string, ECons_in_int, ECons_isNil, ECons_head, ECons_tail, ECons_cons, ECons_append, ECons_print, ECons_init
+
+StaticVList: .word VList_inherits, 12, VList_type_name, VList_abort, VList_copy, VList_out_string, VList_out_int, VList_in_string, VList_in_int, VList_isNil, VList_head, VList_tail, VList_cons, VList_print
+
+StaticVCons: .word VCons_inherits, 16, VCons_type_name, VCons_abort, VCons_copy, VCons_out_string, VCons_out_int, VCons_in_string, VCons_in_int, VCons_isNil, VCons_head, VCons_tail, VCons_cons, VCons_print, VCons_init
+
+StaticParse: .word Parse_inherits, 16, Parse_type_name, Parse_abort, Parse_copy, Parse_out_string, Parse_out_int, Parse_in_string, Parse_in_int, Parse_read_input, Parse_parse_line, Parse_c2i, Parse_a2i, Parse_a2i_aux
+
+StaticMain: .word Main_inherits, 8, Main_type_name, Main_abort, Main_copy, Main_out_string, Main_out_int, Main_in_string, Main_in_int, Main_main
+
+StaticBoolOp: .word BoolOp_inherits, 8, BoolOp_type_name, BoolOp_abort, BoolOp_copy, BoolOp_and, BoolOp_or
+
+StaticA2I: .word A2I_inherits, 8, A2I_type_name, A2I_abort, A2I_copy, A2I_c2i, A2I_i2c, A2I_a2i, A2I_a2i_aux, A2I_i2a, A2I_i2a_aux
+
+Object_inherits: .word -1, -1, -1, 1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1
+
+IO_inherits: .word -1, -1, -1, -1, 1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1
+
+Graph_inherits: .word -1, -1, -1, 2, -1, 1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1
+
+Vertice_inherits: .word -1, -1, -1, 3, 2, -1, 1, -1, -1, -1, -1, -1, -1, -1, -1, -1
+
+Edge_inherits: .word -1, -1, -1, 3, 2, -1, -1, 1, -1, -1, -1, -1, -1, -1, -1, -1
+
+EList_inherits: .word -1, -1, -1, 3, 2, -1, -1, -1, 1, -1, -1, -1, -1, -1, -1, -1
+
+ECons_inherits: .word -1, -1, -1, 4, 3, -1, -1, -1, 2, 1, -1, -1, -1, -1, -1, -1
+
+VList_inherits: .word -1, -1, -1, 3, 2, -1, -1, -1, -1, -1, 1, -1, -1, -1, -1, -1
+
+VCons_inherits: .word -1, -1, -1, 4, 3, -1, -1, -1, -1, -1, 2, 1, -1, -1, -1, -1
+
+Parse_inherits: .word -1, -1, -1, 3, 2, -1, -1, -1, -1, -1, -1, -1, 1, -1, -1, -1
+
+Main_inherits: .word -1, -1, -1, 3, 2, -1, -1, -1, -1, -1, -1, -1, -1, 1, -1, -1
+
+BoolOp_inherits: .word -1, -1, -1, 2, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, 1, -1
+
+A2I_inherits: .word -1, -1, -1, 2, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, 1
 
 .text
 .globl main
@@ -58,185 +103,185 @@ main:
 	syscall
 A2I_c2i:
 	lw $t1, 4($sp)
-	la $t0, str1
-	loop_compare_0:
+	la $t0, str34
+	loop_compare_32:
 	lb $s5, 0($t1)
 	lb $s6, 0($t0)
 	addiu $t1, $t1, 1
 	addiu $t0, $t0, 1
-	bne $s5, $s6, end_not_equals_0
-	bnez $s5, loop_compare_0
+	bne $s5, $s6, end_not_equals_32
+	bnez $s5, loop_compare_32
 	li $t1, 1
-	j end_compare_0
-	end_not_equals_0:
+	j end_compare_38
+	end_not_equals_32:
 	li $t1, 0
-	end_compare_0:
-	beq $t1, $zero, else_0
+	end_compare_38:
+	beq $t1, $zero, else_36
 	li $t0, 0
-	j endif_0
-else_0:
+	j endif_36
+else_36:
 	lw $t1, 4($sp)
-	la $t0, str2
-	loop_compare_1:
+	la $t0, str35
+	loop_compare_33:
 	lb $s5, 0($t1)
 	lb $s6, 0($t0)
 	addiu $t1, $t1, 1
 	addiu $t0, $t0, 1
-	bne $s5, $s6, end_not_equals_1
-	bnez $s5, loop_compare_1
+	bne $s5, $s6, end_not_equals_33
+	bnez $s5, loop_compare_33
 	li $t1, 1
-	j end_compare_1
-	end_not_equals_1:
+	j end_compare_39
+	end_not_equals_33:
 	li $t1, 0
-	end_compare_1:
-	beq $t1, $zero, else_1
+	end_compare_39:
+	beq $t1, $zero, else_37
 	li $t0, 1
-	j endif_1
-else_1:
+	j endif_37
+else_37:
 	lw $t1, 4($sp)
-	la $t0, str3
-	loop_compare_2:
+	la $t0, str36
+	loop_compare_34:
 	lb $s5, 0($t1)
 	lb $s6, 0($t0)
 	addiu $t1, $t1, 1
 	addiu $t0, $t0, 1
-	bne $s5, $s6, end_not_equals_2
-	bnez $s5, loop_compare_2
+	bne $s5, $s6, end_not_equals_34
+	bnez $s5, loop_compare_34
 	li $t1, 1
-	j end_compare_2
-	end_not_equals_2:
+	j end_compare_40
+	end_not_equals_34:
 	li $t1, 0
-	end_compare_2:
-	beq $t1, $zero, else_2
+	end_compare_40:
+	beq $t1, $zero, else_38
 	li $t0, 2
-	j endif_2
-else_2:
+	j endif_38
+else_38:
 	lw $t1, 4($sp)
-	la $t0, str4
-	loop_compare_3:
+	la $t0, str37
+	loop_compare_35:
 	lb $s5, 0($t1)
 	lb $s6, 0($t0)
 	addiu $t1, $t1, 1
 	addiu $t0, $t0, 1
-	bne $s5, $s6, end_not_equals_3
-	bnez $s5, loop_compare_3
+	bne $s5, $s6, end_not_equals_35
+	bnez $s5, loop_compare_35
 	li $t1, 1
-	j end_compare_3
-	end_not_equals_3:
+	j end_compare_41
+	end_not_equals_35:
 	li $t1, 0
-	end_compare_3:
-	beq $t1, $zero, else_3
+	end_compare_41:
+	beq $t1, $zero, else_39
 	li $t0, 3
-	j endif_3
-else_3:
+	j endif_39
+else_39:
 	lw $t1, 4($sp)
-	la $t0, str5
-	loop_compare_4:
+	la $t0, str38
+	loop_compare_36:
 	lb $s5, 0($t1)
 	lb $s6, 0($t0)
 	addiu $t1, $t1, 1
 	addiu $t0, $t0, 1
-	bne $s5, $s6, end_not_equals_4
-	bnez $s5, loop_compare_4
+	bne $s5, $s6, end_not_equals_36
+	bnez $s5, loop_compare_36
 	li $t1, 1
-	j end_compare_4
-	end_not_equals_4:
+	j end_compare_42
+	end_not_equals_36:
 	li $t1, 0
-	end_compare_4:
-	beq $t1, $zero, else_4
+	end_compare_42:
+	beq $t1, $zero, else_40
 	li $t0, 4
-	j endif_4
-else_4:
+	j endif_40
+else_40:
 	lw $t1, 4($sp)
-	la $t0, str6
-	loop_compare_5:
+	la $t0, str39
+	loop_compare_37:
 	lb $s5, 0($t1)
 	lb $s6, 0($t0)
 	addiu $t1, $t1, 1
 	addiu $t0, $t0, 1
-	bne $s5, $s6, end_not_equals_5
-	bnez $s5, loop_compare_5
+	bne $s5, $s6, end_not_equals_37
+	bnez $s5, loop_compare_37
 	li $t1, 1
-	j end_compare_5
-	end_not_equals_5:
+	j end_compare_43
+	end_not_equals_37:
 	li $t1, 0
-	end_compare_5:
-	beq $t1, $zero, else_5
+	end_compare_43:
+	beq $t1, $zero, else_41
 	li $t0, 5
-	j endif_5
-else_5:
+	j endif_41
+else_41:
 	lw $t1, 4($sp)
-	la $t0, str7
-	loop_compare_6:
+	la $t0, str40
+	loop_compare_38:
 	lb $s5, 0($t1)
 	lb $s6, 0($t0)
 	addiu $t1, $t1, 1
 	addiu $t0, $t0, 1
-	bne $s5, $s6, end_not_equals_6
-	bnez $s5, loop_compare_6
+	bne $s5, $s6, end_not_equals_38
+	bnez $s5, loop_compare_38
 	li $t1, 1
-	j end_compare_6
-	end_not_equals_6:
+	j end_compare_44
+	end_not_equals_38:
 	li $t1, 0
-	end_compare_6:
-	beq $t1, $zero, else_6
+	end_compare_44:
+	beq $t1, $zero, else_42
 	li $t0, 6
-	j endif_6
-else_6:
+	j endif_42
+else_42:
 	lw $t1, 4($sp)
-	la $t0, str8
-	loop_compare_7:
+	la $t0, str41
+	loop_compare_39:
 	lb $s5, 0($t1)
 	lb $s6, 0($t0)
 	addiu $t1, $t1, 1
 	addiu $t0, $t0, 1
-	bne $s5, $s6, end_not_equals_7
-	bnez $s5, loop_compare_7
+	bne $s5, $s6, end_not_equals_39
+	bnez $s5, loop_compare_39
 	li $t1, 1
-	j end_compare_7
-	end_not_equals_7:
+	j end_compare_45
+	end_not_equals_39:
 	li $t1, 0
-	end_compare_7:
-	beq $t1, $zero, else_7
+	end_compare_45:
+	beq $t1, $zero, else_43
 	li $t0, 7
-	j endif_7
-else_7:
+	j endif_43
+else_43:
 	lw $t1, 4($sp)
-	la $t0, str9
-	loop_compare_8:
+	la $t0, str42
+	loop_compare_40:
 	lb $s5, 0($t1)
 	lb $s6, 0($t0)
 	addiu $t1, $t1, 1
 	addiu $t0, $t0, 1
-	bne $s5, $s6, end_not_equals_8
-	bnez $s5, loop_compare_8
+	bne $s5, $s6, end_not_equals_40
+	bnez $s5, loop_compare_40
 	li $t1, 1
-	j end_compare_8
-	end_not_equals_8:
+	j end_compare_46
+	end_not_equals_40:
 	li $t1, 0
-	end_compare_8:
-	beq $t1, $zero, else_8
+	end_compare_46:
+	beq $t1, $zero, else_44
 	li $t0, 8
-	j endif_8
-else_8:
+	j endif_44
+else_44:
 	lw $t1, 4($sp)
-	la $t0, str10
-	loop_compare_9:
+	la $t0, str43
+	loop_compare_41:
 	lb $s5, 0($t1)
 	lb $s6, 0($t0)
 	addiu $t1, $t1, 1
 	addiu $t0, $t0, 1
-	bne $s5, $s6, end_not_equals_9
-	bnez $s5, loop_compare_9
+	bne $s5, $s6, end_not_equals_41
+	bnez $s5, loop_compare_41
 	li $t1, 1
-	j end_compare_9
-	end_not_equals_9:
+	j end_compare_47
+	end_not_equals_41:
 	li $t1, 0
-	end_compare_9:
-	beq $t1, $zero, else_9
+	end_compare_47:
+	beq $t1, $zero, else_45
 	li $t0, 9
-	j endif_9
-else_9:
+	j endif_45
+else_45:
 	lw $t0, 0($sp)
 	move $s2, $t0
 	addi $sp, $sp, -8
@@ -251,249 +296,249 @@ else_9:
 	lw $s2, 4($sp)
 	addi $sp, $sp, 8
 	li $t0, 0
-endif_9:
-endif_8:
-endif_7:
-endif_6:
-endif_5:
-endif_4:
-endif_3:
-endif_2:
-endif_1:
-endif_0:
+endif_45:
+endif_44:
+endif_43:
+endif_42:
+endif_41:
+endif_40:
+endif_39:
+endif_38:
+endif_37:
+endif_36:
 	move $a0, $t0
 	jr $ra
 A2I_i2c:
 	lw $t1, 4($sp)
 	li $t0, 0
-	beq $t1, $t0, compare_0
-	addi $t0, $zero, 0
-	j end_compare_12
-	compare_0:
-	addi $t0, $zero, 1
-	end_compare_12:
-	beq $t0, $zero, else_10
-	li $a0, 2
-	li $v0, 9
-	syscall
-	move $s4, $v0
-	la $s3, str11
-	copy_0:
-	lb $t0, 0($s3)
-	sb $t0, 0($s4)
-	addiu $s3, $s3, 1
-	addiu $s4, $s4, 1
-	bnez $t0, copy_0
-	move $t0, $v0
-	j endif_10
-else_10:
-	lw $t1, 4($sp)
-	li $t0, 1
-	beq $t1, $t0, compare_1
-	addi $t0, $zero, 0
-	j end_compare_13
-	compare_1:
-	addi $t0, $zero, 1
-	end_compare_13:
-	beq $t0, $zero, else_11
-	li $a0, 2
-	li $v0, 9
-	syscall
-	move $s4, $v0
-	la $s3, str12
-	copy_1:
-	lb $t0, 0($s3)
-	sb $t0, 0($s4)
-	addiu $s3, $s3, 1
-	addiu $s4, $s4, 1
-	bnez $t0, copy_1
-	move $t0, $v0
-	j endif_11
-else_11:
-	lw $t1, 4($sp)
-	li $t0, 2
-	beq $t1, $t0, compare_2
-	addi $t0, $zero, 0
-	j end_compare_14
-	compare_2:
-	addi $t0, $zero, 1
-	end_compare_14:
-	beq $t0, $zero, else_12
-	li $a0, 2
-	li $v0, 9
-	syscall
-	move $s4, $v0
-	la $s3, str13
-	copy_2:
-	lb $t0, 0($s3)
-	sb $t0, 0($s4)
-	addiu $s3, $s3, 1
-	addiu $s4, $s4, 1
-	bnez $t0, copy_2
-	move $t0, $v0
-	j endif_12
-else_12:
-	lw $t1, 4($sp)
-	li $t0, 3
-	beq $t1, $t0, compare_3
-	addi $t0, $zero, 0
-	j end_compare_15
-	compare_3:
-	addi $t0, $zero, 1
-	end_compare_15:
-	beq $t0, $zero, else_13
-	li $a0, 2
-	li $v0, 9
-	syscall
-	move $s4, $v0
-	la $s3, str14
-	copy_3:
-	lb $t0, 0($s3)
-	sb $t0, 0($s4)
-	addiu $s3, $s3, 1
-	addiu $s4, $s4, 1
-	bnez $t0, copy_3
-	move $t0, $v0
-	j endif_13
-else_13:
-	lw $t1, 4($sp)
-	li $t0, 4
-	beq $t1, $t0, compare_4
-	addi $t0, $zero, 0
-	j end_compare_16
-	compare_4:
-	addi $t0, $zero, 1
-	end_compare_16:
-	beq $t0, $zero, else_14
-	li $a0, 2
-	li $v0, 9
-	syscall
-	move $s4, $v0
-	la $s3, str15
-	copy_4:
-	lb $t0, 0($s3)
-	sb $t0, 0($s4)
-	addiu $s3, $s3, 1
-	addiu $s4, $s4, 1
-	bnez $t0, copy_4
-	move $t0, $v0
-	j endif_14
-else_14:
-	lw $t1, 4($sp)
-	li $t0, 5
-	beq $t1, $t0, compare_5
-	addi $t0, $zero, 0
-	j end_compare_17
-	compare_5:
-	addi $t0, $zero, 1
-	end_compare_17:
-	beq $t0, $zero, else_15
-	li $a0, 2
-	li $v0, 9
-	syscall
-	move $s4, $v0
-	la $s3, str16
-	copy_5:
-	lb $t0, 0($s3)
-	sb $t0, 0($s4)
-	addiu $s3, $s3, 1
-	addiu $s4, $s4, 1
-	bnez $t0, copy_5
-	move $t0, $v0
-	j endif_15
-else_15:
-	lw $t1, 4($sp)
-	li $t0, 6
 	beq $t1, $t0, compare_6
 	addi $t0, $zero, 0
-	j end_compare_18
+	j end_compare_50
 	compare_6:
 	addi $t0, $zero, 1
-	end_compare_18:
-	beq $t0, $zero, else_16
+	end_compare_50:
+	beq $t0, $zero, else_46
 	li $a0, 2
 	li $v0, 9
 	syscall
 	move $s4, $v0
-	la $s3, str17
-	copy_6:
+	la $s3, str44
+	copy_11:
 	lb $t0, 0($s3)
 	sb $t0, 0($s4)
 	addiu $s3, $s3, 1
 	addiu $s4, $s4, 1
-	bnez $t0, copy_6
+	bnez $t0, copy_11
 	move $t0, $v0
-	j endif_16
-else_16:
+	j endif_46
+else_46:
 	lw $t1, 4($sp)
-	li $t0, 7
+	li $t0, 1
 	beq $t1, $t0, compare_7
 	addi $t0, $zero, 0
-	j end_compare_19
+	j end_compare_51
 	compare_7:
 	addi $t0, $zero, 1
-	end_compare_19:
-	beq $t0, $zero, else_17
+	end_compare_51:
+	beq $t0, $zero, else_47
 	li $a0, 2
 	li $v0, 9
 	syscall
 	move $s4, $v0
-	la $s3, str18
-	copy_7:
+	la $s3, str45
+	copy_12:
 	lb $t0, 0($s3)
 	sb $t0, 0($s4)
 	addiu $s3, $s3, 1
 	addiu $s4, $s4, 1
-	bnez $t0, copy_7
+	bnez $t0, copy_12
 	move $t0, $v0
-	j endif_17
-else_17:
+	j endif_47
+else_47:
 	lw $t1, 4($sp)
-	li $t0, 8
+	li $t0, 2
 	beq $t1, $t0, compare_8
 	addi $t0, $zero, 0
-	j end_compare_20
+	j end_compare_52
 	compare_8:
 	addi $t0, $zero, 1
-	end_compare_20:
-	beq $t0, $zero, else_18
+	end_compare_52:
+	beq $t0, $zero, else_48
 	li $a0, 2
 	li $v0, 9
 	syscall
 	move $s4, $v0
-	la $s3, str19
-	copy_8:
+	la $s3, str46
+	copy_13:
 	lb $t0, 0($s3)
 	sb $t0, 0($s4)
 	addiu $s3, $s3, 1
 	addiu $s4, $s4, 1
-	bnez $t0, copy_8
+	bnez $t0, copy_13
 	move $t0, $v0
-	j endif_18
-else_18:
+	j endif_48
+else_48:
 	lw $t1, 4($sp)
-	li $t0, 9
+	li $t0, 3
 	beq $t1, $t0, compare_9
 	addi $t0, $zero, 0
-	j end_compare_21
+	j end_compare_53
 	compare_9:
 	addi $t0, $zero, 1
-	end_compare_21:
-	beq $t0, $zero, else_19
+	end_compare_53:
+	beq $t0, $zero, else_49
 	li $a0, 2
 	li $v0, 9
 	syscall
 	move $s4, $v0
-	la $s3, str20
-	copy_9:
+	la $s3, str47
+	copy_14:
 	lb $t0, 0($s3)
 	sb $t0, 0($s4)
 	addiu $s3, $s3, 1
 	addiu $s4, $s4, 1
-	bnez $t0, copy_9
+	bnez $t0, copy_14
 	move $t0, $v0
-	j endif_19
-else_19:
+	j endif_49
+else_49:
+	lw $t1, 4($sp)
+	li $t0, 4
+	beq $t1, $t0, compare_10
+	addi $t0, $zero, 0
+	j end_compare_54
+	compare_10:
+	addi $t0, $zero, 1
+	end_compare_54:
+	beq $t0, $zero, else_50
+	li $a0, 2
+	li $v0, 9
+	syscall
+	move $s4, $v0
+	la $s3, str48
+	copy_15:
+	lb $t0, 0($s3)
+	sb $t0, 0($s4)
+	addiu $s3, $s3, 1
+	addiu $s4, $s4, 1
+	bnez $t0, copy_15
+	move $t0, $v0
+	j endif_50
+else_50:
+	lw $t1, 4($sp)
+	li $t0, 5
+	beq $t1, $t0, compare_11
+	addi $t0, $zero, 0
+	j end_compare_55
+	compare_11:
+	addi $t0, $zero, 1
+	end_compare_55:
+	beq $t0, $zero, else_51
+	li $a0, 2
+	li $v0, 9
+	syscall
+	move $s4, $v0
+	la $s3, str49
+	copy_16:
+	lb $t0, 0($s3)
+	sb $t0, 0($s4)
+	addiu $s3, $s3, 1
+	addiu $s4, $s4, 1
+	bnez $t0, copy_16
+	move $t0, $v0
+	j endif_51
+else_51:
+	lw $t1, 4($sp)
+	li $t0, 6
+	beq $t1, $t0, compare_12
+	addi $t0, $zero, 0
+	j end_compare_56
+	compare_12:
+	addi $t0, $zero, 1
+	end_compare_56:
+	beq $t0, $zero, else_52
+	li $a0, 2
+	li $v0, 9
+	syscall
+	move $s4, $v0
+	la $s3, str50
+	copy_17:
+	lb $t0, 0($s3)
+	sb $t0, 0($s4)
+	addiu $s3, $s3, 1
+	addiu $s4, $s4, 1
+	bnez $t0, copy_17
+	move $t0, $v0
+	j endif_52
+else_52:
+	lw $t1, 4($sp)
+	li $t0, 7
+	beq $t1, $t0, compare_13
+	addi $t0, $zero, 0
+	j end_compare_57
+	compare_13:
+	addi $t0, $zero, 1
+	end_compare_57:
+	beq $t0, $zero, else_53
+	li $a0, 2
+	li $v0, 9
+	syscall
+	move $s4, $v0
+	la $s3, str51
+	copy_18:
+	lb $t0, 0($s3)
+	sb $t0, 0($s4)
+	addiu $s3, $s3, 1
+	addiu $s4, $s4, 1
+	bnez $t0, copy_18
+	move $t0, $v0
+	j endif_53
+else_53:
+	lw $t1, 4($sp)
+	li $t0, 8
+	beq $t1, $t0, compare_14
+	addi $t0, $zero, 0
+	j end_compare_58
+	compare_14:
+	addi $t0, $zero, 1
+	end_compare_58:
+	beq $t0, $zero, else_54
+	li $a0, 2
+	li $v0, 9
+	syscall
+	move $s4, $v0
+	la $s3, str52
+	copy_19:
+	lb $t0, 0($s3)
+	sb $t0, 0($s4)
+	addiu $s3, $s3, 1
+	addiu $s4, $s4, 1
+	bnez $t0, copy_19
+	move $t0, $v0
+	j endif_54
+else_54:
+	lw $t1, 4($sp)
+	li $t0, 9
+	beq $t1, $t0, compare_15
+	addi $t0, $zero, 0
+	j end_compare_59
+	compare_15:
+	addi $t0, $zero, 1
+	end_compare_59:
+	beq $t0, $zero, else_55
+	li $a0, 2
+	li $v0, 9
+	syscall
+	move $s4, $v0
+	la $s3, str53
+	copy_20:
+	lb $t0, 0($s3)
+	sb $t0, 0($s4)
+	addiu $s3, $s3, 1
+	addiu $s4, $s4, 1
+	bnez $t0, copy_20
+	move $t0, $v0
+	j endif_55
+else_55:
 	lw $t0, 0($sp)
 	move $s2, $t0
 	addi $sp, $sp, -8
@@ -511,24 +556,24 @@ else_19:
 	li $v0, 9
 	syscall
 	move $s4, $v0
-	la $s3, str21
-	copy_10:
+	la $s3, str54
+	copy_21:
 	lb $t0, 0($s3)
 	sb $t0, 0($s4)
 	addiu $s3, $s3, 1
 	addiu $s4, $s4, 1
-	bnez $t0, copy_10
+	bnez $t0, copy_21
 	move $t0, $v0
-endif_19:
-endif_18:
-endif_17:
-endif_16:
-endif_15:
-endif_14:
-endif_13:
-endif_12:
-endif_11:
-endif_10:
+endif_55:
+endif_54:
+endif_53:
+endif_52:
+endif_51:
+endif_50:
+endif_49:
+endif_48:
+endif_47:
+endif_46:
 	move $a0, $t0
 	jr $ra
 A2I_a2i:
@@ -547,16 +592,16 @@ A2I_a2i:
 	addi $sp, $sp, 8
 	move $t0, $a0
 	li $t1, 0
-	beq $t0, $t1, compare_10
+	beq $t0, $t1, compare_16
 	addi $t0, $zero, 0
-	j end_compare_22
-	compare_10:
+	j end_compare_60
+	compare_16:
 	addi $t0, $zero, 1
-	end_compare_22:
-	beq $t0, $zero, else_20
+	end_compare_60:
+	beq $t0, $zero, else_56
 	li $t0, 0
-	j endif_20
-else_20:
+	j endif_56
+else_56:
 	lw $t1, 4($sp)
 	move $s2, $t1
 	addi $sp, $sp, -8
@@ -575,20 +620,20 @@ else_20:
 	lw $s2, 4($sp)
 	addi $sp, $sp, 8
 	move $t0, $a0
-	la $t1, str22
-	loop_compare_10:
+	la $t1, str55
+	loop_compare_42:
 	lb $s5, 0($t0)
 	lb $s6, 0($t1)
 	addiu $t0, $t0, 1
 	addiu $t1, $t1, 1
-	bne $s5, $s6, end_not_equals_10
-	bnez $s5, loop_compare_10
+	bne $s5, $s6, end_not_equals_42
+	bnez $s5, loop_compare_42
 	li $t0, 1
-	j end_compare_10
-	end_not_equals_10:
+	j end_compare_48
+	end_not_equals_42:
 	li $t0, 0
-	end_compare_10:
-	beq $t0, $zero, else_21
+	end_compare_48:
+	beq $t0, $zero, else_57
 	lw $t0, 0($sp)
 	move $s2, $t0
 	addi $sp, $sp, -8
@@ -618,8 +663,8 @@ else_20:
 	lw $ra, 0($sp)
 	lw $s2, 4($sp)
 	addi $sp, $sp, 8
-	addi $t0, $a0, -1
-	sw $t0, 8($sp)
+	addi $a0, $a0, -1
+	sw $a0, 8($sp)
 	lw $s2, 16($sp)
 	jal substr
 	addi $sp, $sp, 12
@@ -635,8 +680,8 @@ else_20:
 	addi $sp, $sp, 8
 	addi $a0 $a0 -1
 	subu $a0 $zero $a0
-	j endif_21
-else_21:
+	j endif_57
+else_57:
 	lw $t1, 4($sp)
 	move $s2, $t1
 	addi $sp, $sp, -8
@@ -655,20 +700,20 @@ else_21:
 	lw $s2, 4($sp)
 	addi $sp, $sp, 8
 	move $t0, $a0
-	la $t1, str23
-	loop_compare_11:
+	la $t1, str56
+	loop_compare_43:
 	lb $s5, 0($t0)
 	lb $s6, 0($t1)
 	addiu $t0, $t0, 1
 	addiu $t1, $t1, 1
-	bne $s5, $s6, end_not_equals_11
-	bnez $s5, loop_compare_11
+	bne $s5, $s6, end_not_equals_43
+	bnez $s5, loop_compare_43
 	li $t0, 1
-	j end_compare_11
-	end_not_equals_11:
+	j end_compare_49
+	end_not_equals_43:
 	li $t0, 0
-	end_compare_11:
-	beq $t0, $zero, else_22
+	end_compare_49:
+	beq $t0, $zero, else_58
 	lw $t0, 0($sp)
 	move $s2, $t0
 	addi $sp, $sp, -8
@@ -698,8 +743,8 @@ else_21:
 	lw $ra, 0($sp)
 	lw $s2, 4($sp)
 	addi $sp, $sp, 8
-	addi $t0, $a0, -1
-	sw $t0, 8($sp)
+	addi $a0, $a0, -1
+	sw $a0, 8($sp)
 	lw $s2, 16($sp)
 	jal substr
 	addi $sp, $sp, 12
@@ -713,8 +758,8 @@ else_21:
 	lw $ra, 0($sp)
 	lw $s2, 4($sp)
 	addi $sp, $sp, 8
-	j endif_22
-else_22:
+	j endif_58
+else_58:
 	lw $t0, 0($sp)
 	move $s2, $t0
 	addi $sp, $sp, -8
@@ -730,10 +775,10 @@ else_22:
 	lw $ra, 0($sp)
 	lw $s2, 4($sp)
 	addi $sp, $sp, 8
-endif_22:
-endif_21:
+endif_58:
+endif_57:
 	move $t0, $a0
-endif_20:
+endif_56:
 	move $a0, $t0
 	jr $ra
 A2I_a2i_aux:
@@ -761,38 +806,38 @@ A2I_a2i_aux:
 	addi $sp, $sp, -4
 	li $t0, 0
 	sw $t0, 0($sp)
-loop_0:
+loop_6:
 	lw $t1, 0($sp)
 	lw $t2, 4($sp)
-	slt $t0, $t1, $t2
-	beq $t0, $zero, end_while_0
+	slt $t1, $t1, $t2
+	beq $t1, $zero, end_while_6
 	lw $t1, 8($sp)
 	li $t0, 10
-	mul $t2, $t1, $t0
+	mul $t1, $t1, $t0
 	lw $t0, 12($sp)
 	move $s2, $t0
 	addi $sp, $sp, -12
-	sw $t2, 0($sp)
+	sw $t1, 0($sp)
 	sw $ra, 4($sp)
 	sw $s2, 8($sp)
 	addi $sp, $sp, -8
 	sw $s2, 0($sp)
-	lw $t1, 36($sp)
-	move $s2, $t1
+	lw $t2, 36($sp)
+	move $s2, $t2
 	addi $sp, $sp, -12
-	sw $t2, 0($sp)
+	sw $t1, 0($sp)
 	sw $ra, 4($sp)
 	sw $s2, 8($sp)
 	addi $sp, $sp, -12
 	sw $s2, 0($sp)
-	lw $t1, 44($sp)
-	sw $t1, 4($sp)
+	lw $t2, 44($sp)
+	sw $t2, 4($sp)
 	li $t0, 1
 	sw $t0, 8($sp)
 	lw $s2, 20($sp)
 	jal substr
 	addi $sp, $sp, 12
-	lw $t2, 0($sp)
+	lw $t1, 0($sp)
 	lw $ra, 4($sp)
 	lw $s2, 8($sp)
 	addi $sp, $sp, 12
@@ -800,17 +845,17 @@ loop_0:
 	lw $s2, 16($sp)
 	jal A2I_c2i
 	addi $sp, $sp, 8
-	lw $t2, 0($sp)
+	lw $t1, 0($sp)
 	lw $ra, 4($sp)
 	lw $s2, 8($sp)
 	addi $sp, $sp, 12
-	add $t0, $t2, $a0
-	sw $t0, 8($sp)
+	add $t1, $t1, $a0
+	sw $t1, 8($sp)
 	lw $t1, 0($sp)
-	addi $t0, $t1, 1
-	sw $t0, 0($sp)
-	j loop_0
-end_while_0:
+	addi $t1, $t1, 1
+	sw $t1, 0($sp)
+	j loop_6
+end_while_6:
 	la $a0, StaticVoid
 	addi $sp, $sp, 4
 	#End Region Let
@@ -824,31 +869,31 @@ end_while_0:
 A2I_i2a:
 	lw $t1, 4($sp)
 	li $t0, 0
-	beq $t1, $t0, compare_11
+	beq $t1, $t0, compare_17
 	addi $t0, $zero, 0
-	j end_compare_23
-	compare_11:
+	j end_compare_61
+	compare_17:
 	addi $t0, $zero, 1
-	end_compare_23:
-	beq $t0, $zero, else_23
+	end_compare_61:
+	beq $t0, $zero, else_59
 	li $a0, 2
 	li $v0, 9
 	syscall
 	move $s4, $v0
-	la $s3, str24
-	copy_11:
+	la $s3, str57
+	copy_22:
 	lb $t0, 0($s3)
 	sb $t0, 0($s4)
 	addiu $s3, $s3, 1
 	addiu $s4, $s4, 1
-	bnez $t0, copy_11
+	bnez $t0, copy_22
 	move $t0, $v0
-	j endif_23
-else_23:
+	j endif_59
+else_59:
 	li $t0, 0
 	lw $t2, 4($sp)
-	slt $t1, $t0, $t2
-	beq $t1, $zero, else_24
+	slt $t0, $t0, $t2
+	beq $t0, $zero, else_60
 	lw $t0, 0($sp)
 	move $s2, $t0
 	addi $sp, $sp, -8
@@ -864,19 +909,19 @@ else_23:
 	lw $ra, 0($sp)
 	lw $s2, 4($sp)
 	addi $sp, $sp, 8
-	j endif_24
-else_24:
+	j endif_60
+else_60:
 	li $a0, 2
 	li $v0, 9
 	syscall
 	move $s4, $v0
-	la $s3, str25
-	copy_12:
+	la $s3, str58
+	copy_23:
 	lb $t0, 0($s3)
 	sb $t0, 0($s4)
 	addiu $s3, $s3, 1
 	addiu $s4, $s4, 1
-	bnez $t0, copy_12
+	bnez $t0, copy_23
 	move $t0, $v0
 	move $s2, $t0
 	addi $sp, $sp, -8
@@ -895,8 +940,8 @@ else_24:
 	li $t0, 1
 	addi $t0 $t0 -1
 	subu $t0 $zero $t0
-	mul $t0, $t1, $t0
-	sw $t0, 4($sp)
+	mul $t1, $t1, $t0
+	sw $t1, 4($sp)
 	lw $s2, 12($sp)
 	jal A2I_i2a_aux
 	addi $sp, $sp, 8
@@ -910,42 +955,42 @@ else_24:
 	lw $ra, 0($sp)
 	lw $s2, 4($sp)
 	addi $sp, $sp, 8
-endif_24:
+endif_60:
 	move $t0, $a0
-endif_23:
+endif_59:
 	move $a0, $t0
 	jr $ra
 A2I_i2a_aux:
 	lw $t1, 4($sp)
 	li $t0, 0
-	beq $t1, $t0, compare_12
+	beq $t1, $t0, compare_18
 	addi $t0, $zero, 0
-	j end_compare_24
-	compare_12:
+	j end_compare_62
+	compare_18:
 	addi $t0, $zero, 1
-	end_compare_24:
-	beq $t0, $zero, else_25
+	end_compare_62:
+	beq $t0, $zero, else_61
 	li $a0, 1
 	li $v0, 9
 	syscall
 	move $s4, $v0
-	la $s3, str26
-	copy_13:
+	la $s3, str59
+	copy_24:
 	lb $t0, 0($s3)
 	sb $t0, 0($s4)
 	addiu $s3, $s3, 1
 	addiu $s4, $s4, 1
-	bnez $t0, copy_13
+	bnez $t0, copy_24
 	move $t0, $v0
-	j endif_25
-else_25:
+	j endif_61
+else_61:
 	#Region Let
 	addi $sp, $sp, -4
 	lw $t1, 8($sp)
 	li $t0, 10
 	div $t1, $t0
-	mflo $t2
-	sw $t2, 0($sp)
+	mflo $t1
+	sw $t1, 0($sp)
 	lw $t0, 4($sp)
 	move $s2, $t0
 	addi $sp, $sp, -8
@@ -977,9 +1022,9 @@ else_25:
 	lw $t1, 40($sp)
 	lw $t2, 32($sp)
 	li $t0, 10
-	mul $t3, $t2, $t0
-	sub $t0, $t1, $t3
-	sw $t0, 4($sp)
+	mul $t2, $t2, $t0
+	sub $t1, $t1, $t2
+	sw $t1, 4($sp)
 	lw $s2, 12($sp)
 	jal A2I_i2c
 	addi $sp, $sp, 8
@@ -996,7 +1041,7 @@ else_25:
 	addi $sp, $sp, 4
 	#End Region Let
 	move $t0, $a0
-endif_25:
+endif_61:
 	move $a0, $t0
 	jr $ra
 Main_main:
@@ -1020,13 +1065,13 @@ Main_main:
 	li $v0, 9
 	syscall
 	move $s4, $v0
-	la $s3, str27
-	copy_14:
+	la $s3, str60
+	copy_25:
 	lb $t0, 0($s3)
 	sb $t0, 0($s4)
 	addiu $s3, $s3, 1
 	addiu $s4, $s4, 1
-	bnez $t0, copy_14
+	bnez $t0, copy_25
 	move $t0, $v0
 	sw $t0, 4($sp)
 	lw $s2, 12($sp)
@@ -1092,13 +1137,13 @@ Main_main:
 	li $v0, 9
 	syscall
 	move $s4, $v0
-	la $s3, str28
-	copy_15:
+	la $s3, str61
+	copy_26:
 	lb $t0, 0($s3)
 	sb $t0, 0($s4)
 	addiu $s3, $s3, 1
 	addiu $s4, $s4, 1
-	bnez $t0, copy_15
+	bnez $t0, copy_26
 	move $t0, $v0
 	sw $t0, 4($sp)
 	lw $s2, 12($sp)
@@ -1133,13 +1178,13 @@ Main_main:
 	li $v0, 9
 	syscall
 	move $s4, $v0
-	la $s3, str29
-	copy_16:
+	la $s3, str62
+	copy_27:
 	lb $t0, 0($s3)
 	sb $t0, 0($s4)
 	addiu $s3, $s3, 1
 	addiu $s4, $s4, 1
-	bnez $t0, copy_16
+	bnez $t0, copy_27
 	move $t0, $v0
 	sw $t0, 4($sp)
 	lw $s2, 12($sp)
@@ -1187,6 +1232,23 @@ __init_IO__:
 	sw $t0, 4($v0) 
 	move $a0, $v0
 	jr $ra
+Object_type_name:
+	lw $t0, 0($sp)
+	lw $t1, 0($t0)
+	move $a0, $t1
+	jr $ra
+Object_copy:
+	jr $ra
+Object_abort:
+	la $a0, abort
+	li $v0, 4
+	syscall
+	lw $t0, 0($sp)
+	lw $a0, 0($t0)
+	li $v0, 4
+	syscall
+	li $v0, 10
+	syscall
 IO_out_string:
 	lw $a0, 4($sp)
 	li $v0, 4
@@ -1211,11 +1273,11 @@ li $a1, 1024
 syscall
 	move $t0, $a0
 	addi $t1, $zero, -1
-	length_in_string_0:
+	length_in_string_9:
 	lb $t2, 0($t0)
 	addi $t0, $t0, 1
 	addi $t1, $t1, 1
-	bnez $t2, length_in_string_0
+	bnez $t2, length_in_string_9
 	move $t3, $t1
 addi $t3, $t0, -2
 sb $zero, 0($t3)
@@ -1224,12 +1286,12 @@ addi $a0, $t1, 1
 li $v0, 9
 syscall
 move $t1, $v0
-copy_in_0:
+copy_in_9:
 lb $t3, 0($t0)
 sb $t3, 0($t1)
 addi $t0, $t0, 1
 addi $t1, $t1, 1
-	bnez $t3, copy_in_0
+	bnez $t3, copy_in_9
 move $a0, $v0
 	jr $ra
 IO_type_name:
@@ -1249,14 +1311,14 @@ IO_abort:
 	syscall
 	li $v0, 10
 	syscall
-Object_type_name:
+Graph_type_name:
 	lw $t0, 0($sp)
 	lw $t1, 0($t0)
 	move $a0, $t1
 	jr $ra
-Object_copy:
+Graph_copy:
 	jr $ra
-Object_abort:
+Graph_abort:
 	la $a0, abort
 	li $v0, 4
 	syscall
@@ -1266,14 +1328,431 @@ Object_abort:
 	syscall
 	li $v0, 10
 	syscall
-A2I_type_name:
+Vertice_out_string:
+	lw $a0, 4($sp)
+	li $v0, 4
+	syscall
+	lw $a0, 0($sp)
+	jr $ra
+Vertice_out_int:
+	lw $a0, 4($sp)
+	li $v0, 1
+	syscall
+	lw $a0, 0($sp)
+	jr $ra
+Vertice_in_int:
+	li $v0, 5
+	syscall
+	move $a0, $v0
+	jr $ra
+Vertice_in_string:
+li $v0, 8
+la $a0, string_space
+li $a1, 1024
+syscall
+	move $t0, $a0
+	addi $t1, $zero, -1
+	length_in_string_10:
+	lb $t2, 0($t0)
+	addi $t0, $t0, 1
+	addi $t1, $t1, 1
+	bnez $t2, length_in_string_10
+	move $t3, $t1
+addi $t3, $t0, -2
+sb $zero, 0($t3)
+move $t0, $a0
+addi $a0, $t1, 1
+li $v0, 9
+syscall
+move $t1, $v0
+copy_in_10:
+lb $t3, 0($t0)
+sb $t3, 0($t1)
+addi $t0, $t0, 1
+addi $t1, $t1, 1
+	bnez $t3, copy_in_10
+move $a0, $v0
+	jr $ra
+Vertice_type_name:
 	lw $t0, 0($sp)
 	lw $t1, 0($t0)
 	move $a0, $t1
 	jr $ra
-A2I_copy:
+Vertice_copy:
 	jr $ra
-A2I_abort:
+Vertice_abort:
+	la $a0, abort
+	li $v0, 4
+	syscall
+	lw $t0, 0($sp)
+	lw $a0, 0($t0)
+	li $v0, 4
+	syscall
+	li $v0, 10
+	syscall
+Edge_out_string:
+	lw $a0, 4($sp)
+	li $v0, 4
+	syscall
+	lw $a0, 0($sp)
+	jr $ra
+Edge_out_int:
+	lw $a0, 4($sp)
+	li $v0, 1
+	syscall
+	lw $a0, 0($sp)
+	jr $ra
+Edge_in_int:
+	li $v0, 5
+	syscall
+	move $a0, $v0
+	jr $ra
+Edge_in_string:
+li $v0, 8
+la $a0, string_space
+li $a1, 1024
+syscall
+	move $t0, $a0
+	addi $t1, $zero, -1
+	length_in_string_11:
+	lb $t2, 0($t0)
+	addi $t0, $t0, 1
+	addi $t1, $t1, 1
+	bnez $t2, length_in_string_11
+	move $t3, $t1
+addi $t3, $t0, -2
+sb $zero, 0($t3)
+move $t0, $a0
+addi $a0, $t1, 1
+li $v0, 9
+syscall
+move $t1, $v0
+copy_in_11:
+lb $t3, 0($t0)
+sb $t3, 0($t1)
+addi $t0, $t0, 1
+addi $t1, $t1, 1
+	bnez $t3, copy_in_11
+move $a0, $v0
+	jr $ra
+Edge_type_name:
+	lw $t0, 0($sp)
+	lw $t1, 0($t0)
+	move $a0, $t1
+	jr $ra
+Edge_copy:
+	jr $ra
+Edge_abort:
+	la $a0, abort
+	li $v0, 4
+	syscall
+	lw $t0, 0($sp)
+	lw $a0, 0($t0)
+	li $v0, 4
+	syscall
+	li $v0, 10
+	syscall
+EList_out_string:
+	lw $a0, 4($sp)
+	li $v0, 4
+	syscall
+	lw $a0, 0($sp)
+	jr $ra
+EList_out_int:
+	lw $a0, 4($sp)
+	li $v0, 1
+	syscall
+	lw $a0, 0($sp)
+	jr $ra
+EList_in_int:
+	li $v0, 5
+	syscall
+	move $a0, $v0
+	jr $ra
+EList_in_string:
+li $v0, 8
+la $a0, string_space
+li $a1, 1024
+syscall
+	move $t0, $a0
+	addi $t1, $zero, -1
+	length_in_string_12:
+	lb $t2, 0($t0)
+	addi $t0, $t0, 1
+	addi $t1, $t1, 1
+	bnez $t2, length_in_string_12
+	move $t3, $t1
+addi $t3, $t0, -2
+sb $zero, 0($t3)
+move $t0, $a0
+addi $a0, $t1, 1
+li $v0, 9
+syscall
+move $t1, $v0
+copy_in_12:
+lb $t3, 0($t0)
+sb $t3, 0($t1)
+addi $t0, $t0, 1
+addi $t1, $t1, 1
+	bnez $t3, copy_in_12
+move $a0, $v0
+	jr $ra
+EList_type_name:
+	lw $t0, 0($sp)
+	lw $t1, 0($t0)
+	move $a0, $t1
+	jr $ra
+EList_copy:
+	jr $ra
+EList_abort:
+	la $a0, abort
+	li $v0, 4
+	syscall
+	lw $t0, 0($sp)
+	lw $a0, 0($t0)
+	li $v0, 4
+	syscall
+	li $v0, 10
+	syscall
+ECons_out_string:
+	lw $a0, 4($sp)
+	li $v0, 4
+	syscall
+	lw $a0, 0($sp)
+	jr $ra
+ECons_out_int:
+	lw $a0, 4($sp)
+	li $v0, 1
+	syscall
+	lw $a0, 0($sp)
+	jr $ra
+ECons_in_int:
+	li $v0, 5
+	syscall
+	move $a0, $v0
+	jr $ra
+ECons_in_string:
+li $v0, 8
+la $a0, string_space
+li $a1, 1024
+syscall
+	move $t0, $a0
+	addi $t1, $zero, -1
+	length_in_string_13:
+	lb $t2, 0($t0)
+	addi $t0, $t0, 1
+	addi $t1, $t1, 1
+	bnez $t2, length_in_string_13
+	move $t3, $t1
+addi $t3, $t0, -2
+sb $zero, 0($t3)
+move $t0, $a0
+addi $a0, $t1, 1
+li $v0, 9
+syscall
+move $t1, $v0
+copy_in_13:
+lb $t3, 0($t0)
+sb $t3, 0($t1)
+addi $t0, $t0, 1
+addi $t1, $t1, 1
+	bnez $t3, copy_in_13
+move $a0, $v0
+	jr $ra
+ECons_type_name:
+	lw $t0, 0($sp)
+	lw $t1, 0($t0)
+	move $a0, $t1
+	jr $ra
+ECons_copy:
+	jr $ra
+ECons_abort:
+	la $a0, abort
+	li $v0, 4
+	syscall
+	lw $t0, 0($sp)
+	lw $a0, 0($t0)
+	li $v0, 4
+	syscall
+	li $v0, 10
+	syscall
+VList_out_string:
+	lw $a0, 4($sp)
+	li $v0, 4
+	syscall
+	lw $a0, 0($sp)
+	jr $ra
+VList_out_int:
+	lw $a0, 4($sp)
+	li $v0, 1
+	syscall
+	lw $a0, 0($sp)
+	jr $ra
+VList_in_int:
+	li $v0, 5
+	syscall
+	move $a0, $v0
+	jr $ra
+VList_in_string:
+li $v0, 8
+la $a0, string_space
+li $a1, 1024
+syscall
+	move $t0, $a0
+	addi $t1, $zero, -1
+	length_in_string_14:
+	lb $t2, 0($t0)
+	addi $t0, $t0, 1
+	addi $t1, $t1, 1
+	bnez $t2, length_in_string_14
+	move $t3, $t1
+addi $t3, $t0, -2
+sb $zero, 0($t3)
+move $t0, $a0
+addi $a0, $t1, 1
+li $v0, 9
+syscall
+move $t1, $v0
+copy_in_14:
+lb $t3, 0($t0)
+sb $t3, 0($t1)
+addi $t0, $t0, 1
+addi $t1, $t1, 1
+	bnez $t3, copy_in_14
+move $a0, $v0
+	jr $ra
+VList_type_name:
+	lw $t0, 0($sp)
+	lw $t1, 0($t0)
+	move $a0, $t1
+	jr $ra
+VList_copy:
+	jr $ra
+VList_abort:
+	la $a0, abort
+	li $v0, 4
+	syscall
+	lw $t0, 0($sp)
+	lw $a0, 0($t0)
+	li $v0, 4
+	syscall
+	li $v0, 10
+	syscall
+VCons_out_string:
+	lw $a0, 4($sp)
+	li $v0, 4
+	syscall
+	lw $a0, 0($sp)
+	jr $ra
+VCons_out_int:
+	lw $a0, 4($sp)
+	li $v0, 1
+	syscall
+	lw $a0, 0($sp)
+	jr $ra
+VCons_in_int:
+	li $v0, 5
+	syscall
+	move $a0, $v0
+	jr $ra
+VCons_in_string:
+li $v0, 8
+la $a0, string_space
+li $a1, 1024
+syscall
+	move $t0, $a0
+	addi $t1, $zero, -1
+	length_in_string_15:
+	lb $t2, 0($t0)
+	addi $t0, $t0, 1
+	addi $t1, $t1, 1
+	bnez $t2, length_in_string_15
+	move $t3, $t1
+addi $t3, $t0, -2
+sb $zero, 0($t3)
+move $t0, $a0
+addi $a0, $t1, 1
+li $v0, 9
+syscall
+move $t1, $v0
+copy_in_15:
+lb $t3, 0($t0)
+sb $t3, 0($t1)
+addi $t0, $t0, 1
+addi $t1, $t1, 1
+	bnez $t3, copy_in_15
+move $a0, $v0
+	jr $ra
+VCons_type_name:
+	lw $t0, 0($sp)
+	lw $t1, 0($t0)
+	move $a0, $t1
+	jr $ra
+VCons_copy:
+	jr $ra
+VCons_abort:
+	la $a0, abort
+	li $v0, 4
+	syscall
+	lw $t0, 0($sp)
+	lw $a0, 0($t0)
+	li $v0, 4
+	syscall
+	li $v0, 10
+	syscall
+Parse_out_string:
+	lw $a0, 4($sp)
+	li $v0, 4
+	syscall
+	lw $a0, 0($sp)
+	jr $ra
+Parse_out_int:
+	lw $a0, 4($sp)
+	li $v0, 1
+	syscall
+	lw $a0, 0($sp)
+	jr $ra
+Parse_in_int:
+	li $v0, 5
+	syscall
+	move $a0, $v0
+	jr $ra
+Parse_in_string:
+li $v0, 8
+la $a0, string_space
+li $a1, 1024
+syscall
+	move $t0, $a0
+	addi $t1, $zero, -1
+	length_in_string_16:
+	lb $t2, 0($t0)
+	addi $t0, $t0, 1
+	addi $t1, $t1, 1
+	bnez $t2, length_in_string_16
+	move $t3, $t1
+addi $t3, $t0, -2
+sb $zero, 0($t3)
+move $t0, $a0
+addi $a0, $t1, 1
+li $v0, 9
+syscall
+move $t1, $v0
+copy_in_16:
+lb $t3, 0($t0)
+sb $t3, 0($t1)
+addi $t0, $t0, 1
+addi $t1, $t1, 1
+	bnez $t3, copy_in_16
+move $a0, $v0
+	jr $ra
+Parse_type_name:
+	lw $t0, 0($sp)
+	lw $t1, 0($t0)
+	move $a0, $t1
+	jr $ra
+Parse_copy:
+	jr $ra
+Parse_abort:
 	la $a0, abort
 	li $v0, 4
 	syscall
@@ -1307,11 +1786,11 @@ li $a1, 1024
 syscall
 	move $t0, $a0
 	addi $t1, $zero, -1
-	length_in_string_1:
+	length_in_string_17:
 	lb $t2, 0($t0)
 	addi $t0, $t0, 1
 	addi $t1, $t1, 1
-	bnez $t2, length_in_string_1
+	bnez $t2, length_in_string_17
 	move $t3, $t1
 addi $t3, $t0, -2
 sb $zero, 0($t3)
@@ -1320,12 +1799,12 @@ addi $a0, $t1, 1
 li $v0, 9
 syscall
 move $t1, $v0
-copy_in_1:
+copy_in_17:
 lb $t3, 0($t0)
 sb $t3, 0($t1)
 addi $t0, $t0, 1
 addi $t1, $t1, 1
-	bnez $t3, copy_in_1
+	bnez $t3, copy_in_17
 move $a0, $v0
 	jr $ra
 Main_type_name:
@@ -1336,6 +1815,40 @@ Main_type_name:
 Main_copy:
 	jr $ra
 Main_abort:
+	la $a0, abort
+	li $v0, 4
+	syscall
+	lw $t0, 0($sp)
+	lw $a0, 0($t0)
+	li $v0, 4
+	syscall
+	li $v0, 10
+	syscall
+BoolOp_type_name:
+	lw $t0, 0($sp)
+	lw $t1, 0($t0)
+	move $a0, $t1
+	jr $ra
+BoolOp_copy:
+	jr $ra
+BoolOp_abort:
+	la $a0, abort
+	li $v0, 4
+	syscall
+	lw $t0, 0($sp)
+	lw $a0, 0($t0)
+	li $v0, 4
+	syscall
+	li $v0, 10
+	syscall
+A2I_type_name:
+	lw $t0, 0($sp)
+	lw $t1, 0($t0)
+	move $a0, $t1
+	jr $ra
+A2I_copy:
+	jr $ra
+A2I_abort:
 	la $a0, abort
 	li $v0, 4
 	syscall

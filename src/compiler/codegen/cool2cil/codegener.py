@@ -97,7 +97,19 @@ class Data:
 class CILProgram():
     def __init__(self, program:CoolProgram):
         super().__init__()
+        #Limpiar los datos base#####################################
         Data.free()
+        # global TYPES
+        # global TYPES_INHERITS
+        # global TYPES_INHERITS_INDEX
+
+        # TYPES = {}
+        # TYPES_INHERITS = {'Int': 0, 'String': 4, 'Bool': 8}
+        # TYPES_INHERITS_INDEX = {'Int': 0, 'String': 1, 'Bool': 2}
+        # TYPES ['Object'] = BaseType('Object')
+        # TYPES ['IO'] = BaseType('IO')
+        
+        ################################################################
         self.types:dict[str,CILType] = {}  # Lista de CILType
         self.methods:list[CILMethod] = []
         self.set_types(program)
@@ -137,8 +149,6 @@ class CILProgram():
                 temp += f'{value}, '
             
             Data.add(f'{temp[:-2]}\n')
-
-
 
     def generate_init_types(self):
         for type in self.types.values():
@@ -1304,37 +1314,32 @@ class DivExpression:
         # TempNames.free([temp])
 
     def arithmetic(aritmetic: ArithmeticOP, body:Body, scope:dict = {}):
-        # lefth_is_id_and_not_atr = IsType.id(aritmetic.left) and not aritmetic.left.is_atr()
-        # right_is_id_and_not_atr = IsType.id(aritmetic.right) and not aritmetic.right.is_atr()
-        
         mult_div = (aritmetic.op == '/' or aritmetic.op == '*')
 
-        # if (IsType.int(aritmetic.left) or lefth_is_id_and_not_atr)  and (IsType.int(aritmetic.right) or right_is_id_and_not_atr ):
         if (IsType.int(aritmetic.left)) and (IsType.int(aritmetic.right) ) and not mult_div and USE_i:
             body.add_expr(CILAssign(TempNames.get_name(),aritmetic.left))
             left_value = body.current_value()
-            body.add_expr(CILAssign(TempNames.get_name(),CILArithmeticOp(left_value,aritmetic.right, aritmetic.op, constant=True)))
-            TempNames.free([left_value])
+            body.add_expr(CILAssign(left_value,CILArithmeticOp(left_value,aritmetic.right, aritmetic.op, constant=True)))
+            # TempNames.free([left_value])
         elif isinstance(aritmetic.left, IntNode) and (aritmetic.op == '+') and not mult_div and USE_i:# or lefth_is_id_and_not_atr):
             DivExpression(aritmetic.right,body,scope)
             rigth_value = body.current_value()
-            body.add_expr(CILAssign(TempNames.get_name(),CILArithmeticOp(rigth_value,aritmetic.left,aritmetic.op, constant=True)))
-            TempNames.free([rigth_value])
-            # body.add_expr(CILAssign(TempNames.get_name(),CILArithmeticOp(aritmetic.left,body.current_value(),aritmetic.op)))
-        # elif (isinstance(aritmetic.right, IntNode) or right_is_id_and_not_atr):
+            body.add_expr(CILAssign(rigth_value,CILArithmeticOp(rigth_value,aritmetic.left,aritmetic.op, constant=True)))
+            # TempNames.free([rigth_value])
         elif (isinstance(aritmetic.right, IntNode))and not mult_div and USE_i:
             DivExpression(aritmetic.left,body,scope)
             left_value = body.current_value()
-            body.add_expr(CILAssign(TempNames.get_name(),CILArithmeticOp(body.current_value(),aritmetic.right,aritmetic.op, constant=True)))
-            TempNames.free([ left_value])
+            body.add_expr(CILAssign(left_value,CILArithmeticOp(body.current_value(),aritmetic.right,aritmetic.op, constant=True)))
+            # TempNames.free([ left_value])
         else:
             DivExpression(aritmetic.left,body,scope)
             left_value = body.current_value()
             DivExpression(aritmetic.right,body,scope)
             rigth_value = body.current_value()
-            body.add_expr(CILAssign(TempNames.get_name(),CILArithmeticOp(left_value,rigth_value,aritmetic.op)))
+            body.add_expr(CILAssign(left_value,CILArithmeticOp(left_value,rigth_value,aritmetic.op)))
             #cuando yo termino una operacion aritmetica, yo puedo volver a utilizar los variables donde no guarde el resultado, dado la naturaleza del codigo recursivo que va desde hijos a padres, solo me interesa conservar la varable donde se asigno el valor de la operacion. Luego las variables que use en el cuerpo de la operacion no las necesito, por lo tanto pueden volver a usarse.
-            TempNames.free([left_value,rigth_value])
+            TempNames.free([rigth_value])
+            # TempNames.free([left_value,rigth_value])
     
     def logical(logicar:Logicar, body:Body, scope:dict = {}):
         if logicar.op != '=':
@@ -1402,7 +1407,8 @@ class DivExpression:
             left_value = body.current_value()
             body.add_expr(CILAssign(TempNames.get_name(),logicar.right))
             rigth_value = body.current_value()
-            body.add_expr(CILAssign(TempNames.get_name(),CILLogicalOP(left_value,rigth_value, logicar.op)))
+            body.add_expr(CILAssign(left_value,CILLogicalOP(left_value,rigth_value, logicar.op)))
+            # TempNames.free([left_value,rigth_value])
             TempNames.free([left_value,rigth_value])
 
         elif isinstance(logicar.left, IntNode):
@@ -1410,7 +1416,7 @@ class DivExpression:
             left_value = body.current_value()
             DivExpression(logicar.right,body,scope)
             rigth_value = body.current_value()
-            body.add_expr(CILAssign(TempNames.get_name(),CILLogicalOP(left_value,rigth_value,logicar.op)))
+            body.add_expr(CILAssign(left_value,CILLogicalOP(left_value,rigth_value,logicar.op)))
             TempNames.free([left_value,rigth_value])
         
         elif isinstance(logicar.right, IntNode):
@@ -1418,14 +1424,14 @@ class DivExpression:
             rigth_value = body.current_value()
             DivExpression(logicar.left,body,scope)
             left_value = body.current_value()
-            body.add_expr(CILAssign(TempNames.get_name(),CILLogicalOP(body.current_value(),rigth_value,logicar.op)))
+            body.add_expr(CILAssign(left_value,CILLogicalOP(body.current_value(),rigth_value,logicar.op)))
             TempNames.free([left_value,rigth_value])
         else:
             DivExpression(logicar.left,body,scope)
             left_value = body.current_value()
             DivExpression(logicar.right,body,scope)
             rigth_value = body.current_value()
-            body.add_expr(CILAssign(TempNames.get_name(),CILLogicalOP(left_value,rigth_value,logicar.op)))
+            body.add_expr(CILAssign(left_value,CILLogicalOP(left_value,rigth_value,logicar.op)))
             TempNames.free([left_value,rigth_value])
     
     def int(_int:IntNode, body:Body, scope:dict = {}):
@@ -1744,6 +1750,8 @@ class DivExpression:
         body.add_expr(CILAssign("$s2",CILCallLocal(temp[:3], scope[temp]))) #asiginar a $s2 su anterior valor
 
 
+       
+
         if type is not None:
             # llama a la funcion si el type no es none con salto normal xq es estatico
             body.add_expr(CallMethod(label_method))
@@ -1754,6 +1762,9 @@ class DivExpression:
             body.add_expr(CILAssign(dir,'$s2'))#la instancia esta en el registro $s2, guarda su valor en dir
             body.add_expr(CallFromDir(dir,pos))
             TempNames.free([dir]) #Libera la direcion que le pasa    
+
+         #TODO esto es nuevo, despues de llamar el metodo, librear todos los temporales
+        # TempNames.free_all()
 
         #Aqui hay que recuperar el valor de los registros temporales. Para ello hay que liberar la pila de los argumentos con los que se llamo la funcion, luego de ello recueperar la posicion en pila de los temporales restando el desplaziento que se libero
         body.add_expr(FreeStack(space))

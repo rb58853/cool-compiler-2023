@@ -1,6 +1,7 @@
 .data
-abort: .asciiz "Abort called from class "
-substring_error: .asciiz "error substring is out of range."
+abort: .asciiz "Abort called from class"
+case_error: .asciiz "error case not have dinamyc type"
+substring_error: .asciiz "error substring is out of range"
 String: .asciiz "String"
 Bool: .asciiz "Bool"
 Int: .asciiz "Int"
@@ -9,31 +10,71 @@ string_space: .space 1024
 newline: .asciiz "\n"
 CellularAutomaton: .asciiz "CellularAutomaton"
 Main: .asciiz "Main"
-str3: .asciiz "\n"
-str4: .asciiz "X"
-str5: .asciiz "X"
-str6: .asciiz "X"
-str7: .asciiz "X"
-str8: .asciiz "."
-str9: .asciiz ""
-str10: .asciiz "         X         "
-str2: .asciiz ""
+str73: .asciiz "\n"
+str74: .asciiz "X"
+str75: .asciiz "X"
+str76: .asciiz "X"
+str77: .asciiz "X"
+str78: .asciiz "."
+str79: .asciiz ""
+str80: .asciiz "         X         "
+str72: .asciiz ""
 StaticVoid: .word Void, 4
-StaticIO: .word IO_inherits, 8, IO_type_name, IO_abort, IO_copy, IO_out_string, IO_out_int, IO_in_string, IO_in_int
-
 StaticObject: .word Object_inherits, 8, Object_type_name, Object_abort, Object_copy
 
-StaticCellularAutomaton: .word CellularAutomaton_inherits, 12, CellularAutomaton_type_name, CellularAutomaton_abort, CellularAutomaton_copy, CellularAutomaton_out_string, CellularAutomaton_out_int, CellularAutomaton_in_string, CellularAutomaton_in_int, CellularAutomaton_init, CellularAutomaton_print, CellularAutomaton_num_cells, CellularAutomaton_cell, CellularAutomaton_cell_left_neighbor, CellularAutomaton_cell_right_neighbor, CellularAutomaton_cell_at_next_evolution, CellularAutomaton_evolve
+StaticIO: .word IO_inherits, 8, IO_type_name, IO_abort, IO_copy, IO_out_string, IO_out_int, IO_in_string, IO_in_int
+
+StaticGraph: .word Graph_inherits, 16, Graph_type_name, Graph_abort, Graph_copy, Graph_add_vertice, Graph_print_E, Graph_print_V
+
+StaticVertice: .word Vertice_inherits, 16, Vertice_type_name, Vertice_abort, Vertice_copy, Vertice_out_string, Vertice_out_int, Vertice_in_string, Vertice_in_int, Vertice_outgoing, Vertice_number, Vertice_init, Vertice_add_out, Vertice_print
+
+StaticEdge: .word Edge_inherits, 20, Edge_type_name, Edge_abort, Edge_copy, Edge_out_string, Edge_out_int, Edge_in_string, Edge_in_int, Edge_init, Edge_print
+
+StaticEList: .word EList_inherits, 12, EList_type_name, EList_abort, EList_copy, EList_out_string, EList_out_int, EList_in_string, EList_in_int, EList_isNil, EList_head, EList_tail, EList_cons, EList_append, EList_print
+
+StaticECons: .word ECons_inherits, 16, ECons_type_name, ECons_abort, ECons_copy, ECons_out_string, ECons_out_int, ECons_in_string, ECons_in_int, ECons_isNil, ECons_head, ECons_tail, ECons_cons, ECons_append, ECons_print, ECons_init
+
+StaticVList: .word VList_inherits, 12, VList_type_name, VList_abort, VList_copy, VList_out_string, VList_out_int, VList_in_string, VList_in_int, VList_isNil, VList_head, VList_tail, VList_cons, VList_print
+
+StaticVCons: .word VCons_inherits, 16, VCons_type_name, VCons_abort, VCons_copy, VCons_out_string, VCons_out_int, VCons_in_string, VCons_in_int, VCons_isNil, VCons_head, VCons_tail, VCons_cons, VCons_print, VCons_init
+
+StaticParse: .word Parse_inherits, 16, Parse_type_name, Parse_abort, Parse_copy, Parse_out_string, Parse_out_int, Parse_in_string, Parse_in_int, Parse_read_input, Parse_parse_line, Parse_c2i, Parse_a2i, Parse_a2i_aux
 
 StaticMain: .word Main_inherits, 12, Main_type_name, Main_abort, Main_copy, Main_main
 
-IO_inherits: .word 0, -1, -1, -1
+StaticBoolOp: .word BoolOp_inherits, 8, BoolOp_type_name, BoolOp_abort, BoolOp_copy, BoolOp_and, BoolOp_or
 
-Object_inherits: .word -1, 0, -1, -1
+StaticA2I: .word A2I_inherits, 8, A2I_type_name, A2I_abort, A2I_copy, A2I_c2i, A2I_i2c, A2I_a2i, A2I_a2i_aux, A2I_i2a, A2I_i2a_aux
 
-CellularAutomaton_inherits: .word 1, 2, 0, -1
+StaticCellularAutomaton: .word CellularAutomaton_inherits, 12, CellularAutomaton_type_name, CellularAutomaton_abort, CellularAutomaton_copy, CellularAutomaton_out_string, CellularAutomaton_out_int, CellularAutomaton_in_string, CellularAutomaton_in_int, CellularAutomaton_init, CellularAutomaton_print, CellularAutomaton_num_cells, CellularAutomaton_cell, CellularAutomaton_cell_left_neighbor, CellularAutomaton_cell_right_neighbor, CellularAutomaton_cell_at_next_evolution, CellularAutomaton_evolve
 
-Main_inherits: .word -1, 1, -1, 0
+Object_inherits: .word -1, -1, -1, 1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1
+
+IO_inherits: .word -1, -1, -1, -1, 1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1
+
+Graph_inherits: .word -1, -1, -1, 2, -1, 1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1
+
+Vertice_inherits: .word -1, -1, -1, 3, 2, -1, 1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1
+
+Edge_inherits: .word -1, -1, -1, 3, 2, -1, -1, 1, -1, -1, -1, -1, -1, -1, -1, -1, -1
+
+EList_inherits: .word -1, -1, -1, 3, 2, -1, -1, -1, 1, -1, -1, -1, -1, -1, -1, -1, -1
+
+ECons_inherits: .word -1, -1, -1, 4, 3, -1, -1, -1, 2, 1, -1, -1, -1, -1, -1, -1, -1
+
+VList_inherits: .word -1, -1, -1, 3, 2, -1, -1, -1, -1, -1, 1, -1, -1, -1, -1, -1, -1
+
+VCons_inherits: .word -1, -1, -1, 4, 3, -1, -1, -1, -1, -1, 2, 1, -1, -1, -1, -1, -1
+
+Parse_inherits: .word -1, -1, -1, 3, 2, -1, -1, -1, -1, -1, -1, -1, 1, -1, -1, -1, -1
+
+Main_inherits: .word -1, -1, -1, 2, -1, -1, -1, -1, -1, -1, -1, -1, -1, 1, -1, -1, -1
+
+BoolOp_inherits: .word -1, -1, -1, 2, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, 1, -1, -1
+
+A2I_inherits: .word -1, -1, -1, 2, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, 1, -1
+
+CellularAutomaton_inherits: .word -1, -1, -1, 3, 2, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, 1
 
 .text
 .globl main
@@ -71,13 +112,13 @@ CellularAutomaton_print:
 	li $v0, 9
 	syscall
 	move $s4, $v0
-	la $s3, str3
-	copy_0:
+	la $s3, str73
+	copy_28:
 	lb $t0, 0($s3)
 	sb $t0, 0($s4)
 	addiu $s3, $s3, 1
 	addiu $s4, $s4, 1
-	bnez $t0, copy_0
+	bnez $t0, copy_28
 	move $t0, $v0
 	sw $t0, 4($sp)
 	lw $s2, 12($sp)
@@ -135,13 +176,13 @@ CellularAutomaton_cell:
 CellularAutomaton_cell_left_neighbor:
 	lw $t1, 4($sp)
 	li $t0, 0
-	beq $t1, $t0, compare_0
+	beq $t1, $t0, compare_19
 	addi $t0, $zero, 0
-	j end_compare_3
-	compare_0:
+	j end_compare_66
+	compare_19:
 	addi $t0, $zero, 1
-	end_compare_3:
-	beq $t0, $zero, else_0
+	end_compare_66:
+	beq $t0, $zero, else_62
 	lw $t0, 0($sp)
 	move $s2, $t0
 	addi $sp, $sp, -8
@@ -162,16 +203,16 @@ CellularAutomaton_cell_left_neighbor:
 	lw $ra, 0($sp)
 	lw $s2, 4($sp)
 	addi $sp, $sp, 8
-	addi $t0, $a0, -1
-	sw $t0, 4($sp)
+	addi $a0, $a0, -1
+	sw $a0, 4($sp)
 	lw $s2, 12($sp)
 	jal CellularAutomaton_cell
 	addi $sp, $sp, 8
 	lw $ra, 0($sp)
 	lw $s2, 4($sp)
 	addi $sp, $sp, 8
-	j endif_0
-else_0:
+	j endif_62
+else_62:
 	lw $t0, 0($sp)
 	move $s2, $t0
 	addi $sp, $sp, -8
@@ -180,15 +221,15 @@ else_0:
 	addi $sp, $sp, -8
 	sw $s2, 0($sp)
 	lw $t1, 20($sp)
-	addi $t0, $t1, -1
-	sw $t0, 4($sp)
+	addi $t1, $t1, -1
+	sw $t1, 4($sp)
 	lw $s2, 12($sp)
 	jal CellularAutomaton_cell
 	addi $sp, $sp, 8
 	lw $ra, 0($sp)
 	lw $s2, 4($sp)
 	addi $sp, $sp, 8
-endif_0:
+endif_62:
 	jr $ra
 CellularAutomaton_cell_right_neighbor:
 	lw $t1, 4($sp)
@@ -207,14 +248,14 @@ CellularAutomaton_cell_right_neighbor:
 	lw $ra, 4($sp)
 	lw $s2, 8($sp)
 	addi $sp, $sp, 12
-	addi $t0, $a0, -1
-	beq $t1, $t0, compare_1
+	addi $a0, $a0, -1
+	beq $t1, $a0, compare_20
 	addi $t0, $zero, 0
-	j end_compare_4
-	compare_1:
+	j end_compare_67
+	compare_20:
 	addi $t0, $zero, 1
-	end_compare_4:
-	beq $t0, $zero, else_1
+	end_compare_67:
+	beq $t0, $zero, else_63
 	lw $t0, 0($sp)
 	move $s2, $t0
 	addi $sp, $sp, -8
@@ -230,8 +271,8 @@ CellularAutomaton_cell_right_neighbor:
 	lw $ra, 0($sp)
 	lw $s2, 4($sp)
 	addi $sp, $sp, 8
-	j endif_1
-else_1:
+	j endif_63
+else_63:
 	lw $t0, 0($sp)
 	move $s2, $t0
 	addi $sp, $sp, -8
@@ -240,15 +281,15 @@ else_1:
 	addi $sp, $sp, -8
 	sw $s2, 0($sp)
 	lw $t1, 20($sp)
-	addi $t0, $t1, 1
-	sw $t0, 4($sp)
+	addi $t1, $t1, 1
+	sw $t1, 4($sp)
 	lw $s2, 12($sp)
 	jal CellularAutomaton_cell
 	addi $sp, $sp, 8
 	lw $ra, 0($sp)
 	lw $s2, 4($sp)
 	addi $sp, $sp, 8
-endif_1:
+endif_63:
 	jr $ra
 CellularAutomaton_cell_at_next_evolution:
 	lw $t0, 0($sp)
@@ -267,25 +308,25 @@ CellularAutomaton_cell_at_next_evolution:
 	lw $s2, 4($sp)
 	addi $sp, $sp, 8
 	move $t0, $a0
-	la $t1, str4
-	loop_compare_0:
+	la $t1, str74
+	loop_compare_44:
 	lb $s5, 0($t0)
 	lb $s6, 0($t1)
 	addiu $t0, $t0, 1
 	addiu $t1, $t1, 1
-	bne $s5, $s6, end_not_equals_0
-	bnez $s5, loop_compare_0
+	bne $s5, $s6, end_not_equals_44
+	bnez $s5, loop_compare_44
 	li $t0, 1
-	j end_compare_0
-	end_not_equals_0:
+	j end_compare_63
+	end_not_equals_44:
 	li $t0, 0
-	end_compare_0:
-	beq $t0, $zero, else_3
+	end_compare_63:
+	beq $t0, $zero, else_65
 	li $t0, 1
-	j endif_3
-else_3:
+	j endif_65
+else_65:
 	li $t0, 0
-endif_3:
+endif_65:
 	lw $t1, 0($sp)
 	move $s2, $t1
 	addi $sp, $sp, -12
@@ -304,99 +345,99 @@ endif_3:
 	lw $s2, 8($sp)
 	addi $sp, $sp, 12
 	move $t1, $a0
-	la $t2, str5
-	loop_compare_1:
+	la $t2, str75
+	loop_compare_45:
 	lb $s5, 0($t1)
 	lb $s6, 0($t2)
 	addiu $t1, $t1, 1
 	addiu $t2, $t2, 1
-	bne $s5, $s6, end_not_equals_1
-	bnez $s5, loop_compare_1
+	bne $s5, $s6, end_not_equals_45
+	bnez $s5, loop_compare_45
 	li $t1, 1
-	j end_compare_1
-	end_not_equals_1:
+	j end_compare_64
+	end_not_equals_45:
 	li $t1, 0
-	end_compare_1:
-	beq $t1, $zero, else_4
+	end_compare_64:
+	beq $t1, $zero, else_66
 	li $t1, 1
-	j endif_4
-else_4:
+	j endif_66
+else_66:
 	li $t1, 0
-endif_4:
-	add $t2, $t0, $t1
-	lw $t0, 0($sp)
-	move $s2, $t0
+endif_66:
+	add $t0, $t0, $t1
+	lw $t1, 0($sp)
+	move $s2, $t1
 	addi $sp, $sp, -12
-	sw $t2, 0($sp)
+	sw $t0, 0($sp)
 	sw $ra, 4($sp)
 	sw $s2, 8($sp)
 	addi $sp, $sp, -8
 	sw $s2, 0($sp)
-	lw $t1, 24($sp)
-	sw $t1, 4($sp)
+	lw $t2, 24($sp)
+	sw $t2, 4($sp)
 	lw $s2, 16($sp)
 	jal CellularAutomaton_cell_right_neighbor
 	addi $sp, $sp, 8
-	lw $t2, 0($sp)
+	lw $t0, 0($sp)
 	lw $ra, 4($sp)
 	lw $s2, 8($sp)
 	addi $sp, $sp, 12
-	move $t0, $a0
-	la $t1, str6
-	loop_compare_2:
-	lb $s5, 0($t0)
-	lb $s6, 0($t1)
-	addiu $t0, $t0, 1
+	move $t1, $a0
+	la $t2, str76
+	loop_compare_46:
+	lb $s5, 0($t1)
+	lb $s6, 0($t2)
 	addiu $t1, $t1, 1
-	bne $s5, $s6, end_not_equals_2
-	bnez $s5, loop_compare_2
-	li $t0, 1
-	j end_compare_2
-	end_not_equals_2:
-	li $t0, 0
-	end_compare_2:
-	beq $t0, $zero, else_5
-	li $t0, 1
-	j endif_5
-else_5:
-	li $t0, 0
-endif_5:
-	add $t1, $t2, $t0
-	li $t0, 1
-	beq $t1, $t0, compare_2
+	addiu $t2, $t2, 1
+	bne $s5, $s6, end_not_equals_46
+	bnez $s5, loop_compare_46
+	li $t1, 1
+	j end_compare_65
+	end_not_equals_46:
+	li $t1, 0
+	end_compare_65:
+	beq $t1, $zero, else_67
+	li $t1, 1
+	j endif_67
+else_67:
+	li $t1, 0
+endif_67:
+	add $t0, $t0, $t1
+	li $t1, 1
+	beq $t0, $t1, compare_21
 	addi $t0, $zero, 0
-	j end_compare_5
-	compare_2:
+	j end_compare_68
+	compare_21:
 	addi $t0, $zero, 1
-	end_compare_5:
-	beq $t0, $zero, else_2
+	end_compare_68:
+	beq $t0, $zero, else_64
 	li $a0, 2
 	li $v0, 9
 	syscall
 	move $s4, $v0
-	la $s3, str7
-	copy_1:
+	la $s3, str77
+	copy_29:
 	lb $t0, 0($s3)
 	sb $t0, 0($s4)
 	addiu $s3, $s3, 1
 	addiu $s4, $s4, 1
-	bnez $t0, copy_1
+	bnez $t0, copy_29
 	move $t0, $v0
-	j endif_2
-else_2:
+	j endif_64
+else_64:
 	li $a0, 2
 	li $v0, 9
 	syscall
 	move $s4, $v0
-	la $s3, str8
-	copy_2:
+	la $s3, str78
+	copy_30:
 	lb $t0, 0($s3)
 	sb $t0, 0($s4)
 	addiu $s3, $s3, 1
 	addiu $s4, $s4, 1
-	bnez $t0, copy_2
+	bnez $t0, copy_30
 	move $t0, $v0
-endif_2:
+endif_64:
 	move $a0, $t0
 	jr $ra
 CellularAutomaton_evolve:
@@ -426,20 +467,20 @@ CellularAutomaton_evolve:
 	li $v0, 9
 	syscall
 	move $s4, $v0
-	la $s3, str9
-	copy_3:
+	la $s3, str79
+	copy_31:
 	lb $t0, 0($s3)
 	sb $t0, 0($s4)
 	addiu $s3, $s3, 1
 	addiu $s4, $s4, 1
-	bnez $t0, copy_3
+	bnez $t0, copy_31
 	move $t0, $v0
 	sw $t0, 0($sp)
-loop_0:
+loop_7:
 	lw $t1, 8($sp)
 	lw $t2, 4($sp)
-	slt $t0, $t1, $t2
-	beq $t0, $zero, end_while_0
+	slt $t1, $t1, $t2
+	beq $t1, $zero, end_while_7
 	lw $t1, 0($sp)
 	move $s2, $t1
 	addi $sp, $sp, -8
@@ -471,10 +512,10 @@ loop_0:
 	addi $sp, $sp, 8
 	sw $a0, 0($sp)
 	lw $t1, 8($sp)
-	addi $t0, $t1, 1
-	sw $t0, 8($sp)
-	j loop_0
-end_while_0:
+	addi $t1, $t1, 1
+	sw $t1, 8($sp)
+	j loop_7
+end_while_7:
 	la $a0, StaticVoid
 	lw $t1, 0($sp)
 	lw $t0, 12($sp)
@@ -507,13 +548,13 @@ Main_main:
 	li $v0, 9
 	syscall
 	move $s4, $v0
-	la $s3, str10
-	copy_4:
+	la $s3, str80
+	copy_32:
 	lb $t0, 0($s3)
 	sb $t0, 0($s4)
 	addiu $s3, $s3, 1
 	addiu $s4, $s4, 1
-	bnez $t0, copy_4
+	bnez $t0, copy_32
 	move $t0, $v0
 	sw $t0, 4($sp)
 	lw $s2, 12($sp)
@@ -548,11 +589,11 @@ Main_main:
 	addi $sp, $sp, -4
 	li $t0, 20
 	sw $t0, 0($sp)
-loop_1:
+loop_8:
 	li $t0, 0
 	lw $t2, 0($sp)
-	slt $t1, $t0, $t2
-	beq $t1, $zero, end_while_1
+	slt $t0, $t0, $t2
+	beq $t0, $zero, end_while_8
 	lw $t0, 4($sp)
 	lw $t1, 8($t0)
 	move $s2, $t1
@@ -588,10 +629,10 @@ loop_1:
 	lw $s2, 4($sp)
 	addi $sp, $sp, 8
 	lw $t1, 0($sp)
-	addi $t0, $t1, -1
-	sw $t0, 0($sp)
-	j loop_1
-end_while_1:
+	addi $t1, $t1, -1
+	sw $t1, 0($sp)
+	j loop_8
+end_while_8:
 	la $a0, StaticVoid
 	addi $sp, $sp, 4
 	#End Region Let
@@ -613,13 +654,13 @@ __init_CellularAutomaton__:
 	li $v0, 9
 	syscall
 	move $s4, $v0
-	la $s3, str2
-	copy_5:
+	la $s3, str72
+	copy_33:
 	lb $t0, 0($s3)
 	sb $t0, 0($s4)
 	addiu $s3, $s3, 1
 	addiu $s4, $s4, 1
-	bnez $t0, copy_5
+	bnez $t0, copy_33
 	move $t0, $v0
 	sw $t0, 8($s1)
 	addi $sp, $sp, 4
@@ -649,6 +690,23 @@ __init_IO__:
 	sw $t0, 4($v0) 
 	move $a0, $v0
 	jr $ra
+Object_type_name:
+	lw $t0, 0($sp)
+	lw $t1, 0($t0)
+	move $a0, $t1
+	jr $ra
+Object_copy:
+	jr $ra
+Object_abort:
+	la $a0, abort
+	li $v0, 4
+	syscall
+	lw $t0, 0($sp)
+	lw $a0, 0($t0)
+	li $v0, 4
+	syscall
+	li $v0, 10
+	syscall
 IO_out_string:
 	lw $a0, 4($sp)
 	li $v0, 4
@@ -673,11 +731,11 @@ li $a1, 1024
 syscall
 	move $t0, $a0
 	addi $t1, $zero, -1
-	length_in_string_0:
+	length_in_string_18:
 	lb $t2, 0($t0)
 	addi $t0, $t0, 1
 	addi $t1, $t1, 1
-	bnez $t2, length_in_string_0
+	bnez $t2, length_in_string_18
 	move $t3, $t1
 addi $t3, $t0, -2
 sb $zero, 0($t3)
@@ -686,12 +744,12 @@ addi $a0, $t1, 1
 li $v0, 9
 syscall
 move $t1, $v0
-copy_in_0:
+copy_in_18:
 lb $t3, 0($t0)
 sb $t3, 0($t1)
 addi $t0, $t0, 1
 addi $t1, $t1, 1
-	bnez $t3, copy_in_0
+	bnez $t3, copy_in_18
 move $a0, $v0
 	jr $ra
 IO_type_name:
@@ -711,14 +769,499 @@ IO_abort:
 	syscall
 	li $v0, 10
 	syscall
-Object_type_name:
+Graph_type_name:
 	lw $t0, 0($sp)
 	lw $t1, 0($t0)
 	move $a0, $t1
 	jr $ra
-Object_copy:
+Graph_copy:
 	jr $ra
-Object_abort:
+Graph_abort:
+	la $a0, abort
+	li $v0, 4
+	syscall
+	lw $t0, 0($sp)
+	lw $a0, 0($t0)
+	li $v0, 4
+	syscall
+	li $v0, 10
+	syscall
+Vertice_out_string:
+	lw $a0, 4($sp)
+	li $v0, 4
+	syscall
+	lw $a0, 0($sp)
+	jr $ra
+Vertice_out_int:
+	lw $a0, 4($sp)
+	li $v0, 1
+	syscall
+	lw $a0, 0($sp)
+	jr $ra
+Vertice_in_int:
+	li $v0, 5
+	syscall
+	move $a0, $v0
+	jr $ra
+Vertice_in_string:
+li $v0, 8
+la $a0, string_space
+li $a1, 1024
+syscall
+	move $t0, $a0
+	addi $t1, $zero, -1
+	length_in_string_19:
+	lb $t2, 0($t0)
+	addi $t0, $t0, 1
+	addi $t1, $t1, 1
+	bnez $t2, length_in_string_19
+	move $t3, $t1
+addi $t3, $t0, -2
+sb $zero, 0($t3)
+move $t0, $a0
+addi $a0, $t1, 1
+li $v0, 9
+syscall
+move $t1, $v0
+copy_in_19:
+lb $t3, 0($t0)
+sb $t3, 0($t1)
+addi $t0, $t0, 1
+addi $t1, $t1, 1
+	bnez $t3, copy_in_19
+move $a0, $v0
+	jr $ra
+Vertice_type_name:
+	lw $t0, 0($sp)
+	lw $t1, 0($t0)
+	move $a0, $t1
+	jr $ra
+Vertice_copy:
+	jr $ra
+Vertice_abort:
+	la $a0, abort
+	li $v0, 4
+	syscall
+	lw $t0, 0($sp)
+	lw $a0, 0($t0)
+	li $v0, 4
+	syscall
+	li $v0, 10
+	syscall
+Edge_out_string:
+	lw $a0, 4($sp)
+	li $v0, 4
+	syscall
+	lw $a0, 0($sp)
+	jr $ra
+Edge_out_int:
+	lw $a0, 4($sp)
+	li $v0, 1
+	syscall
+	lw $a0, 0($sp)
+	jr $ra
+Edge_in_int:
+	li $v0, 5
+	syscall
+	move $a0, $v0
+	jr $ra
+Edge_in_string:
+li $v0, 8
+la $a0, string_space
+li $a1, 1024
+syscall
+	move $t0, $a0
+	addi $t1, $zero, -1
+	length_in_string_20:
+	lb $t2, 0($t0)
+	addi $t0, $t0, 1
+	addi $t1, $t1, 1
+	bnez $t2, length_in_string_20
+	move $t3, $t1
+addi $t3, $t0, -2
+sb $zero, 0($t3)
+move $t0, $a0
+addi $a0, $t1, 1
+li $v0, 9
+syscall
+move $t1, $v0
+copy_in_20:
+lb $t3, 0($t0)
+sb $t3, 0($t1)
+addi $t0, $t0, 1
+addi $t1, $t1, 1
+	bnez $t3, copy_in_20
+move $a0, $v0
+	jr $ra
+Edge_type_name:
+	lw $t0, 0($sp)
+	lw $t1, 0($t0)
+	move $a0, $t1
+	jr $ra
+Edge_copy:
+	jr $ra
+Edge_abort:
+	la $a0, abort
+	li $v0, 4
+	syscall
+	lw $t0, 0($sp)
+	lw $a0, 0($t0)
+	li $v0, 4
+	syscall
+	li $v0, 10
+	syscall
+EList_out_string:
+	lw $a0, 4($sp)
+	li $v0, 4
+	syscall
+	lw $a0, 0($sp)
+	jr $ra
+EList_out_int:
+	lw $a0, 4($sp)
+	li $v0, 1
+	syscall
+	lw $a0, 0($sp)
+	jr $ra
+EList_in_int:
+	li $v0, 5
+	syscall
+	move $a0, $v0
+	jr $ra
+EList_in_string:
+li $v0, 8
+la $a0, string_space
+li $a1, 1024
+syscall
+	move $t0, $a0
+	addi $t1, $zero, -1
+	length_in_string_21:
+	lb $t2, 0($t0)
+	addi $t0, $t0, 1
+	addi $t1, $t1, 1
+	bnez $t2, length_in_string_21
+	move $t3, $t1
+addi $t3, $t0, -2
+sb $zero, 0($t3)
+move $t0, $a0
+addi $a0, $t1, 1
+li $v0, 9
+syscall
+move $t1, $v0
+copy_in_21:
+lb $t3, 0($t0)
+sb $t3, 0($t1)
+addi $t0, $t0, 1
+addi $t1, $t1, 1
+	bnez $t3, copy_in_21
+move $a0, $v0
+	jr $ra
+EList_type_name:
+	lw $t0, 0($sp)
+	lw $t1, 0($t0)
+	move $a0, $t1
+	jr $ra
+EList_copy:
+	jr $ra
+EList_abort:
+	la $a0, abort
+	li $v0, 4
+	syscall
+	lw $t0, 0($sp)
+	lw $a0, 0($t0)
+	li $v0, 4
+	syscall
+	li $v0, 10
+	syscall
+ECons_out_string:
+	lw $a0, 4($sp)
+	li $v0, 4
+	syscall
+	lw $a0, 0($sp)
+	jr $ra
+ECons_out_int:
+	lw $a0, 4($sp)
+	li $v0, 1
+	syscall
+	lw $a0, 0($sp)
+	jr $ra
+ECons_in_int:
+	li $v0, 5
+	syscall
+	move $a0, $v0
+	jr $ra
+ECons_in_string:
+li $v0, 8
+la $a0, string_space
+li $a1, 1024
+syscall
+	move $t0, $a0
+	addi $t1, $zero, -1
+	length_in_string_22:
+	lb $t2, 0($t0)
+	addi $t0, $t0, 1
+	addi $t1, $t1, 1
+	bnez $t2, length_in_string_22
+	move $t3, $t1
+addi $t3, $t0, -2
+sb $zero, 0($t3)
+move $t0, $a0
+addi $a0, $t1, 1
+li $v0, 9
+syscall
+move $t1, $v0
+copy_in_22:
+lb $t3, 0($t0)
+sb $t3, 0($t1)
+addi $t0, $t0, 1
+addi $t1, $t1, 1
+	bnez $t3, copy_in_22
+move $a0, $v0
+	jr $ra
+ECons_type_name:
+	lw $t0, 0($sp)
+	lw $t1, 0($t0)
+	move $a0, $t1
+	jr $ra
+ECons_copy:
+	jr $ra
+ECons_abort:
+	la $a0, abort
+	li $v0, 4
+	syscall
+	lw $t0, 0($sp)
+	lw $a0, 0($t0)
+	li $v0, 4
+	syscall
+	li $v0, 10
+	syscall
+VList_out_string:
+	lw $a0, 4($sp)
+	li $v0, 4
+	syscall
+	lw $a0, 0($sp)
+	jr $ra
+VList_out_int:
+	lw $a0, 4($sp)
+	li $v0, 1
+	syscall
+	lw $a0, 0($sp)
+	jr $ra
+VList_in_int:
+	li $v0, 5
+	syscall
+	move $a0, $v0
+	jr $ra
+VList_in_string:
+li $v0, 8
+la $a0, string_space
+li $a1, 1024
+syscall
+	move $t0, $a0
+	addi $t1, $zero, -1
+	length_in_string_23:
+	lb $t2, 0($t0)
+	addi $t0, $t0, 1
+	addi $t1, $t1, 1
+	bnez $t2, length_in_string_23
+	move $t3, $t1
+addi $t3, $t0, -2
+sb $zero, 0($t3)
+move $t0, $a0
+addi $a0, $t1, 1
+li $v0, 9
+syscall
+move $t1, $v0
+copy_in_23:
+lb $t3, 0($t0)
+sb $t3, 0($t1)
+addi $t0, $t0, 1
+addi $t1, $t1, 1
+	bnez $t3, copy_in_23
+move $a0, $v0
+	jr $ra
+VList_type_name:
+	lw $t0, 0($sp)
+	lw $t1, 0($t0)
+	move $a0, $t1
+	jr $ra
+VList_copy:
+	jr $ra
+VList_abort:
+	la $a0, abort
+	li $v0, 4
+	syscall
+	lw $t0, 0($sp)
+	lw $a0, 0($t0)
+	li $v0, 4
+	syscall
+	li $v0, 10
+	syscall
+VCons_out_string:
+	lw $a0, 4($sp)
+	li $v0, 4
+	syscall
+	lw $a0, 0($sp)
+	jr $ra
+VCons_out_int:
+	lw $a0, 4($sp)
+	li $v0, 1
+	syscall
+	lw $a0, 0($sp)
+	jr $ra
+VCons_in_int:
+	li $v0, 5
+	syscall
+	move $a0, $v0
+	jr $ra
+VCons_in_string:
+li $v0, 8
+la $a0, string_space
+li $a1, 1024
+syscall
+	move $t0, $a0
+	addi $t1, $zero, -1
+	length_in_string_24:
+	lb $t2, 0($t0)
+	addi $t0, $t0, 1
+	addi $t1, $t1, 1
+	bnez $t2, length_in_string_24
+	move $t3, $t1
+addi $t3, $t0, -2
+sb $zero, 0($t3)
+move $t0, $a0
+addi $a0, $t1, 1
+li $v0, 9
+syscall
+move $t1, $v0
+copy_in_24:
+lb $t3, 0($t0)
+sb $t3, 0($t1)
+addi $t0, $t0, 1
+addi $t1, $t1, 1
+	bnez $t3, copy_in_24
+move $a0, $v0
+	jr $ra
+VCons_type_name:
+	lw $t0, 0($sp)
+	lw $t1, 0($t0)
+	move $a0, $t1
+	jr $ra
+VCons_copy:
+	jr $ra
+VCons_abort:
+	la $a0, abort
+	li $v0, 4
+	syscall
+	lw $t0, 0($sp)
+	lw $a0, 0($t0)
+	li $v0, 4
+	syscall
+	li $v0, 10
+	syscall
+Parse_out_string:
+	lw $a0, 4($sp)
+	li $v0, 4
+	syscall
+	lw $a0, 0($sp)
+	jr $ra
+Parse_out_int:
+	lw $a0, 4($sp)
+	li $v0, 1
+	syscall
+	lw $a0, 0($sp)
+	jr $ra
+Parse_in_int:
+	li $v0, 5
+	syscall
+	move $a0, $v0
+	jr $ra
+Parse_in_string:
+li $v0, 8
+la $a0, string_space
+li $a1, 1024
+syscall
+	move $t0, $a0
+	addi $t1, $zero, -1
+	length_in_string_25:
+	lb $t2, 0($t0)
+	addi $t0, $t0, 1
+	addi $t1, $t1, 1
+	bnez $t2, length_in_string_25
+	move $t3, $t1
+addi $t3, $t0, -2
+sb $zero, 0($t3)
+move $t0, $a0
+addi $a0, $t1, 1
+li $v0, 9
+syscall
+move $t1, $v0
+copy_in_25:
+lb $t3, 0($t0)
+sb $t3, 0($t1)
+addi $t0, $t0, 1
+addi $t1, $t1, 1
+	bnez $t3, copy_in_25
+move $a0, $v0
+	jr $ra
+Parse_type_name:
+	lw $t0, 0($sp)
+	lw $t1, 0($t0)
+	move $a0, $t1
+	jr $ra
+Parse_copy:
+	jr $ra
+Parse_abort:
+	la $a0, abort
+	li $v0, 4
+	syscall
+	lw $t0, 0($sp)
+	lw $a0, 0($t0)
+	li $v0, 4
+	syscall
+	li $v0, 10
+	syscall
+Main_type_name:
+	lw $t0, 0($sp)
+	lw $t1, 0($t0)
+	move $a0, $t1
+	jr $ra
+Main_copy:
+	jr $ra
+Main_abort:
+	la $a0, abort
+	li $v0, 4
+	syscall
+	lw $t0, 0($sp)
+	lw $a0, 0($t0)
+	li $v0, 4
+	syscall
+	li $v0, 10
+	syscall
+BoolOp_type_name:
+	lw $t0, 0($sp)
+	lw $t1, 0($t0)
+	move $a0, $t1
+	jr $ra
+BoolOp_copy:
+	jr $ra
+BoolOp_abort:
+	la $a0, abort
+	li $v0, 4
+	syscall
+	lw $t0, 0($sp)
+	lw $a0, 0($t0)
+	li $v0, 4
+	syscall
+	li $v0, 10
+	syscall
+A2I_type_name:
+	lw $t0, 0($sp)
+	lw $t1, 0($t0)
+	move $a0, $t1
+	jr $ra
+A2I_copy:
+	jr $ra
+A2I_abort:
 	la $a0, abort
 	li $v0, 4
 	syscall
@@ -752,11 +1295,11 @@ li $a1, 1024
 syscall
 	move $t0, $a0
 	addi $t1, $zero, -1
-	length_in_string_1:
+	length_in_string_26:
 	lb $t2, 0($t0)
 	addi $t0, $t0, 1
 	addi $t1, $t1, 1
-	bnez $t2, length_in_string_1
+	bnez $t2, length_in_string_26
 	move $t3, $t1
 addi $t3, $t0, -2
 sb $zero, 0($t3)
@@ -765,12 +1308,12 @@ addi $a0, $t1, 1
 li $v0, 9
 syscall
 move $t1, $v0
-copy_in_1:
+copy_in_26:
 lb $t3, 0($t0)
 sb $t3, 0($t1)
 addi $t0, $t0, 1
 addi $t1, $t1, 1
-	bnez $t3, copy_in_1
+	bnez $t3, copy_in_26
 move $a0, $v0
 	jr $ra
 CellularAutomaton_type_name:
@@ -781,23 +1324,6 @@ CellularAutomaton_type_name:
 CellularAutomaton_copy:
 	jr $ra
 CellularAutomaton_abort:
-	la $a0, abort
-	li $v0, 4
-	syscall
-	lw $t0, 0($sp)
-	lw $a0, 0($t0)
-	li $v0, 4
-	syscall
-	li $v0, 10
-	syscall
-Main_type_name:
-	lw $t0, 0($sp)
-	lw $t1, 0($t0)
-	move $a0, $t1
-	jr $ra
-Main_copy:
-	jr $ra
-Main_abort:
 	la $a0, abort
 	li $v0, 4
 	syscall

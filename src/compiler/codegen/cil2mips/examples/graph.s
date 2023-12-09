@@ -1558,8 +1558,8 @@ else_12:
 	lw $ra, 0($sp)
 	lw $s2, 4($sp)
 	addi $sp, $sp, 8
-	addi $t0, $a0, -1
-	sw $t0, 8($sp)
+	addi $a0, $a0, -1
+	sw $a0, 8($sp)
 	lw $s2, 16($sp)
 	jal substr
 	addi $sp, $sp, 12
@@ -1638,8 +1638,8 @@ else_13:
 	lw $ra, 0($sp)
 	lw $s2, 4($sp)
 	addi $sp, $sp, 8
-	addi $t0, $a0, -1
-	sw $t0, 8($sp)
+	addi $a0, $a0, -1
+	sw $a0, 8($sp)
 	lw $s2, 16($sp)
 	jal substr
 	addi $sp, $sp, 12
@@ -1704,8 +1704,8 @@ Parse_a2i_aux:
 loop_2:
 	lw $t1, 0($sp)
 	lw $t2, 4($sp)
-	slt $t0, $t1, $t2
-	beq $t0, $zero, end_while_2
+	slt $t1, $t1, $t2
+	beq $t1, $zero, end_while_2
 	#Region Let
 	addi $sp, $sp, -4
 	lw $t1, 20($sp)
@@ -1749,8 +1749,8 @@ loop_2:
 	addi $sp, $sp, -12
 	sw $s2, 0($sp)
 	lw $t1, 24($sp)
-	addi $t0, $t1, 1
-	sw $t0, 4($sp)
+	addi $t1, $t1, 1
+	sw $t1, 4($sp)
 	lw $t1, 40($sp)
 	move $s2, $t1
 	addi $sp, $sp, -8
@@ -1765,9 +1765,9 @@ loop_2:
 	lw $s2, 4($sp)
 	addi $sp, $sp, 8
 	lw $t1, 24($sp)
-	sub $t0, $a0, $t1
-	addi $t1, $t0, -1
-	sw $t1, 8($sp)
+	sub $a0, $a0, $t1
+	addi $a0, $a0, -1
+	sw $a0, 8($sp)
 	lw $s2, 16($sp)
 	jal substr
 	addi $sp, $sp, 12
@@ -1803,8 +1803,8 @@ else_15:
 	addi $sp, $sp, -12
 	sw $s2, 0($sp)
 	lw $t1, 24($sp)
-	addi $t0, $t1, 1
-	sw $t0, 4($sp)
+	addi $t1, $t1, 1
+	sw $t1, 4($sp)
 	lw $t1, 40($sp)
 	move $s2, $t1
 	addi $sp, $sp, -8
@@ -1819,9 +1819,9 @@ else_15:
 	lw $s2, 4($sp)
 	addi $sp, $sp, 8
 	lw $t1, 24($sp)
-	sub $t0, $a0, $t1
-	addi $t1, $t0, -1
-	sw $t1, 8($sp)
+	sub $a0, $a0, $t1
+	addi $a0, $a0, -1
+	sw $a0, 8($sp)
 	lw $s2, 16($sp)
 	jal substr
 	addi $sp, $sp, 12
@@ -1836,31 +1836,31 @@ else_15:
 else_16:
 	lw $t1, 12($sp)
 	li $t0, 10
-	mul $t2, $t1, $t0
+	mul $t1, $t1, $t0
 	lw $t0, 16($sp)
 	move $s2, $t0
 	addi $sp, $sp, -12
-	sw $t2, 0($sp)
+	sw $t1, 0($sp)
 	sw $ra, 4($sp)
 	sw $s2, 8($sp)
 	addi $sp, $sp, -8
 	sw $s2, 0($sp)
-	lw $t1, 40($sp)
-	move $s2, $t1
+	lw $t2, 40($sp)
+	move $s2, $t2
 	addi $sp, $sp, -12
-	sw $t2, 0($sp)
+	sw $t1, 0($sp)
 	sw $ra, 4($sp)
 	sw $s2, 8($sp)
 	addi $sp, $sp, -12
 	sw $s2, 0($sp)
-	lw $t1, 48($sp)
-	sw $t1, 4($sp)
+	lw $t2, 48($sp)
+	sw $t2, 4($sp)
 	li $t0, 1
 	sw $t0, 8($sp)
 	lw $s2, 20($sp)
 	jal substr
 	addi $sp, $sp, 12
-	lw $t2, 0($sp)
+	lw $t1, 0($sp)
 	lw $ra, 4($sp)
 	lw $s2, 8($sp)
 	addi $sp, $sp, 12
@@ -1868,15 +1868,15 @@ else_16:
 	lw $s2, 16($sp)
 	jal Parse_c2i
 	addi $sp, $sp, 8
-	lw $t2, 0($sp)
+	lw $t1, 0($sp)
 	lw $ra, 4($sp)
 	lw $s2, 8($sp)
 	addi $sp, $sp, 12
-	add $t0, $t2, $a0
-	sw $t0, 12($sp)
+	add $t1, $t1, $a0
+	sw $t1, 12($sp)
 	lw $t1, 4($sp)
-	addi $t0, $t1, 1
-	sw $t0, 4($sp)
+	addi $t1, $t1, 1
+	sw $t1, 4($sp)
 	lw $t1, 4($sp)
 	lw $t2, 8($sp)
 	beq $t1, $t2, compare_2
@@ -2543,8 +2543,8 @@ else_28:
 	lw $ra, 0($sp)
 	lw $s2, 4($sp)
 	addi $sp, $sp, 8
-	addi $t0, $a0, 1
-	sw $t0, 8($sp)
+	addi $a0, $a0, 1
+	sw $a0, 8($sp)
 	lw $s2, 16($sp)
 	jal substr
 	addi $sp, $sp, 12
@@ -2623,8 +2623,8 @@ else_29:
 	lw $ra, 0($sp)
 	lw $s2, 4($sp)
 	addi $sp, $sp, 8
-	addi $t0, $a0, 1
-	sw $t0, 8($sp)
+	addi $a0, $a0, 1
+	sw $a0, 8($sp)
 	lw $s2, 16($sp)
 	jal substr
 	addi $sp, $sp, 12
@@ -2689,8 +2689,8 @@ Main_a2i_aux:
 loop_5:
 	lw $t1, 0($sp)
 	lw $t2, 4($sp)
-	slt $t0, $t1, $t2
-	beq $t0, $zero, end_while_5
+	slt $t1, $t1, $t2
+	beq $t1, $zero, end_while_5
 	#Region Let
 	addi $sp, $sp, -4
 	lw $t1, 20($sp)
@@ -2734,8 +2734,8 @@ loop_5:
 	addi $sp, $sp, -12
 	sw $s2, 0($sp)
 	lw $t1, 24($sp)
-	addi $t0, $t1, 1
-	sw $t0, 4($sp)
+	addi $t1, $t1, 1
+	sw $t1, 4($sp)
 	lw $t1, 40($sp)
 	move $s2, $t1
 	addi $sp, $sp, -8
@@ -2750,9 +2750,9 @@ loop_5:
 	lw $s2, 4($sp)
 	addi $sp, $sp, 8
 	lw $t1, 24($sp)
-	sub $t0, $a0, $t1
-	addi $t1, $t0, 1
-	sw $t1, 8($sp)
+	sub $a0, $a0, $t1
+	addi $a0, $a0, 1
+	sw $a0, 8($sp)
 	lw $s2, 16($sp)
 	jal substr
 	addi $sp, $sp, 12
@@ -2788,8 +2788,8 @@ else_31:
 	addi $sp, $sp, -12
 	sw $s2, 0($sp)
 	lw $t1, 24($sp)
-	addi $t0, $t1, 1
-	sw $t0, 4($sp)
+	addi $t1, $t1, 1
+	sw $t1, 4($sp)
 	lw $t1, 40($sp)
 	move $s2, $t1
 	addi $sp, $sp, -8
@@ -2804,9 +2804,9 @@ else_31:
 	lw $s2, 4($sp)
 	addi $sp, $sp, 8
 	lw $t1, 24($sp)
-	sub $t0, $a0, $t1
-	addi $t1, $t0, 1
-	sw $t1, 8($sp)
+	sub $a0, $a0, $t1
+	addi $a0, $a0, 1
+	sw $a0, 8($sp)
 	lw $s2, 16($sp)
 	jal substr
 	addi $sp, $sp, 12
@@ -2821,31 +2821,31 @@ else_31:
 else_32:
 	lw $t1, 12($sp)
 	li $t0, 10
-	mul $t2, $t1, $t0
+	mul $t1, $t1, $t0
 	lw $t0, 16($sp)
 	move $s2, $t0
 	addi $sp, $sp, -12
-	sw $t2, 0($sp)
+	sw $t1, 0($sp)
 	sw $ra, 4($sp)
 	sw $s2, 8($sp)
 	addi $sp, $sp, -8
 	sw $s2, 0($sp)
-	lw $t1, 40($sp)
-	move $s2, $t1
+	lw $t2, 40($sp)
+	move $s2, $t2
 	addi $sp, $sp, -12
-	sw $t2, 0($sp)
+	sw $t1, 0($sp)
 	sw $ra, 4($sp)
 	sw $s2, 8($sp)
 	addi $sp, $sp, -12
 	sw $s2, 0($sp)
-	lw $t1, 48($sp)
-	sw $t1, 4($sp)
+	lw $t2, 48($sp)
+	sw $t2, 4($sp)
 	li $t0, 1
 	sw $t0, 8($sp)
 	lw $s2, 20($sp)
 	jal substr
 	addi $sp, $sp, 12
-	lw $t2, 0($sp)
+	lw $t1, 0($sp)
 	lw $ra, 4($sp)
 	lw $s2, 8($sp)
 	addi $sp, $sp, 12
@@ -2853,15 +2853,15 @@ else_32:
 	lw $s2, 16($sp)
 	jal Parse_c2i
 	addi $sp, $sp, 8
-	lw $t2, 0($sp)
+	lw $t1, 0($sp)
 	lw $ra, 4($sp)
 	lw $s2, 8($sp)
 	addi $sp, $sp, 12
-	add $t0, $t2, $a0
-	sw $t0, 12($sp)
+	add $t1, $t1, $a0
+	sw $t1, 12($sp)
 	lw $t1, 4($sp)
-	addi $t0, $t1, 1
-	sw $t0, 4($sp)
+	addi $t1, $t1, 1
+	sw $t1, 4($sp)
 	lw $t1, 4($sp)
 	lw $t2, 8($sp)
 	beq $t1, $t2, compare_5

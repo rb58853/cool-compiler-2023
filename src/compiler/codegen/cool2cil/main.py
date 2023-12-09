@@ -21,5 +21,5 @@ def cil_program(file):
 #endregion
     
 
-    cil_program = CILProgram(cool_program)
-    return cil_program
+    return CILProgram(cool_program)
+     
