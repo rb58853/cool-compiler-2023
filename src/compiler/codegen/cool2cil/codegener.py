@@ -1,4 +1,5 @@
 import compiler.AST.environment as env
+import compiler.semantic.cool_bases as bases
 from compiler.AST.ast import CoolProgram, CoolClass, Feature, expr, IntNode, CoolBool, CoolString, CoolLet, ArithmeticOP,Logicar,Assign, CoolID, Context, Dispatch, CoolCase, CoolWhile, CoolIf, CoolBlockScope, CoolCallable, CoolNew, CoolNot, CoolUminus, CoolIsVoid
 
 '''
@@ -7,17 +8,19 @@ from compiler.AST.ast import CoolProgram, CoolClass, Feature, expr, IntNode, Coo
 3. El registro $s1 hay que controlarlo en pila, se usa para guardar las direcciones de las instancias nuevas creadas, si usted usa $s1 tendra que guardar su valor en pila, xq en caso de crear una instancia de clase el valor de $s1 sera modificado.
 4. El registro $s4 se usa en operaciones para guardar strings, no debera usarlo en otro ambito dado que cuando se guarda un string este registro sera manipulado
 5. El registro $s5 y $s6 se usan para comparacion de strings, si usted usa este registro debe tratarlo cuidadosamente xq una exprsion `=` los sobreescribe
-6. El registro $s7 se en isVoid. Si esta expresion es usada, este reistro es sobreescrito.
+6. El registro $s7 se usa en isVoid. Si esta expresion es usada, este reistro es sobreescrito.
 '''
 #esto es para usar operaciones con valores inmediatos, por ejemplo addi $s0, $1, 5 . Las constantes solo admiten 16 bytes. Valor default = False
 USE_i = True
 
-ATRS_INIT_INDEX = 8 #en la posicion cero va TYPE_SELF, en la posicion 4 va parte estatica
+ATRS_INIT_INDEX = 8 #en la posicion cero va TYPE_SELF(type_name), en la posicion 4 va parte estatica
 METHODS_INIT_INDEX = 8 #en la posicion 0 va la clase desde la que hereda, en la posicion 4 va el espacio de atributos
 WORD = 4
 
 TYPE_LENGTH= {'Int':4, 'Bool':4, 'String':4,}
 TYPES = {}
+TYPES_INHERITS = {}
+TYPES_INHERITS_INDEX = {}
 #Lo siguiente sirve para saber si se redefinio algun metodo basico como copy(), en caso se hacerse entonces se usa el mismo
 
 class TempNames:
@@ -98,12 +101,25 @@ class CILProgram():
         self.set_types(program)
         self.generate_methods(program)
         self.generate_init_types()
+        self.full_inherits_types()
         self.full_data()
+
+    def full_inherits_types(self):
+        pos = 0
+        index = 0
+        for type in TYPES:
+            TYPES_INHERITS[type] = pos
+            TYPES_INHERITS_INDEX[type] = index
+            pos+=WORD
+            index+=1
+
+        for type in TYPES.values():
+            type.set_inherit_types()    
     
     def full_data(self):
         Data.add('StaticVoid: .word Void, 4')
         for key, value in zip(TYPES.keys(), TYPES.values()):
-            temp = f'Static{key}: .word Static{value.inherit}, {value.space}, '
+            temp = f'Static{key}: .word {value.inherit}, {value.space}, '
             i = 0
             for meth in value.methods:
                 if i>1:
@@ -111,6 +127,16 @@ class CILProgram():
                 i+=1
 
             Data.add(f'{temp[:-2]}\n')
+        
+        temp =""
+        for type in TYPES.values():
+            temp =f'{type.inherit}: .word '
+            for value in type.inherit_types:
+                temp += f'{value}, '
+            
+            Data.add(f'{temp[:-2]}\n')
+
+
 
     def generate_init_types(self):
         for type in self.types.values():
@@ -154,10 +180,11 @@ class CILType():
     def __init__(self, cclass:CoolClass):
         self.name = cclass.type
         self.methods:dict[str:int] = {'inherit':0,'space':4 }  # Esto es cada metodo con su posicion en memoria donde se asigne
-        self.inherit = cclass.inherit
+        self.inherit = f'{cclass.type}_inherits'
         self.attributes:list[CILVar] = []  # Lista de CILAttribute
         self.atrs = {env.self_type_name: 0}
         self.redefined_base_methods = []
+        self.inherit_types = []
         self.method_pos = METHODS_INIT_INDEX
         self.atr_pos = ATRS_INIT_INDEX #En la posicion 0 va SELF_TYPE, en la posicion 4 va la parte estatica
         self.space = self.get_all_from(cclass)
@@ -166,6 +193,15 @@ class CILType():
         self.add_methods_redefined_base(cclass, cclass)
         self.cclass = cclass
         
+    def set_inherit_types(self):
+        self.inherit_types = [-1] * len(TYPES_INHERITS)
+        
+        def inheritance_length(count, cclass:CoolClass):
+            if cclass.inherit_class is not None:
+                inheritance_length(count+1, cclass.inherit_class)
+
+            self.inherit_types[TYPES_INHERITS_INDEX[cclass.type]] = count
+        inheritance_length(0,self.cclass)
 
     def add_methods_redefined_base(self, cclass: CoolClass, cclass_origin:CoolClass):
         '''Agrega los metodos base redefinidos para el caso que sea necsario llamar la redefinicion o no'''
@@ -225,22 +261,36 @@ class BaseType(CILType):
         self.redefined_base_methods = []
         self.methods = {'inherit':0,'space':4, 'type_name':8, 'abort':12, 'copy':16}
         self.name = Type
-        self.inherit = 'Object' 
+        self.inherit = f'{Type}_inherits'
+        self.inherit_types = [] 
         self.space = 8 #4 para el self_type y 4 para la parte estitica
         self.full()
-    
+
+    def set_inherit_types(self):
+        self.inherit_types = [-1] * len(TYPES_INHERITS)
+        
+        def inheritance_length(count, cclass:CoolClass):
+            if cclass.inherit_class is not None:
+                inheritance_length(count+1, cclass.inherit_class)
+
+            self.inherit_types[TYPES_INHERITS_INDEX[cclass.type]] = count
+            
+        if self.name == env.io_type_name:
+            cclass = bases.IOClass.cclass()
+        if self.name == env.object_type_name:
+            cclass = bases.ObjectClass.cclass()
+
+        inheritance_length(0,cclass)
+
     def full(self):
         if self.name == 'IO':
             self.methods['out_string'] = 20
             self.methods['out_int'] = 24
             self.methods['in_string'] = 28
             self.methods['in_int'] = 32
-
-        if self.name == 'Object':
-            self.inherit = 'Void'
         
-TYPES ['IO'] = BaseType('IO')
 TYPES ['Object'] = BaseType('Object')
+TYPES ['IO'] = BaseType('IO')
         
 class CILMethod():
     def __init__(self, cool_meth: Feature.CoolDef, cil_program: CILProgram, Type):

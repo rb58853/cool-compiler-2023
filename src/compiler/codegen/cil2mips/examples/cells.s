@@ -19,13 +19,21 @@ str9: .asciiz ""
 str10: .asciiz "         X         "
 str2: .asciiz ""
 StaticVoid: .word Void, 4
-StaticIO: .word StaticObject, 8, IO_type_name, IO_abort, IO_copy, IO_out_string, IO_out_int, IO_in_string, IO_in_int
+StaticIO: .word IO_inherits, 8, IO_type_name, IO_abort, IO_copy, IO_out_string, IO_out_int, IO_in_string, IO_in_int
 
-StaticObject: .word StaticVoid, 8, Object_type_name, Object_abort, Object_copy
+StaticObject: .word Object_inherits, 8, Object_type_name, Object_abort, Object_copy
 
-StaticCellularAutomaton: .word StaticIO, 12, CellularAutomaton_type_name, CellularAutomaton_abort, CellularAutomaton_copy, CellularAutomaton_out_string, CellularAutomaton_out_int, CellularAutomaton_in_string, CellularAutomaton_in_int, CellularAutomaton_init, CellularAutomaton_print, CellularAutomaton_num_cells, CellularAutomaton_cell, CellularAutomaton_cell_left_neighbor, CellularAutomaton_cell_right_neighbor, CellularAutomaton_cell_at_next_evolution, CellularAutomaton_evolve
+StaticCellularAutomaton: .word CellularAutomaton_inherits, 12, CellularAutomaton_type_name, CellularAutomaton_abort, CellularAutomaton_copy, CellularAutomaton_out_string, CellularAutomaton_out_int, CellularAutomaton_in_string, CellularAutomaton_in_int, CellularAutomaton_init, CellularAutomaton_print, CellularAutomaton_num_cells, CellularAutomaton_cell, CellularAutomaton_cell_left_neighbor, CellularAutomaton_cell_right_neighbor, CellularAutomaton_cell_at_next_evolution, CellularAutomaton_evolve
 
-StaticMain: .word StaticObject, 12, Main_type_name, Main_abort, Main_copy, Main_main
+StaticMain: .word Main_inherits, 12, Main_type_name, Main_abort, Main_copy, Main_main
+
+IO_inherits: .word 0, -1, -1, -1
+
+Object_inherits: .word -1, 0, -1, -1
+
+CellularAutomaton_inherits: .word 1, 2, 0, -1
+
+Main_inherits: .word -1, 1, -1, 0
 
 .text
 .globl main
