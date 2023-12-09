@@ -62,6 +62,7 @@ class TempNames:
             if TempNames.s_id[i]:     
                 result.append(f'$s{i}')
         result.append('$ra')        
+        result.append('$s2')        
         return result        
     
 class NameTempExpression:
@@ -1148,7 +1149,7 @@ class DivExpression:
             
             #TODO ERROR antes cuando no se liberaba temp1 funcionaba
             TempNames.free([temp1])
-            
+
             if was_call:
                 TempNames.free([temp])
         else:
@@ -1405,7 +1406,7 @@ class DivExpression:
         TempNames.free([temp]) #Libera el temporal que se usa para el then, se puede usar en el else TODO warning
         
         DivExpression(else_s,body,scope)
-        temp = body.current_value()
+        body.add_expr(CILAssign(temp,body.current_value())) #guarda en la misma variable del then lo del else
         # body.add_expr(CILAssign(result_expr,body.current_value()))
         body.add_expr(Label(label_end))
         cil_if.set_des(temp) #el final del if es el temporal dentro del else
@@ -1459,9 +1460,10 @@ class DivExpression:
     def callable(callable:CoolCallable, body:Body, scope:dict = {},instance= None, cclass_type = None, dinamyc_type= None, basic = False):
         #Instance es la instancia desde la cual se va a llamar al metodo, a esta instancia hay que pedirle la direccion de su metodo.
         type = cclass_type
-
         arguments = callable.params
         id = callable.id.id
+        if id =='a2i':
+            pass
 
         label_method = f'{type}_{id}'
         if basic:
@@ -1478,11 +1480,13 @@ class DivExpression:
         used_temps = TempNames.used_temps()
         if len(used_temps)>0:
             body.add_expr(ReserveSTACK(len(used_temps)*4)) #Reserva pila para los registros temporales en uso
+        recently_used_temps =[]
         
         for i in range(len(used_temps)):
             #si hay varios llamados dentro de otro que usa el mismo id de temporal, entonces hay que cambiar el key
             while used_temps[i] in scope:
                 used_temps[i] = used_temps[i]+'0'
+                # recently_used_temps.append(used_temps[i]+'0') #TODO
         
         #Cuando se reserva pila hay que mover las posiciones relativas de las variables del scope
         for key in scope.keys():
@@ -1528,7 +1532,14 @@ class DivExpression:
             body.add_expr(StoreLocal(name=body.current_value(),pos= pos,value=body.current_value()))
             TempNames.free([temp])#libera el temporal que se uso para almacenar en los argumentos
             pos += WORD
-        
+
+        #Cuando se llega a aqui hay que recuperar el s2 usado, el ultimo en cuestion, ya que despues de varios llamados s2 puede cambiar
+        temp = "$s2" 
+        while f'{temp}0' in used_temps:
+            temp =  f'{temp}0' #esto va a buscar el ultimo s2 usado
+        body.add_expr(CILAssign("$s2",CILCallLocal(temp[:3], scope[temp]))) #asiginar a $s2 su anterior valor
+
+
         if type is not None:
             # llama a la funcion si el type no es none con salto normal xq es estatico
             body.add_expr(CallMethod(label_method))

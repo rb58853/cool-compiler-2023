@@ -71,8 +71,8 @@ class InString:
         f'{label_copy}:',
         'lb $t3, 0($t0)',             #carga byte de t0
         'sb $t3, 0($t1)',              #guarda el byte en t1
-        'addi $t0, 1',              #aumenta t0 en 1
-        'addi $t1, 1',              #aumenta t1 en 1
+        'addi $t0, $t0, 1',              #aumenta t0 en 1
+        'addi $t1, $t1, 1',              #aumenta t1 en 1
         f'\tbnez $t3, {label_copy}',  # lo compara con el caracter nulo, en caso de no serlo repite el ciclo
         'move $a0, $v0', 
 
