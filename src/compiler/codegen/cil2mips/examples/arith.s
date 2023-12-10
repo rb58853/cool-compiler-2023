@@ -4835,8 +4835,8 @@ else_52:
 	end_compare_21:
 	beq $t0, $zero, else_53
 	li $t0, 0
-	lw $t0, 0($sp)
-	sw $t0, 20($t0)
+	lw $t1, 0($sp)
+	sw $t0, 20($t1)
 	j endif_53
 else_53:
 	addi $sp, $sp, -8

@@ -1556,8 +1556,7 @@ else_12:
 	lw $ra, 0($sp)
 	lw $s2, 4($sp)
 	addi $sp, $sp, 8
-	addi $a0 $a0 -1
-	subu $a0 $zero $a0
+	sub $a0 $zero $a0
 	j endif_13
 else_13:
 	lw $t0, 4($sp)
@@ -2539,8 +2538,7 @@ else_28:
 	lw $ra, 0($sp)
 	lw $s2, 4($sp)
 	addi $sp, $sp, 8
-	addi $a0 $a0 -1
-	subu $a0 $zero $a0
+	sub $a0 $zero $a0
 	j endif_29
 else_29:
 	lw $t0, 4($sp)

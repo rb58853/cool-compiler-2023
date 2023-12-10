@@ -16,17 +16,17 @@ class Main inherits IO{
         {
             instance <- new B;
             
-            let x:A in 
-                out_string(x.type_name());
+            -- let x:A in 
+            --     out_string(x.type_name());
 
-            case instance of
+            case new Object of
             int:Int => exit <-"Int";
             string:String => exit <-"String";
             bool:Bool => exit <-"Bool";
-            object:Object => exit <-"Object";
+            -- object:Object => exit <-"Object";
             io:IO => exit <-"IO";
-            a:A => exit <-"A";
-            b:B => exit <-"B";
+            -- a:A => exit <-"A";
+            -- b:B => exit <-"B";
             c:C => exit <-"C";
             d:D => exit <-"D";
             e:E => exit <-"E";

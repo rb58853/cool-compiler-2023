@@ -1462,14 +1462,14 @@ class DivExpression:
     
     def int(_int:IntNode, body:Body, scope:dict = {}):
         body.add_expr(CILAssign(TempNames.get_name(),_int))
-        TempNames.free([TempNames.get_name()])
+        # TempNames.free([body.current_value()])
 
     def bool(_bool:CoolBool, body:Body, scope:dict = {}):
         if _bool.value == 'false':
             body.add_expr(CILAssign(TempNames.get_name(),IntNode()))
         else:    
             body.add_expr(CILAssign(TempNames.get_name(),IntNode(1)))
-        TempNames.free(body.current_value())    
+        # TempNames.free(body.current_value())    
 
     def get_atr(id:CoolID, body:Body, scope:dict = {}, instance = 'self', dest= None):
         # body.add_expr(CILCallAtr(scope[instance],id))
