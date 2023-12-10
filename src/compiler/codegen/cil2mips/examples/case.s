@@ -88,156 +88,119 @@ Main_main:
 	lw $s2, 4($sp)
 	addi $sp, $sp, 8
 	move $t0, $a0
-	lw $t1, 0($sp)
-	sw $t0, 8($t1)
-	#Region Let
-	addi $sp, $sp, -4
-	la $a0, StaticVoid
-	sw $a0, 0($sp)
-	lw $t0, 4($sp)
-	move $s2, $t0
-	addi $sp, $sp, -8
-	sw $ra, 0($sp)
-	sw $s2, 4($sp)
-	addi $sp, $sp, -8
-	sw $s2, 0($sp)
-	lw $t1, 16($sp)
-	move $s2, $t1
-	addi $sp, $sp, -8
-	sw $ra, 0($sp)
-	sw $s2, 4($sp)
-	addi $sp, $sp, -4
-	sw $s2, 0($sp)
-	lw $s2, 8($sp)
-	move $t0, $s2
-	lw $t0, 4($t0)
-	lw $t0, 8($t0)
-	jal $t0
-	addi $sp, $sp, 4
-	lw $ra, 0($sp)
-	lw $s2, 4($sp)
-	addi $sp, $sp, 8
-	sw $a0, 4($sp)
-	lw $s2, 12($sp)
-	jal Main_out_string
-	addi $sp, $sp, 8
-	lw $ra, 0($sp)
-	lw $s2, 4($sp)
-	addi $sp, $sp, 8
-	addi $sp, $sp, 4
-	#End Region Let
 	lw $t0, 0($sp)
-	lw $t1, 8($t0)
-	move $t0, $t1
+	sw $t0, 8($t0)
+	lw $t0, 0($sp)
+	lw $t0, 8($t0)
 	lw $t0, 4($t0)
 	lw $t0, 0($t0)
 	la $s7, error_case_0
-	li $t2, 100
+	li $t1, 100
 	lw $s5, 0($t0)
-	slt $s6, $s5, $t2
+	slt $s6, $s5, $t1
 	beqz $s6, end_if_temps_1
 	slt $s6, $zero, $s5
 	beqz $s6, end_if_temps_0
-	move $t2, $s5
+	move $t1, $s5
 	la $s7, case_0
 	end_if_temps_0:
 	end_if_temps_1:
 	lw $s5, 4($t0)
-	slt $s6, $s5, $t2
+	slt $s6, $s5, $t1
 	beqz $s6, end_if_temps_3
 	slt $s6, $zero, $s5
 	beqz $s6, end_if_temps_2
-	move $t2, $s5
+	move $t1, $s5
 	la $s7, case_1
 	end_if_temps_2:
 	end_if_temps_3:
 	lw $s5, 8($t0)
-	slt $s6, $s5, $t2
+	slt $s6, $s5, $t1
 	beqz $s6, end_if_temps_5
 	slt $s6, $zero, $s5
 	beqz $s6, end_if_temps_4
-	move $t2, $s5
+	move $t1, $s5
 	la $s7, case_2
 	end_if_temps_4:
 	end_if_temps_5:
 	lw $s5, 12($t0)
-	slt $s6, $s5, $t2
+	slt $s6, $s5, $t1
 	beqz $s6, end_if_temps_7
 	slt $s6, $zero, $s5
 	beqz $s6, end_if_temps_6
-	move $t2, $s5
+	move $t1, $s5
 	la $s7, case_3
 	end_if_temps_6:
 	end_if_temps_7:
 	lw $s5, 16($t0)
-	slt $s6, $s5, $t2
+	slt $s6, $s5, $t1
 	beqz $s6, end_if_temps_9
 	slt $s6, $zero, $s5
 	beqz $s6, end_if_temps_8
-	move $t2, $s5
+	move $t1, $s5
 	la $s7, case_4
 	end_if_temps_8:
 	end_if_temps_9:
 	lw $s5, 20($t0)
-	slt $s6, $s5, $t2
+	slt $s6, $s5, $t1
 	beqz $s6, end_if_temps_11
 	slt $s6, $zero, $s5
 	beqz $s6, end_if_temps_10
-	move $t2, $s5
+	move $t1, $s5
 	la $s7, case_5
 	end_if_temps_10:
 	end_if_temps_11:
 	lw $s5, 24($t0)
-	slt $s6, $s5, $t2
+	slt $s6, $s5, $t1
 	beqz $s6, end_if_temps_13
 	slt $s6, $zero, $s5
 	beqz $s6, end_if_temps_12
-	move $t2, $s5
+	move $t1, $s5
 	la $s7, case_6
 	end_if_temps_12:
 	end_if_temps_13:
 	lw $s5, 28($t0)
-	slt $s6, $s5, $t2
+	slt $s6, $s5, $t1
 	beqz $s6, end_if_temps_15
 	slt $s6, $zero, $s5
 	beqz $s6, end_if_temps_14
-	move $t2, $s5
+	move $t1, $s5
 	la $s7, case_7
 	end_if_temps_14:
 	end_if_temps_15:
 	lw $s5, 32($t0)
-	slt $s6, $s5, $t2
+	slt $s6, $s5, $t1
 	beqz $s6, end_if_temps_17
 	slt $s6, $zero, $s5
 	beqz $s6, end_if_temps_16
-	move $t2, $s5
+	move $t1, $s5
 	la $s7, case_8
 	end_if_temps_16:
 	end_if_temps_17:
 	lw $s5, 36($t0)
-	slt $s6, $s5, $t2
+	slt $s6, $s5, $t1
 	beqz $s6, end_if_temps_19
 	slt $s6, $zero, $s5
 	beqz $s6, end_if_temps_18
-	move $t2, $s5
+	move $t1, $s5
 	la $s7, case_9
 	end_if_temps_18:
 	end_if_temps_19:
 	lw $s5, 40($t0)
-	slt $s6, $s5, $t2
+	slt $s6, $s5, $t1
 	beqz $s6, end_if_temps_21
 	slt $s6, $zero, $s5
 	beqz $s6, end_if_temps_20
-	move $t2, $s5
+	move $t1, $s5
 	la $s7, case_10
 	end_if_temps_20:
 	end_if_temps_21:
 	lw $s5, 44($t0)
-	slt $s6, $s5, $t2
+	slt $s6, $s5, $t1
 	beqz $s6, end_if_temps_23
 	slt $s6, $zero, $s5
 	beqz $s6, end_if_temps_22
-	move $t2, $s5
+	move $t1, $s5
 	la $s7, case_11
 	end_if_temps_22:
 	end_if_temps_23:
@@ -250,7 +213,7 @@ error_case_0:
 		li $v0, 10
 		syscall
 	la $a0, StaticVoid
-	sw $t2, 0($sp)
+	sw $t1, 0($sp)
 case_0:
 	li $a0, 4
 	li $v0, 9
@@ -258,17 +221,17 @@ case_0:
 	move $s4, $v0
 	la $s3, str2
 	copy_0:
-	lb $t2, 0($s3)
-	sb $t2, 0($s4)
+	lb $t1, 0($s3)
+	sb $t1, 0($s4)
 	addiu $s3, $s3, 1
 	addiu $s4, $s4, 1
-	bnez $t2, copy_0
-	move $t2, $v0
-	lw $t3, 48($sp)
-	sw $t2, 12($t3)
+	bnez $t1, copy_0
+	move $t1, $v0
+	lw $t2, 48($sp)
+	sw $t1, 12($t2)
 	j end_case_0
 	la $a0, StaticVoid
-	sw $t2, 4($sp)
+	sw $t1, 4($sp)
 case_1:
 	li $a0, 7
 	li $v0, 9
@@ -276,17 +239,17 @@ case_1:
 	move $s4, $v0
 	la $s3, str3
 	copy_1:
-	lb $t2, 0($s3)
-	sb $t2, 0($s4)
+	lb $t1, 0($s3)
+	sb $t1, 0($s4)
 	addiu $s3, $s3, 1
 	addiu $s4, $s4, 1
-	bnez $t2, copy_1
-	move $t2, $v0
-	lw $t3, 48($sp)
-	sw $t2, 12($t3)
+	bnez $t1, copy_1
+	move $t1, $v0
+	lw $t2, 48($sp)
+	sw $t1, 12($t2)
 	j end_case_0
 	la $a0, StaticVoid
-	sw $t2, 8($sp)
+	sw $t1, 8($sp)
 case_2:
 	li $a0, 5
 	li $v0, 9
@@ -294,17 +257,17 @@ case_2:
 	move $s4, $v0
 	la $s3, str4
 	copy_2:
-	lb $t2, 0($s3)
-	sb $t2, 0($s4)
+	lb $t1, 0($s3)
+	sb $t1, 0($s4)
 	addiu $s3, $s3, 1
 	addiu $s4, $s4, 1
-	bnez $t2, copy_2
-	move $t2, $v0
-	lw $t3, 48($sp)
-	sw $t2, 12($t3)
+	bnez $t1, copy_2
+	move $t1, $v0
+	lw $t2, 48($sp)
+	sw $t1, 12($t2)
 	j end_case_0
 	la $a0, StaticVoid
-	sw $t2, 12($sp)
+	sw $t1, 12($sp)
 case_3:
 	li $a0, 7
 	li $v0, 9
@@ -312,17 +275,17 @@ case_3:
 	move $s4, $v0
 	la $s3, str5
 	copy_3:
-	lb $t2, 0($s3)
-	sb $t2, 0($s4)
+	lb $t1, 0($s3)
+	sb $t1, 0($s4)
 	addiu $s3, $s3, 1
 	addiu $s4, $s4, 1
-	bnez $t2, copy_3
-	move $t2, $v0
-	lw $t3, 48($sp)
-	sw $t2, 12($t3)
+	bnez $t1, copy_3
+	move $t1, $v0
+	lw $t2, 48($sp)
+	sw $t1, 12($t2)
 	j end_case_0
 	la $a0, StaticVoid
-	sw $t2, 16($sp)
+	sw $t1, 16($sp)
 case_4:
 	li $a0, 3
 	li $v0, 9
@@ -330,17 +293,17 @@ case_4:
 	move $s4, $v0
 	la $s3, str6
 	copy_4:
-	lb $t2, 0($s3)
-	sb $t2, 0($s4)
+	lb $t1, 0($s3)
+	sb $t1, 0($s4)
 	addiu $s3, $s3, 1
 	addiu $s4, $s4, 1
-	bnez $t2, copy_4
-	move $t2, $v0
-	lw $t3, 48($sp)
-	sw $t2, 12($t3)
+	bnez $t1, copy_4
+	move $t1, $v0
+	lw $t2, 48($sp)
+	sw $t1, 12($t2)
 	j end_case_0
 	la $a0, StaticVoid
-	sw $t2, 20($sp)
+	sw $t1, 20($sp)
 case_5:
 	li $a0, 2
 	li $v0, 9
@@ -348,17 +311,17 @@ case_5:
 	move $s4, $v0
 	la $s3, str7
 	copy_5:
-	lb $t2, 0($s3)
-	sb $t2, 0($s4)
+	lb $t1, 0($s3)
+	sb $t1, 0($s4)
 	addiu $s3, $s3, 1
 	addiu $s4, $s4, 1
-	bnez $t2, copy_5
-	move $t2, $v0
-	lw $t3, 48($sp)
-	sw $t2, 12($t3)
+	bnez $t1, copy_5
+	move $t1, $v0
+	lw $t2, 48($sp)
+	sw $t1, 12($t2)
 	j end_case_0
 	la $a0, StaticVoid
-	sw $t2, 24($sp)
+	sw $t1, 24($sp)
 case_6:
 	li $a0, 2
 	li $v0, 9
@@ -366,17 +329,17 @@ case_6:
 	move $s4, $v0
 	la $s3, str8
 	copy_6:
-	lb $t2, 0($s3)
-	sb $t2, 0($s4)
+	lb $t1, 0($s3)
+	sb $t1, 0($s4)
 	addiu $s3, $s3, 1
 	addiu $s4, $s4, 1
-	bnez $t2, copy_6
-	move $t2, $v0
-	lw $t3, 48($sp)
-	sw $t2, 12($t3)
+	bnez $t1, copy_6
+	move $t1, $v0
+	lw $t2, 48($sp)
+	sw $t1, 12($t2)
 	j end_case_0
 	la $a0, StaticVoid
-	sw $t2, 28($sp)
+	sw $t1, 28($sp)
 case_7:
 	li $a0, 2
 	li $v0, 9
@@ -384,17 +347,17 @@ case_7:
 	move $s4, $v0
 	la $s3, str9
 	copy_7:
-	lb $t2, 0($s3)
-	sb $t2, 0($s4)
+	lb $t1, 0($s3)
+	sb $t1, 0($s4)
 	addiu $s3, $s3, 1
 	addiu $s4, $s4, 1
-	bnez $t2, copy_7
-	move $t2, $v0
-	lw $t3, 48($sp)
-	sw $t2, 12($t3)
+	bnez $t1, copy_7
+	move $t1, $v0
+	lw $t2, 48($sp)
+	sw $t1, 12($t2)
 	j end_case_0
 	la $a0, StaticVoid
-	sw $t2, 32($sp)
+	sw $t1, 32($sp)
 case_8:
 	li $a0, 2
 	li $v0, 9
@@ -402,17 +365,17 @@ case_8:
 	move $s4, $v0
 	la $s3, str10
 	copy_8:
-	lb $t2, 0($s3)
-	sb $t2, 0($s4)
+	lb $t1, 0($s3)
+	sb $t1, 0($s4)
 	addiu $s3, $s3, 1
 	addiu $s4, $s4, 1
-	bnez $t2, copy_8
-	move $t2, $v0
-	lw $t3, 48($sp)
-	sw $t2, 12($t3)
+	bnez $t1, copy_8
+	move $t1, $v0
+	lw $t2, 48($sp)
+	sw $t1, 12($t2)
 	j end_case_0
 	la $a0, StaticVoid
-	sw $t2, 36($sp)
+	sw $t1, 36($sp)
 case_9:
 	li $a0, 2
 	li $v0, 9
@@ -420,17 +383,17 @@ case_9:
 	move $s4, $v0
 	la $s3, str11
 	copy_9:
-	lb $t2, 0($s3)
-	sb $t2, 0($s4)
+	lb $t1, 0($s3)
+	sb $t1, 0($s4)
 	addiu $s3, $s3, 1
 	addiu $s4, $s4, 1
-	bnez $t2, copy_9
-	move $t2, $v0
-	lw $t3, 48($sp)
-	sw $t2, 12($t3)
+	bnez $t1, copy_9
+	move $t1, $v0
+	lw $t2, 48($sp)
+	sw $t1, 12($t2)
 	j end_case_0
 	la $a0, StaticVoid
-	sw $t2, 40($sp)
+	sw $t1, 40($sp)
 case_10:
 	li $a0, 2
 	li $v0, 9
@@ -438,17 +401,17 @@ case_10:
 	move $s4, $v0
 	la $s3, str12
 	copy_10:
-	lb $t2, 0($s3)
-	sb $t2, 0($s4)
+	lb $t1, 0($s3)
+	sb $t1, 0($s4)
 	addiu $s3, $s3, 1
 	addiu $s4, $s4, 1
-	bnez $t2, copy_10
-	move $t2, $v0
-	lw $t3, 48($sp)
-	sw $t2, 12($t3)
+	bnez $t1, copy_10
+	move $t1, $v0
+	lw $t2, 48($sp)
+	sw $t1, 12($t2)
 	j end_case_0
 	la $a0, StaticVoid
-	sw $t2, 44($sp)
+	sw $t1, 44($sp)
 case_11:
 	li $a0, 2
 	li $v0, 9
@@ -456,37 +419,33 @@ case_11:
 	move $s4, $v0
 	la $s3, str13
 	copy_11:
-	lb $t2, 0($s3)
-	sb $t2, 0($s4)
+	lb $t1, 0($s3)
+	sb $t1, 0($s4)
 	addiu $s3, $s3, 1
 	addiu $s4, $s4, 1
-	bnez $t2, copy_11
-	move $t2, $v0
-	lw $t3, 48($sp)
-	sw $t2, 12($t3)
+	bnez $t1, copy_11
+	move $t1, $v0
+	lw $t2, 48($sp)
+	sw $t1, 12($t2)
 	j end_case_0
 end_case_0:
 	addi $sp, $sp, 48
-	lw $t2, 0($sp)
-	move $s2, $t2
-	addi $sp, $sp, -16
-	sw $t0, 0($sp)
-	sw $t1, 4($sp)
-	sw $ra, 8($sp)
-	sw $s2, 12($sp)
+	lw $t0, 0($sp)
+	move $s2, $t0
+	addi $sp, $sp, -8
+	sw $ra, 0($sp)
+	sw $s2, 4($sp)
 	addi $sp, $sp, -8
 	sw $s2, 0($sp)
-	lw $t2, 24($sp)
-	lw $t3, 12($t2)
-	sw $t3, 4($sp)
-	lw $s2, 20($sp)
+	lw $t0, 16($sp)
+	lw $t0, 12($t0)
+	sw $t0, 4($sp)
+	lw $s2, 12($sp)
 	jal Main_out_string
 	addi $sp, $sp, 8
-	lw $t0, 0($sp)
-	lw $t1, 4($sp)
-	lw $ra, 8($sp)
-	lw $s2, 12($sp)
-	addi $sp, $sp, 16
+	lw $ra, 0($sp)
+	lw $s2, 4($sp)
+	addi $sp, $sp, 8
 	jr $ra
 __init_A__:
 	li $a0, 8

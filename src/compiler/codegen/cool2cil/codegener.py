@@ -180,16 +180,31 @@ class CILProgram():
             if not cclass.type in env.base_classes:
                 self.add_methods(cclass, cclass)
 
-    def add_methods(self, cclass: CoolClass, cclass_origin:CoolClass):
+    def add_methods(self, cclass: CoolClass, cclass_origin:CoolClass, principal_method = []):
+        #En esta parte se guardan los metodos por orden de importancia, para no guardar metdos con menos importancia(con mayor diferencia de herencia)    
+        principal_method = [m for m in principal_method]
+        
+        if cclass.type not in env.unredefine_classes: 
+            for feature in cclass.features:
+                if isinstance(feature,Feature.CoolDef):
+                    principal_method.append(feature.ID.id)
+    
         if cclass.inherit is not None:
-            self.add_methods(cclass.inherit_class, cclass_origin)
+            self.add_methods(cclass.inherit_class, cclass_origin, principal_method)
 
+        #Aqui se elimina una repeticion del metodo, si esta definido mas de una vez antes entonces sigue en la lista de metodos principales
+        if cclass.type not in env.unredefine_classes: 
+            for feature in cclass.features:
+                if isinstance(feature,Feature.CoolDef):
+                    principal_method.remove(feature.ID.id)
+    
         #No se pueden redefinir los metodos de estas clases
         if cclass.type not in env.unredefine_classes: 
             for feature in cclass.features:
                 if isinstance(feature,Feature.CoolDef):
                     #La proxima linea es para los metodos redefinidos no se repitan
-                    if cclass == cclass_origin or not cclass_origin.context.functions.__contains__(feature.ID.id):
+                    # if cclass == cclass_origin or not cclass_origin.context.functions.__contains__(feature.ID.id):
+                    if feature.ID.id not in principal_method:
                         self.methods.append(CILMethod(feature, self,cclass_origin.type))
     
 class CILType():
@@ -245,7 +260,7 @@ class CILType():
         TYPE_LENGTH[self.name] = result
         return result
     
-    def process_class(self,cclass:CoolClass):
+    def process_class(self,cclass:CoolClass,principal_method =[]):
         if cclass.type != env.object_type_name:
             self.process_class(cclass.inherit_class)
 
@@ -1877,8 +1892,12 @@ class DivExpression:
         label_error = NameLabel('error_case').get()
         label_end = NameLabel('end_case').get()
 
-        temp = TempNames.get_name()
-        body.add_expr(CILAssign(temp, body.current_value())) #guarda el resultado de procesar e en un temporal
+        # if body.current_value()[0] !="$" and body.current_value() !="a0":
+        temp = body.current_value()
+        # else:
+        #     temp = TempNames.get_name()
+        #     body.add_expr(CILAssign(temp, body.current_value())) #guarda el resultado de procesar e en un temporal
+            # TempNames.free(body.current_value()) 
 
         body.add_expr(LoadFromDir(temp,4,temp)) #guarda en temp su parte estatica que esta en la posicion 4 de su instancia
         body.add_expr(LoadFromDir(temp,0,temp)) #guarda en temp sus referencias de herencia que esta en la posicion 0 de su parte estatica

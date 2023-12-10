@@ -4,13 +4,13 @@ import compiler.parser.main as parser
 import compiler.codegen.cool2cil.main as cil
 import compiler.codegen.cil2mips.main as mips
 
-files = ['graph', 'atoi', 'cells', 'list','primes','new_complex','palindrome','hairyscary','book_list']
+file = 'life'
+mips.mips_code(cil.cil_program(file), file)
 
-for file in files:
-    mips.mips_code(cil.cil_program(file), file)
+# files = ['graph', 'atoi', 'cells', 'list','primes','new_complex','palindrome','hairyscary','book_list']
+# for file in files:
+#     mips.mips_code(cil.cil_program(file), file)
 
-# file = 'atoi'
-# mips.mips_code(cil.cil_program(file), file)
 # lexer.test_all_cases()
 # parser.test_all_cases()
 # semantic.test_all_cases()

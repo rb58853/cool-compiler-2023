@@ -613,26 +613,25 @@ Cons_print_list:
 	lw $ra, 0($sp)
 	lw $s2, 4($sp)
 	addi $sp, $sp, 8
-	move $t0, $a0
-	lw $t0, 4($t0)
-	lw $t0, 0($t0)
+	lw $a0, 4($a0)
+	lw $a0, 0($a0)
 	la $s7, error_case_9
-	li $t1, 100
-	lw $s5, 96($t0)
-	slt $s6, $s5, $t1
+	li $t0, 100
+	lw $s5, 96($a0)
+	slt $s6, $s5, $t0
 	beqz $s6, end_if_temps_59
 	slt $s6, $zero, $s5
 	beqz $s6, end_if_temps_58
-	move $t1, $s5
+	move $t0, $s5
 	la $s7, case_29
 	end_if_temps_58:
 	end_if_temps_59:
-	lw $s5, 100($t0)
-	slt $s6, $s5, $t1
+	lw $s5, 100($a0)
+	slt $s6, $s5, $t0
 	beqz $s6, end_if_temps_61
 	slt $s6, $zero, $s5
 	beqz $s6, end_if_temps_60
-	move $t1, $s5
+	move $t0, $s5
 	la $s7, case_30
 	end_if_temps_60:
 	end_if_temps_61:
