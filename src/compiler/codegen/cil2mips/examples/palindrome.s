@@ -1,6 +1,7 @@
 .data
-abort: .asciiz "Abort called from class"
+abort: .asciiz "Abort called from class "
 case_error: .asciiz "error case not have dinamyc type"
+void_error: .asciiz "void error"
 substring_error: .asciiz "error substring is out of range"
 String: .asciiz "String"
 Bool: .asciiz "Bool"
@@ -8,81 +9,49 @@ Int: .asciiz "Int"
 Void: .asciiz "Void"
 string_space: .space 1024
 newline: .asciiz "\n"
+IO: .asciiz "IO"
+Object: .asciiz "Object"
 Main: .asciiz "Main"
 str125: .asciiz " = "
 str126: .asciiz " true\n"
 str127: .asciiz "enter a string\n"
 str128: .asciiz "\nthat was a palindrome\n"
 str129: .asciiz "\nthat was not a palindrome\n"
-StaticVoid: .word Void, 4
+StaticVoid: .word Void, StaticVoid, VoidError, VoidError, VoidError, VoidError, VoidError, VoidError, VoidError, VoidError, VoidError, VoidError, VoidError, VoidError, VoidError, VoidError, VoidError, VoidError, VoidError
 StaticObject: .word Object_inherits, 8, Object_type_name, Object_abort, Object_copy
-
 StaticIO: .word IO_inherits, 8, IO_type_name, IO_abort, IO_copy, IO_out_string, IO_out_int, IO_in_string, IO_in_int
-
 StaticGraph: .word Graph_inherits, 16, Graph_type_name, Graph_abort, Graph_copy, Graph_add_vertice, Graph_print_E, Graph_print_V
-
 StaticVertice: .word Vertice_inherits, 16, Vertice_type_name, Vertice_abort, Vertice_copy, Vertice_out_string, Vertice_out_int, Vertice_in_string, Vertice_in_int, Vertice_outgoing, Vertice_number, Vertice_init, Vertice_add_out, Vertice_print
-
 StaticEdge: .word Edge_inherits, 20, Edge_type_name, Edge_abort, Edge_copy, Edge_out_string, Edge_out_int, Edge_in_string, Edge_in_int, Edge_init, Edge_print
-
 StaticEList: .word EList_inherits, 12, EList_type_name, EList_abort, EList_copy, EList_out_string, EList_out_int, EList_in_string, EList_in_int, EList_isNil, EList_head, EList_tail, EList_cons, EList_append, EList_print
-
 StaticECons: .word ECons_inherits, 16, ECons_type_name, ECons_abort, ECons_copy, ECons_out_string, ECons_out_int, ECons_in_string, ECons_in_int, ECons_isNil, ECons_head, ECons_tail, ECons_cons, ECons_append, ECons_print, ECons_init
-
 StaticVList: .word VList_inherits, 12, VList_type_name, VList_abort, VList_copy, VList_out_string, VList_out_int, VList_in_string, VList_in_int, VList_isNil, VList_head, VList_tail, VList_cons, VList_print
-
 StaticVCons: .word VCons_inherits, 16, VCons_type_name, VCons_abort, VCons_copy, VCons_out_string, VCons_out_int, VCons_in_string, VCons_in_int, VCons_isNil, VCons_head, VCons_tail, VCons_cons, VCons_print, VCons_init
-
 StaticParse: .word Parse_inherits, 16, Parse_type_name, Parse_abort, Parse_copy, Parse_out_string, Parse_out_int, Parse_in_string, Parse_in_int, Parse_read_input, Parse_parse_line, Parse_c2i, Parse_a2i, Parse_a2i_aux
-
 StaticMain: .word Main_inherits, 12, Main_type_name, Main_abort, Main_copy, Main_out_string, Main_out_int, Main_in_string, Main_in_int, Main_pal, Main_main
-
 StaticBoolOp: .word BoolOp_inherits, 8, BoolOp_type_name, BoolOp_abort, BoolOp_copy, BoolOp_and, BoolOp_or
-
 StaticA2I: .word A2I_inherits, 8, A2I_type_name, A2I_abort, A2I_copy, A2I_c2i, A2I_i2c, A2I_a2i, A2I_a2i_aux, A2I_i2a, A2I_i2a_aux
-
 StaticCellularAutomaton: .word CellularAutomaton_inherits, 12, CellularAutomaton_type_name, CellularAutomaton_abort, CellularAutomaton_copy, CellularAutomaton_out_string, CellularAutomaton_out_int, CellularAutomaton_in_string, CellularAutomaton_in_int, CellularAutomaton_init, CellularAutomaton_print, CellularAutomaton_num_cells, CellularAutomaton_cell, CellularAutomaton_cell_left_neighbor, CellularAutomaton_cell_right_neighbor, CellularAutomaton_cell_at_next_evolution, CellularAutomaton_evolve
-
 StaticList: .word List_inherits, 8, List_type_name, List_abort, List_copy, List_isNil, List_head, List_tail, List_cons
-
 StaticCons: .word Cons_inherits, 16, Cons_type_name, Cons_abort, Cons_copy, Cons_isNil, Cons_head, Cons_tail, Cons_cons, Cons_init
-
 StaticComplex: .word Complex_inherits, 16, Complex_type_name, Complex_abort, Complex_copy, Complex_out_string, Complex_out_int, Complex_in_string, Complex_in_int, Complex_init, Complex_print, Complex_reflect_0, Complex_reflect_X, Complex_reflect_Y, Complex_equal, Complex_x_value, Complex_y_value
-
 Object_inherits: .word -1, -1, -1, 1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1
-
 IO_inherits: .word -1, -1, -1, -1, 1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1
-
 Graph_inherits: .word -1, -1, -1, 2, -1, 1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1
-
 Vertice_inherits: .word -1, -1, -1, 3, 2, -1, 1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1
-
 Edge_inherits: .word -1, -1, -1, 3, 2, -1, -1, 1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1
-
 EList_inherits: .word -1, -1, -1, 3, 2, -1, -1, -1, 1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1
-
 ECons_inherits: .word -1, -1, -1, 4, 3, -1, -1, -1, 2, 1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1
-
 VList_inherits: .word -1, -1, -1, 3, 2, -1, -1, -1, -1, -1, 1, -1, -1, -1, -1, -1, -1, -1, -1, -1
-
 VCons_inherits: .word -1, -1, -1, 4, 3, -1, -1, -1, -1, -1, 2, 1, -1, -1, -1, -1, -1, -1, -1, -1
-
 Parse_inherits: .word -1, -1, -1, 3, 2, -1, -1, -1, -1, -1, -1, -1, 1, -1, -1, -1, -1, -1, -1, -1
-
 Main_inherits: .word -1, -1, -1, 3, 2, -1, -1, -1, -1, -1, -1, -1, -1, 1, -1, -1, -1, -1, -1, -1
-
 BoolOp_inherits: .word -1, -1, -1, 2, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, 1, -1, -1, -1, -1, -1
-
 A2I_inherits: .word -1, -1, -1, 2, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, 1, -1, -1, -1, -1
-
 CellularAutomaton_inherits: .word -1, -1, -1, 3, 2, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, 1, -1, -1, -1
-
 List_inherits: .word -1, -1, -1, 2, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, 1, -1, -1
-
 Cons_inherits: .word -1, -1, -1, 3, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, 2, 1, -1
-
 Complex_inherits: .word -1, -1, -1, 3, 2, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, 1
-
 .text
 .globl main
 main:
@@ -518,7 +487,19 @@ __init_IO__:
 	li $a0, 8
 	li $v0, 9
 	syscall
+	la $t0, IO
+	sw $t0, 0($v0)
 	la $t0, StaticIO
+	sw $t0, 4($v0)
+	move $a0, $v0
+	jr $ra
+__init_Object__:
+	li $a0, 8
+	li $v0, 9
+	syscall
+	la $t0, Object
+	sw $t0, 0($v0)
+	la $t0, StaticObject
 	sw $t0, 4($v0) 
 	move $a0, $v0
 	jr $ra
@@ -1429,3 +1410,9 @@ concat:
 	bnez $t2, concat_copy_two
 	move $a0, $v0
 	jr $ra
+VoidError:
+	la $a0, void_error
+	li $v0, 4
+	syscall
+	li $v0, 10
+	syscall

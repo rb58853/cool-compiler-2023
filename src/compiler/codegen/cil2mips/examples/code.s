@@ -1,7 +1,6 @@
 .data
 abort: .asciiz "Abort called from class "
 case_error: .asciiz "error case not have dinamyc type"
-void_error: .asciiz "void error"
 substring_error: .asciiz "error substring is out of range"
 String: .asciiz "String"
 Bool: .asciiz "Bool"
@@ -11,22 +10,20 @@ string_space: .space 1024
 newline: .asciiz "\n"
 IO: .asciiz "IO"
 Object: .asciiz "Object"
-A: .asciiz "A"
-B: .asciiz "B"
 Main: .asciiz "Main"
-str1: .asciiz "Clase A"
-str2: .asciiz "Clase B"
-StaticVoid: .word Void, StaticVoid, VoidError, VoidError, VoidError, VoidError, VoidError, VoidError, VoidError, VoidError, VoidError, VoidError, VoidError
+StaticVoid: .word Void, StaticVoid, Object_type_name, Object_abort, Object_copy
 StaticObject: .word Object_inherits, 8, Object_type_name, Object_abort, Object_copy
+
 StaticIO: .word IO_inherits, 8, IO_type_name, IO_abort, IO_copy, IO_out_string, IO_out_int, IO_in_string, IO_in_int
-StaticA: .word A_inherits, 8, A_type_name, A_abort, A_copy, A_print
-StaticB: .word B_inherits, 8, B_type_name, B_abort, B_copy, B_print
-StaticMain: .word Main_inherits, 8, Main_type_name, Main_abort, Main_copy, Main_out_string, Main_out_int, Main_in_string, Main_in_int, Main_main, Main_int
-Object_inherits: .word -1, -1, -1, 1, -1, -1, -1, -1
-IO_inherits: .word -1, -1, -1, -1, 1, -1, -1, -1
-A_inherits: .word -1, -1, -1, 2, -1, 1, -1, -1
-B_inherits: .word -1, -1, -1, 3, -1, 2, 1, -1
-Main_inherits: .word -1, -1, -1, 3, 2, -1, -1, 1
+
+StaticMain: .word Main_inherits, 8, Main_type_name, Main_abort, Main_copy, Main_out_string, Main_out_int, Main_in_string, Main_in_int, Main_main
+
+Object_inherits: .word -1, -1, -1, 1, -1, -1
+
+IO_inherits: .word -1, -1, -1, -1, 1, -1
+
+Main_inherits: .word -1, -1, -1, 3, 2, 1
+
 .text
 .globl main
 main:
@@ -36,36 +33,6 @@ main:
 	jal Main_main
 	li $v0, 10
 	syscall
-A_print:
-	li $a0, 8
-	li $v0, 9
-	syscall
-	move $s4, $v0
-	la $s3, str1
-	copy_0:
-	lb $t0, 0($s3)
-	sb $t0, 0($s4)
-	addiu $s3, $s3, 1
-	addiu $s4, $s4, 1
-	bnez $t0, copy_0
-	move $t0, $v0
-	move $a0, $t0
-	jr $ra
-B_print:
-	li $a0, 8
-	li $v0, 9
-	syscall
-	move $s4, $v0
-	la $s3, str2
-	copy_1:
-	lb $t0, 0($s3)
-	sb $t0, 0($s4)
-	addiu $s3, $s3, 1
-	addiu $s4, $s4, 1
-	bnez $t0, copy_1
-	move $t0, $v0
-	move $a0, $t0
-	jr $ra
 Main_main:
 	lw $t0, 0($sp)
 	move $s2, $t0
@@ -74,7 +41,14 @@ Main_main:
 	sw $s2, 4($sp)
 	addi $sp, $sp, -8
 	sw $s2, 0($sp)
-	lw $t0, 16($sp)
+	addi $sp, $sp, -8
+	sw $ra, 0($sp)
+	sw $s2, 4($sp)
+	jal __init_IO__
+	lw $ra, 0($sp)
+	lw $s2, 4($sp)
+	addi $sp, $sp, 8
+	move $t0, $a0
 	move $s2, $t0
 	addi $sp, $sp, -8
 	sw $ra, 0($sp)
@@ -82,51 +56,58 @@ Main_main:
 	addi $sp, $sp, -4
 	sw $s2, 0($sp)
 	lw $s2, 8($sp)
-	jal Main_int
+	move $t0, $s2
+	lw $t0, 4($t0)
+	lw $t0, 8($t0)
+	jal $t0
 	addi $sp, $sp, 4
 	lw $ra, 0($sp)
 	lw $s2, 4($sp)
 	addi $sp, $sp, 8
-	sub $a0 $zero $a0
 	sw $a0, 4($sp)
 	lw $s2, 12($sp)
-	jal Main_out_int
+	jal Main_out_string
 	addi $sp, $sp, 8
 	lw $ra, 0($sp)
 	lw $s2, 4($sp)
 	addi $sp, $sp, 8
-	jr $ra
-Main_int:
-	li $t0, 112
-	move $a0, $t0
-	jr $ra
-__init_A__:
-	li $a0, 8
-	li $v0, 9
-	syscall
-	move $s1, $v0
-	la $t0, A
-	sw $t0, 0($s1)
-	la $t0, StaticA
-	sw $t0, 4($s1)
+	lw $t0, 0($sp)
+	move $s2, $t0
+	addi $sp, $sp, -8
+	sw $ra, 0($sp)
+	sw $s2, 4($sp)
+	addi $sp, $sp, -8
+	sw $s2, 0($sp)
+	addi $sp, $sp, -8
+	sw $ra, 0($sp)
+	sw $s2, 4($sp)
+	jal __init_Object__
+	lw $ra, 0($sp)
+	lw $s2, 4($sp)
+	addi $sp, $sp, 8
+	move $t0, $a0
+	move $s2, $t0
+	addi $sp, $sp, -8
+	sw $ra, 0($sp)
+	sw $s2, 4($sp)
 	addi $sp, $sp, -4
-	sw $s1, 0($sp)
+	sw $s2, 0($sp)
+	lw $s2, 8($sp)
+	move $t0, $s2
+	lw $t0, 4($t0)
+	lw $t0, 8($t0)
+	jal $t0
 	addi $sp, $sp, 4
-	move $a0, $s1
-	jr $ra
-__init_B__:
-	li $a0, 8
-	li $v0, 9
-	syscall
-	move $s1, $v0
-	la $t0, B
-	sw $t0, 0($s1)
-	la $t0, StaticB
-	sw $t0, 4($s1)
-	addi $sp, $sp, -4
-	sw $s1, 0($sp)
-	addi $sp, $sp, 4
-	move $a0, $s1
+	lw $ra, 0($sp)
+	lw $s2, 4($sp)
+	addi $sp, $sp, 8
+	sw $a0, 4($sp)
+	lw $s2, 12($sp)
+	jal Main_out_string
+	addi $sp, $sp, 8
+	lw $ra, 0($sp)
+	lw $s2, 4($sp)
+	addi $sp, $sp, 8
 	jr $ra
 __init_Main__:
 	li $a0, 8
@@ -232,40 +213,6 @@ IO_type_name:
 IO_copy:
 	jr $ra
 IO_abort:
-	la $a0, abort
-	li $v0, 4
-	syscall
-	lw $t0, 0($sp)
-	lw $a0, 0($t0)
-	li $v0, 4
-	syscall
-	li $v0, 10
-	syscall
-A_type_name:
-	lw $t0, 0($sp)
-	lw $t1, 0($t0)
-	move $a0, $t1
-	jr $ra
-A_copy:
-	jr $ra
-A_abort:
-	la $a0, abort
-	li $v0, 4
-	syscall
-	lw $t0, 0($sp)
-	lw $a0, 0($t0)
-	li $v0, 4
-	syscall
-	li $v0, 10
-	syscall
-B_type_name:
-	lw $t0, 0($sp)
-	lw $t1, 0($t0)
-	move $a0, $t1
-	jr $ra
-B_copy:
-	jr $ra
-B_abort:
 	la $a0, abort
 	li $v0, 4
 	syscall
@@ -460,9 +407,3 @@ concat:
 	bnez $t2, concat_copy_two
 	move $a0, $v0
 	jr $ra
-VoidError:
-	la $a0, void_error
-	li $v0, 4
-	syscall
-	li $v0, 10
-	syscall

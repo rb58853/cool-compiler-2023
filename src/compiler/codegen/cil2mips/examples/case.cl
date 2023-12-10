@@ -16,8 +16,8 @@ class Main inherits IO{
         {
             instance <- new B;
             
-            -- let x:B in
-            --     out_string(x.type_name());
+            let x:A in 
+                out_string(x.type_name());
 
             case instance of
             int:Int => exit <-"Int";

@@ -276,9 +276,20 @@ class ConstantAbort:
         '\tli $v0, 10',     #Codigo para cerrar el programa
         '\tsyscall'
         ]
+
+class VoidError:
+    def code():
+        return [
+        f'VoidError:',
+        '\tla $a0, void_error',  #texto del abort en la seccion de data
+        '\tli $v0, 4',      #El 4 es para imprimir string
+	    '\tsyscall',        #llamanda al sistema
+        '\tli $v0, 10',     #Codigo para cerrar el programa
+        '\tsyscall'
+        ]    
     
 methods = [OutString,OutInt,InInt, InString, TypeName,Copy, Abort]
-uninherits_methods = [Length, Substring, Concat]
+uninherits_methods = [Length, Substring, Concat, VoidError]
  
 #TODO usar los nombres de env
 contants = [ConstantTypeName("String"),ConstantTypeName("Int"),ConstantTypeName("Bool"),
@@ -292,8 +303,10 @@ class IO:
             '\tli $a0, 8',
             '\tli $v0, 9',
             '\tsyscall', #reserva memoria para una instancia de la clase, solo tendra el self_type
+            '\tla $t0, IO',
+	        '\tsw $t0, 0($v0)',
             '\tla $t0, StaticIO',
-            '\tsw $t0, 4($v0) ',
+            '\tsw $t0, 4($v0)',
             '\tmove $a0, $v0', #guarda en a la direccion del puntero para devolverlo
             '\tjr $ra'
         ]
@@ -306,13 +319,15 @@ class Object:
             '\tli $a0, 8',
             '\tli $v0, 9',
             '\tsyscall', #reserva memoria para una instancia de la clase, solo tendra el self_type
+            '\tla $t0, Object',
+	        '\tsw $t0, 0($v0)',
             '\tla $t0, StaticObject',
             '\tsw $t0, 4($v0) ',
             '\tmove $a0, $v0', #guarda en a la direccion del puntero para devolverlo
             '\tjr $ra'
         ]    
     
-init_bases = [IO]
+init_bases = [IO, Object]
 
 class StartMethod:
     '''Primer metodo del programar en mips, llama una instancia del metodo main'''

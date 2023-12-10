@@ -87,22 +87,23 @@ class Data:
     
     def free():
         Data.body = [
-                    'abort: .asciiz "Abort called from class"',
+                    'abort: .asciiz "Abort called from class "',
                     'case_error: .asciiz "error case not have dinamyc type"',
+                    'void_error: .asciiz "void error"',
                     'substring_error: .asciiz "error substring is out of range"',
                     'String: .asciiz "String"',
                     'Bool: .asciiz "Bool"',
                     'Int: .asciiz "Int"',
                     'Void: .asciiz "Void"',
                     'string_space: .space 1024',
-                    'newline: .asciiz "\\n"'
+                    'newline: .asciiz "\\n"',
+                    'IO: .asciiz "IO"',
+                    'Object: .asciiz "Object"'
                     ]
 
 class CILProgram():
     def __init__(self, program:CoolProgram):
-        super().__init__()
         #Limpiar los datos base#####################################
-        Data.free()
         # global TYPES
         # global TYPES_INHERITS
         # global TYPES_INHERITS_INDEX
@@ -112,8 +113,8 @@ class CILProgram():
         # TYPES_INHERITS_INDEX = {'Int': 0, 'String': 1, 'Bool': 2}
         # TYPES ['Object'] = BaseType('Object')
         # TYPES ['IO'] = BaseType('IO')
-        
         ################################################################
+        Data.free()
         self.types:dict[str,CILType] = {}  # Lista de CILType
         self.methods:list[CILMethod] = []
         self.set_types(program)
@@ -135,7 +136,17 @@ class CILProgram():
             type.set_inherit_types()    
     
     def full_data(self):
-        Data.add('StaticVoid: .word Void, 4')
+        void_data = 'StaticVoid: .word Void, StaticVoid, '
+        max_meth = 0
+        for type in TYPES.values():
+            if len(type.methods)> max_meth:
+                max_meth = len(type.methods)
+        while max_meth>0:
+            max_meth-=1
+            void_data+='VoidError, '
+        void_data = void_data[:-2]            
+
+        Data.add(void_data)
         for key, value in zip(TYPES.keys(), TYPES.values()):
             temp = f'Static{key}: .word {value.inherit}, {value.space}, '
             i = 0
@@ -144,7 +155,7 @@ class CILProgram():
                     temp += f'{key}_{meth}, '
                 i+=1
 
-            Data.add(f'{temp[:-2]}\n')
+            Data.add(f'{temp[:-2]}')
         
         temp =""
         for type in TYPES.values():
@@ -152,7 +163,7 @@ class CILProgram():
             for value in type.inherit_types:
                 temp += f'{value}, '
             
-            Data.add(f'{temp[:-2]}\n')
+            Data.add(f'{temp[:-2]}')
 
     def generate_init_types(self):
         for type in self.types.values():
@@ -826,7 +837,7 @@ class CallFromDir(CILExpr):
         return[
             f'lw {self.dir}, 4({self.dir})',  # Carga en dir el valor de su posicion en 4 (es la parte direccion a la parte estatica)
             f'lw {self.dir}, {self.pos}({self.dir})',  # Carga en dir el valor de la posicion pos, que debe ser la direccion del metodo que se quiere llamar
-            f'jal {self.dir}'
+            f'jalr {self.dir}'
             ]     
 
 class ToA0(CILExpr):
@@ -993,8 +1004,8 @@ class CILUminus(CILExpr):
         if dest[0] != '$':
             dest = f'$t{dest[5:]}'
         return [
-            f'addi {dest} {dest} -1',
-            f'subu {dest} $zero {dest}'
+            # f'addi {dest} {dest} -1',
+            f'sub {dest} $zero {dest}'
             ]    
 
 class CaseError(CILExpr):
@@ -1154,7 +1165,7 @@ class JumpMips(MipsExpr):
         return f'jump to {self.dest}'
     
     def to_mips(self):
-        return [f'j {self.dest}']
+        return [f'jr {self.dest}']
        
 ################################################## PROCESADOR DE COOL ###########################################################
 class Body:
@@ -1319,16 +1330,9 @@ class DivExpression:
             DivExpression.set_atr(assign.left,body,scope,value=assigned_value)
             TempNames.free([assigned_value])
 
-            #lo de debajo no deberia pinchar, debe estar sobrando
-            # if IsType.simple_type(assign.right):
-            #     body.add_expr(CILAssign(assign.left.id,assign.right,is_temp=False))
-            # else:
-            #     DivExpression(assign.right, body, scope)
-            #     body.add_expr(CILAssign(assign.left.id,body.current_value(),is_temp=False))
-    
     def cool_atr(a:Feature.CoolAtr, body:Body, scope:dict = {}):
         DivExpression(a.value,body,scope)
-        # temp = body.current_value()
+        # DivExpression.set_atr(a.ID,body,scope,value=body.current_value())
         # body.add_expr(CILAssign(TempNames.get_name(),temp))
         # TempNames.free([temp])
 
@@ -1602,7 +1606,7 @@ class DivExpression:
             DivExpression.goto_init(f'__init_{e.type}__',body,scope)
             body.add_expr(CILAssign(TempNames.get_name(),'$a0'))
 
-        TempNames.free(body.current_value())    
+        # TempNames.free(body.current_value())    
 
     def _while(_while:CoolWhile, body:Body, context:dict = {}):
         loop = NameLabel(f'loop').get()
@@ -1668,7 +1672,7 @@ class DivExpression:
             TempNames.free([instance])
             return
         
-        type = dispatch.statictype#si este type no es none entonces hay que llamar por el typo estatico
+        type = dispatch.statictype #si este type no es none entonces hay que llamar por el typo estatico
         dinamyc_type = dispatch.expr.get_type()
         expr_type = dispatch.expr.get_type()
         
@@ -1793,9 +1797,6 @@ class DivExpression:
             body.add_expr(CallFromDir(dir,pos))
             TempNames.free([dir]) #Libera la direcion que le pasa    
 
-         #TODO esto es nuevo, despues de llamar el metodo, librear todos los temporales
-        # TempNames.free_all()
-
         #Aqui hay que recuperar el valor de los registros temporales. Para ello hay que liberar la pila de los argumentos con los que se llamo la funcion, luego de ello recueperar la posicion en pila de los temporales restando el desplaziento que se libero
         body.add_expr(FreeStack(space))
         for temp in used_temps:
@@ -1855,6 +1856,14 @@ class DivExpression:
                     body.add_expr(StoreLocal(name=temp,pos= p,value=temp[:3]))
                 p+=4        
 
+            ############# TODO NEW RECUPERAR S2 ########################################
+            #Cuando se llega a aqui hay que recuperar el s2 usado, el ultimo en cuestion, ya que despues de varios llamados s2 puede cambiar
+            temp = "$s2" 
+            while f'{temp}0' in used_temps:
+                temp =  f'{temp}0' #esto va a buscar el ultimo s2 usado
+            body.add_expr(CILAssign("$s2",CILCallLocal(temp[:3], scope[temp]))) #asiginar a $s2 su anterior valor
+            #############################################################################    
+
             # llama a la funcion
             body.add_expr(CallMethod(label))
 
@@ -1892,12 +1901,31 @@ class DivExpression:
         label_error = NameLabel('error_case').get()
         label_end = NameLabel('end_case').get()
 
-        # if body.current_value()[0] !="$" and body.current_value() !="a0":
         temp = body.current_value()
-        # else:
-        #     temp = TempNames.get_name()
-        #     body.add_expr(CILAssign(temp, body.current_value())) #guarda el resultado de procesar e en un temporal
-            # TempNames.free(body.current_value()) 
+
+        body.add_expr(ReserveSTACK(WORD))#reserva 4 de pila para guardar la expresion del case
+        name_in_scope = "ExpresionCase" 
+        while name_in_scope in scope:
+            name_in_scope+="0" #en el caso que se usen case dentro de otro case habran varias Expresiones de case
+
+        body.add_expr(StoreLocal("ExpresionCase",0,temp))#guarda en la posicion cero la exprsion del case
+
+        case_scope ={}
+        for var in scope.keys():
+            #esto inicializa cada variable del scope anterior en su posicion anterior, se hace esto para usar el scope recursivo
+            case_scope[var] = scope[var]
+        
+        #Reservar pila para la expresion del case y mueve la posicion del resto del scope
+        for var in case_scope:
+            #mover la posicion de cada una de las variables que estan en el scope
+            case_scope[var] += WORD
+
+        case_scope[name_in_scope] = 0 #luego en la posicion 0 del scope pone la expresion
+        
+
+        # temp = TempNames.get_name()
+        # body.add_expr(CILAssign(temp, body.current_value())) #guarda el resultado de procesar e en un temporal
+        # TempNames.free(body.current_value()) 
 
         body.add_expr(LoadFromDir(temp,4,temp)) #guarda en temp su parte estatica que esta en la posicion 4 de su instancia
         body.add_expr(LoadFromDir(temp,0,temp)) #guarda en temp sus referencias de herencia que esta en la posicion 0 de su parte estatica
@@ -1927,48 +1955,42 @@ class DivExpression:
         
 
         TempNames.free([temp, temp0]) #liberar ambos temporales que ya cumplieron su funcion
-        temp = TempNames.get_name()
+        # temp = TempNames.get_name()
         #A partir de este momento se sale del analisis izquierdo del case, los registros s5,s6 y s7 pueden ser sobreescritos     
         
-        case_scope = {} 
-        for var in scope.keys():
-            #esto inicializa cada variable del scope anterior en su posicion anterior, se hace esto para usar el scope recursivo
-            case_scope[var] = scope[var]
-        
-        #Reservar pila para las variables de la parte izquierda del case
-        body.add_expr(ReserveSTACK(len(cases)*4))
-        for var in case_scope:
-            #mover la posicion de cada una de las variables que estan en el scope
-            case_scope[var] += len(cases)*4
-            pass  
-
-                      
-        #TODO hay que ocultar los valores sobreescritos en el case, asi como ver como es la sobreescritura, supongo que sea general
         
         body.add_expr(JumpMips(s7))
         body.add_expr(Label(label_error))
         body.add_expr(CaseError())
         # body.add_expr(GOTO(label_end))
         
-        pos = 0        
         for left, right, label in zip (cases.keys(),cases.values(), labels):
-            #Definir la parte izquierda de la rama actual del case, la rama que esta analizando
-            case_scope[left.id] = pos #guardar su posicion en pila en el scope
-            pos+=4
-            DivExpression(None,body,case_scope) #el valor de la parte izquierda es none
-            temp = TempNames.get_name()
-            body.add_expr(StoreLocal(left.id, value = temp, pos= case_scope[left.id]))
-            TempNames.free([temp])
-
+            
             body.add_expr(Label(label))
+            # body.add_expr(ReserveSTACK(WORD))#reserva pila para meter la parte izquierda en el scope
+            
+            #Definir la parte izquierda de la rama actual del case, la rama que esta analizando
+            case_scope[left.id] = case_scope[name_in_scope] #asigna la misma posicion de memoria que la expresion, cuando sea llamado entoces buscara en la misma posicion de la pila, que es donde esta guardado la expresion del case
+            
+            
+            # DivExpression(e,body,case_scope) #el valor de la parte izquierda es el valor de la expresion del case
+            # temp = TempNames.get_name()
+            # temp_to_store = body.current_value()
+            # body.add_expr(StoreLocal(left.id, value = temp_to_store, pos= case_scope[left.id]))
+            # TempNames.free([temp])
+            
+            
             DivExpression(right,body, case_scope)
             body.add_expr(MoveMips(temp,body.current_value()))
             TempNames.free([body.current_value()])
+            
+            
             body.add_expr(GOTO(label_end))
+            case_scope.__delitem__(left.id)
+
 
         body.add_expr(Label(label_end))
-        
-        body.add_expr(FreeStack(len(cases)*4))#liberar la pila usada para los case
+        body.add_expr(FreeStack(WORD))#liberar la pila usada para para la expresion del case
         
         
         body.add_expr(MoveMips(temp,temp)) #esta linea es para que se sepa el retorno del case

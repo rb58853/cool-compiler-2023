@@ -39,7 +39,7 @@ class Bazz inherits IO {
      g : Foo  <- case self of
 		     	n : Bazz => (new Foo);
 		     	n : Razz => (new Bar);
-			n : Foo  => (new Razz);
+			     n : Foo  => (new Razz);
 			n : Bar => n;
 		  esac;
 

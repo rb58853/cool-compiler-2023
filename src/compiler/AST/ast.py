@@ -158,9 +158,19 @@ class Node(PlotNode):
         else:
             return self.name
 
+    def get_context_in_parents(self):
+        '''Esto busca un contexto para arriba hasta encontrar uno'''
+        if self.context is None:
+            if self.father.context is not None:
+                self.get_contex_from_father() 
+            else:
+                self.father.get_context_in_parents()
+            if self.context is None:    
+                self.get_contex_from_father() 
+
     def get_class_context(self):
         if self.context is None:
-            self.get_contex_from_father() #TODO WARNING esto es nuevo antes, todo pinchaba bien
+            self.get_context_in_parents() #TODO WARNING esto es nuevo antes, todo pinchaba bien
 
         if self.context.cclass != None:
             return self.context
@@ -168,6 +178,8 @@ class Node(PlotNode):
             return self.father.get_class_context()  
 
     def is_atr(self, id):
+        if self.context is None:
+            self.get_context_in_parents() #TODO WARNING esto es nuevo antes, todo pinchaba bien
         if self.context.cclass != None: return True
         if self.context.variables.__contains__(id): return False
         return self.father.is_atr(id)

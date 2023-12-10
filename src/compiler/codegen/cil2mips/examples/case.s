@@ -1,6 +1,7 @@
 .data
-abort: .asciiz "Abort called from class"
+abort: .asciiz "Abort called from class "
 case_error: .asciiz "error case not have dinamyc type"
+void_error: .asciiz "void error"
 substring_error: .asciiz "error substring is out of range"
 String: .asciiz "String"
 Bool: .asciiz "Bool"
@@ -8,6 +9,8 @@ Int: .asciiz "Int"
 Void: .asciiz "Void"
 string_space: .space 1024
 newline: .asciiz "\n"
+IO: .asciiz "IO"
+Object: .asciiz "Object"
 A: .asciiz "A"
 B: .asciiz "B"
 C: .asciiz "C"
@@ -29,47 +32,27 @@ str11: .asciiz "E"
 str12: .asciiz "F"
 str13: .asciiz "G"
 str1: .asciiz "error"
-StaticVoid: .word Void, 4
+StaticVoid: .word Void, StaticVoid, VoidError, VoidError, VoidError, VoidError, VoidError, VoidError, VoidError, VoidError, VoidError, VoidError
 StaticObject: .word Object_inherits, 8, Object_type_name, Object_abort, Object_copy
-
 StaticIO: .word IO_inherits, 8, IO_type_name, IO_abort, IO_copy, IO_out_string, IO_out_int, IO_in_string, IO_in_int
-
 StaticA: .word A_inherits, 8, A_type_name, A_abort, A_copy
-
 StaticB: .word B_inherits, 8, B_type_name, B_abort, B_copy
-
 StaticC: .word C_inherits, 8, C_type_name, C_abort, C_copy
-
 StaticD: .word D_inherits, 8, D_type_name, D_abort, D_copy
-
 StaticE: .word E_inherits, 8, E_type_name, E_abort, E_copy
-
 StaticF: .word F_inherits, 8, F_type_name, F_abort, F_copy
-
 StaticG: .word G_inherits, 8, G_type_name, G_abort, G_copy
-
 StaticMain: .word Main_inherits, 16, Main_type_name, Main_abort, Main_copy, Main_out_string, Main_out_int, Main_in_string, Main_in_int, Main_main
-
 Object_inherits: .word -1, -1, -1, 1, -1, -1, -1, -1, -1, -1, -1, -1, -1
-
 IO_inherits: .word -1, -1, -1, -1, 1, -1, -1, -1, -1, -1, -1, -1, -1
-
 A_inherits: .word -1, -1, -1, 2, -1, 1, -1, -1, -1, -1, -1, -1, -1
-
 B_inherits: .word -1, -1, -1, 3, -1, 2, 1, -1, -1, -1, -1, -1, -1
-
 C_inherits: .word -1, -1, -1, 4, -1, 3, 2, 1, -1, -1, -1, -1, -1
-
 D_inherits: .word -1, -1, -1, 3, -1, 2, -1, -1, 1, -1, -1, -1, -1
-
 E_inherits: .word -1, -1, -1, 4, -1, 3, 2, -1, -1, 1, -1, -1, -1
-
 F_inherits: .word -1, -1, -1, 5, -1, 4, 3, 2, -1, -1, 1, -1, -1
-
 G_inherits: .word -1, -1, -1, 6, -1, 5, 4, 3, -1, -1, 2, 1, -1
-
 Main_inherits: .word -1, -1, -1, 3, 2, -1, -1, -1, -1, -1, -1, -1, 1
-
 .text
 .globl main
 main:
@@ -88,8 +71,44 @@ Main_main:
 	lw $s2, 4($sp)
 	addi $sp, $sp, 8
 	move $t0, $a0
-	lw $t0, 0($sp)
-	sw $t0, 8($t0)
+	lw $t1, 0($sp)
+	sw $t0, 8($t1)
+	#Region Let
+	addi $sp, $sp, -4
+	la $a0, StaticVoid
+	sw $a0, 0($sp)
+	lw $t0, 4($sp)
+	move $s2, $t0
+	addi $sp, $sp, -8
+	sw $ra, 0($sp)
+	sw $s2, 4($sp)
+	addi $sp, $sp, -8
+	sw $s2, 0($sp)
+	lw $t0, 16($sp)
+	move $s2, $t0
+	addi $sp, $sp, -8
+	sw $ra, 0($sp)
+	sw $s2, 4($sp)
+	addi $sp, $sp, -4
+	sw $s2, 0($sp)
+	lw $s2, 8($sp)
+	move $t0, $s2
+	lw $t0, 4($t0)
+	lw $t0, 8($t0)
+	jal $t0
+	addi $sp, $sp, 4
+	lw $ra, 0($sp)
+	lw $s2, 4($sp)
+	addi $sp, $sp, 8
+	sw $a0, 4($sp)
+	lw $s2, 12($sp)
+	jal Main_out_string
+	addi $sp, $sp, 8
+	lw $ra, 0($sp)
+	lw $s2, 4($sp)
+	addi $sp, $sp, 8
+	addi $sp, $sp, 4
+	#End Region Let
 	lw $t0, 0($sp)
 	lw $t0, 8($t0)
 	lw $t0, 4($t0)
@@ -204,7 +223,7 @@ Main_main:
 	la $s7, case_11
 	end_if_temps_22:
 	end_if_temps_23:
-	addi $sp, $sp, -48
+	addi $sp, $sp, -4
 	j $s7
 error_case_0:
 	la $a0, case_error
@@ -231,7 +250,7 @@ case_0:
 	sw $t1, 12($t2)
 	j end_case_0
 	la $a0, StaticVoid
-	sw $t1, 4($sp)
+	sw $t1, 0($sp)
 case_1:
 	li $a0, 7
 	li $v0, 9
@@ -249,7 +268,7 @@ case_1:
 	sw $t1, 12($t2)
 	j end_case_0
 	la $a0, StaticVoid
-	sw $t1, 8($sp)
+	sw $t1, 0($sp)
 case_2:
 	li $a0, 5
 	li $v0, 9
@@ -267,7 +286,7 @@ case_2:
 	sw $t1, 12($t2)
 	j end_case_0
 	la $a0, StaticVoid
-	sw $t1, 12($sp)
+	sw $t1, 0($sp)
 case_3:
 	li $a0, 7
 	li $v0, 9
@@ -285,7 +304,7 @@ case_3:
 	sw $t1, 12($t2)
 	j end_case_0
 	la $a0, StaticVoid
-	sw $t1, 16($sp)
+	sw $t1, 0($sp)
 case_4:
 	li $a0, 3
 	li $v0, 9
@@ -303,7 +322,7 @@ case_4:
 	sw $t1, 12($t2)
 	j end_case_0
 	la $a0, StaticVoid
-	sw $t1, 20($sp)
+	sw $t1, 0($sp)
 case_5:
 	li $a0, 2
 	li $v0, 9
@@ -321,7 +340,7 @@ case_5:
 	sw $t1, 12($t2)
 	j end_case_0
 	la $a0, StaticVoid
-	sw $t1, 24($sp)
+	sw $t1, 0($sp)
 case_6:
 	li $a0, 2
 	li $v0, 9
@@ -339,7 +358,7 @@ case_6:
 	sw $t1, 12($t2)
 	j end_case_0
 	la $a0, StaticVoid
-	sw $t1, 28($sp)
+	sw $t1, 0($sp)
 case_7:
 	li $a0, 2
 	li $v0, 9
@@ -357,7 +376,7 @@ case_7:
 	sw $t1, 12($t2)
 	j end_case_0
 	la $a0, StaticVoid
-	sw $t1, 32($sp)
+	sw $t1, 0($sp)
 case_8:
 	li $a0, 2
 	li $v0, 9
@@ -375,7 +394,7 @@ case_8:
 	sw $t1, 12($t2)
 	j end_case_0
 	la $a0, StaticVoid
-	sw $t1, 36($sp)
+	sw $t1, 0($sp)
 case_9:
 	li $a0, 2
 	li $v0, 9
@@ -393,7 +412,7 @@ case_9:
 	sw $t1, 12($t2)
 	j end_case_0
 	la $a0, StaticVoid
-	sw $t1, 40($sp)
+	sw $t1, 0($sp)
 case_10:
 	li $a0, 2
 	li $v0, 9
@@ -411,7 +430,7 @@ case_10:
 	sw $t1, 12($t2)
 	j end_case_0
 	la $a0, StaticVoid
-	sw $t1, 44($sp)
+	sw $t1, 0($sp)
 case_11:
 	li $a0, 2
 	li $v0, 9
@@ -429,7 +448,7 @@ case_11:
 	sw $t1, 12($t2)
 	j end_case_0
 end_case_0:
-	addi $sp, $sp, 48
+	addi $sp, $sp, 4
 	lw $t0, 0($sp)
 	move $s2, $t0
 	addi $sp, $sp, -8
@@ -587,7 +606,19 @@ __init_IO__:
 	li $a0, 8
 	li $v0, 9
 	syscall
+	la $t0, IO
+	sw $t0, 0($v0)
 	la $t0, StaticIO
+	sw $t0, 4($v0)
+	move $a0, $v0
+	jr $ra
+__init_Object__:
+	li $a0, 8
+	li $v0, 9
+	syscall
+	la $t0, Object
+	sw $t0, 0($v0)
+	la $t0, StaticObject
 	sw $t0, 4($v0) 
 	move $a0, $v0
 	jr $ra
@@ -974,3 +1005,9 @@ concat:
 	bnez $t2, concat_copy_two
 	move $a0, $v0
 	jr $ra
+VoidError:
+	la $a0, void_error
+	li $v0, 4
+	syscall
+	li $v0, 10
+	syscall
