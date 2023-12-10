@@ -328,10 +328,14 @@ class Main inherits IO {
    };
  
    print(var : A) : IO {
-     (let z : A2I <- new A2I in
+     (let z : A2I <- new A2I, s:String in
 	{
-	   out_string(z.i2a(var.value()));
-	   out_string(" ");
+	   -- out_string(z.i2a(var.value()));
+      s <- z.i2a(var.value());
+	   out_string(s);
+	   ----------------------------------
+      out_string(" ");
+
 	}
      )
    };

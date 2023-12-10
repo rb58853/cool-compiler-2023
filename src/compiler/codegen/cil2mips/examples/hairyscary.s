@@ -69,7 +69,8 @@ Foo_doh:
 	sw $t0, 0($sp)
 	lw $t0, 4($sp)
 	lw $t0, 8($t0)
-	addi $t0, $t0, 2
+	li $t1, 2
+	add $t0, $t0, $t1
 	lw $t1, 4($sp)
 	sw $t0, 8($t1)
 	lw $t0, 0($sp)
@@ -105,7 +106,8 @@ Bar_doh:
 	sw $t0, 0($sp)
 	lw $t0, 4($sp)
 	lw $t0, 8($t0)
-	addi $t0, $t0, 2
+	li $t1, 2
+	add $t0, $t0, $t1
 	lw $t1, 4($sp)
 	sw $t0, 8($t1)
 	lw $t0, 0($sp)
@@ -141,7 +143,8 @@ Razz_doh:
 	sw $t0, 0($sp)
 	lw $t0, 4($sp)
 	lw $t0, 8($t0)
-	addi $t0, $t0, 2
+	li $t1, 2
+	add $t0, $t0, $t1
 	lw $t1, 4($sp)
 	sw $t0, 8($t1)
 	lw $t0, 0($sp)
@@ -177,7 +180,8 @@ Bazz_doh:
 	sw $t0, 0($sp)
 	lw $t0, 4($sp)
 	lw $t0, 8($t0)
-	addi $t0, $t0, 1
+	li $t1, 1
+	add $t0, $t0, $t1
 	lw $t1, 4($sp)
 	sw $t0, 8($t1)
 	lw $t0, 0($sp)
@@ -416,59 +420,66 @@ end_case_1:
 	lw $ra, 4($sp)
 	lw $s2, 8($sp)
 	addi $sp, $sp, 12
-	lw $t0, 0($sp)
-	lw $t0, 12($t0)
-	move $s2, $t0
-	addi $sp, $sp, -12
-	sw $s1, 0($sp)
-	sw $ra, 4($sp)
-	sw $s2, 8($sp)
+	move $t0, $a0
+	lw $t1, 0($sp)
+	lw $t1, 12($t1)
+	move $s2, $t1
+	addi $sp, $sp, -16
+	sw $t0, 0($sp)
+	sw $s1, 4($sp)
+	sw $ra, 8($sp)
+	sw $s2, 12($sp)
 	addi $sp, $sp, -4
 	sw $s2, 0($sp)
-	lw $s2, 12($sp)
-	move $t0, $s2
-	lw $t0, 4($t0)
-	lw $t0, 40($t0)
-	jalr $t0
+	lw $s2, 16($sp)
+	move $t1, $s2
+	lw $t1, 4($t1)
+	lw $t1, 40($t1)
+	jalr $t1
 	addi $sp, $sp, 4
-	lw $s1, 0($sp)
-	lw $ra, 4($sp)
-	lw $s2, 8($sp)
-	addi $sp, $sp, 12
-	add $a0, $a0, $a0
 	lw $t0, 0($sp)
-	move $s2, $t0
-	addi $sp, $sp, -12
-	sw $s1, 0($sp)
-	sw $ra, 4($sp)
-	sw $s2, 8($sp)
+	lw $s1, 4($sp)
+	lw $ra, 8($sp)
+	lw $s2, 12($sp)
+	addi $sp, $sp, 16
+	add $t0, $t0, $a0
+	lw $t1, 0($sp)
+	move $s2, $t1
+	addi $sp, $sp, -16
+	sw $t0, 0($sp)
+	sw $s1, 4($sp)
+	sw $ra, 8($sp)
+	sw $s2, 12($sp)
 	addi $sp, $sp, -4
 	sw $s2, 0($sp)
-	lw $s2, 12($sp)
+	lw $s2, 16($sp)
 	jal Foo_doh
 	addi $sp, $sp, 4
-	lw $s1, 0($sp)
-	lw $ra, 4($sp)
-	lw $s2, 8($sp)
-	addi $sp, $sp, 12
-	add $a0, $a0, $a0
 	lw $t0, 0($sp)
-	move $s2, $t0
-	addi $sp, $sp, -12
-	sw $s1, 0($sp)
-	sw $ra, 4($sp)
-	sw $s2, 8($sp)
+	lw $s1, 4($sp)
+	lw $ra, 8($sp)
+	lw $s2, 12($sp)
+	addi $sp, $sp, 16
+	add $t0, $t0, $a0
+	lw $t1, 0($sp)
+	move $s2, $t1
+	addi $sp, $sp, -16
+	sw $t0, 0($sp)
+	sw $s1, 4($sp)
+	sw $ra, 8($sp)
+	sw $s2, 12($sp)
 	addi $sp, $sp, -4
 	sw $s2, 0($sp)
-	lw $s2, 12($sp)
+	lw $s2, 16($sp)
 	jal Foo_printh
 	addi $sp, $sp, 4
-	lw $s1, 0($sp)
-	lw $ra, 4($sp)
-	lw $s2, 8($sp)
-	addi $sp, $sp, 12
-	add $a0, $a0, $a0
-	sw $a0, 24($s1)
+	lw $t0, 0($sp)
+	lw $s1, 4($sp)
+	lw $ra, 8($sp)
+	lw $s2, 12($sp)
+	addi $sp, $sp, 16
+	add $t0, $t0, $a0
+	sw $t0, 24($s1)
 	addi $sp, $sp, 4
 	move $a0, $s1
 	jr $ra
@@ -688,59 +699,66 @@ end_case_3:
 	lw $ra, 4($sp)
 	lw $s2, 8($sp)
 	addi $sp, $sp, 12
-	lw $t0, 0($sp)
-	lw $t0, 12($t0)
-	move $s2, $t0
-	addi $sp, $sp, -12
-	sw $s1, 0($sp)
-	sw $ra, 4($sp)
-	sw $s2, 8($sp)
+	move $t0, $a0
+	lw $t1, 0($sp)
+	lw $t1, 12($t1)
+	move $s2, $t1
+	addi $sp, $sp, -16
+	sw $t0, 0($sp)
+	sw $s1, 4($sp)
+	sw $ra, 8($sp)
+	sw $s2, 12($sp)
 	addi $sp, $sp, -4
 	sw $s2, 0($sp)
-	lw $s2, 12($sp)
-	move $t0, $s2
-	lw $t0, 4($t0)
-	lw $t0, 40($t0)
-	jalr $t0
+	lw $s2, 16($sp)
+	move $t1, $s2
+	lw $t1, 4($t1)
+	lw $t1, 40($t1)
+	jalr $t1
 	addi $sp, $sp, 4
-	lw $s1, 0($sp)
-	lw $ra, 4($sp)
-	lw $s2, 8($sp)
-	addi $sp, $sp, 12
-	add $a0, $a0, $a0
 	lw $t0, 0($sp)
-	move $s2, $t0
-	addi $sp, $sp, -12
-	sw $s1, 0($sp)
-	sw $ra, 4($sp)
-	sw $s2, 8($sp)
+	lw $s1, 4($sp)
+	lw $ra, 8($sp)
+	lw $s2, 12($sp)
+	addi $sp, $sp, 16
+	add $t0, $t0, $a0
+	lw $t1, 0($sp)
+	move $s2, $t1
+	addi $sp, $sp, -16
+	sw $t0, 0($sp)
+	sw $s1, 4($sp)
+	sw $ra, 8($sp)
+	sw $s2, 12($sp)
 	addi $sp, $sp, -4
 	sw $s2, 0($sp)
-	lw $s2, 12($sp)
+	lw $s2, 16($sp)
 	jal Foo_doh
 	addi $sp, $sp, 4
-	lw $s1, 0($sp)
-	lw $ra, 4($sp)
-	lw $s2, 8($sp)
-	addi $sp, $sp, 12
-	add $a0, $a0, $a0
 	lw $t0, 0($sp)
-	move $s2, $t0
-	addi $sp, $sp, -12
-	sw $s1, 0($sp)
-	sw $ra, 4($sp)
-	sw $s2, 8($sp)
+	lw $s1, 4($sp)
+	lw $ra, 8($sp)
+	lw $s2, 12($sp)
+	addi $sp, $sp, 16
+	add $t0, $t0, $a0
+	lw $t1, 0($sp)
+	move $s2, $t1
+	addi $sp, $sp, -16
+	sw $t0, 0($sp)
+	sw $s1, 4($sp)
+	sw $ra, 8($sp)
+	sw $s2, 12($sp)
 	addi $sp, $sp, -4
 	sw $s2, 0($sp)
-	lw $s2, 12($sp)
+	lw $s2, 16($sp)
 	jal Foo_printh
 	addi $sp, $sp, 4
-	lw $s1, 0($sp)
-	lw $ra, 4($sp)
-	lw $s2, 8($sp)
-	addi $sp, $sp, 12
-	add $a0, $a0, $a0
-	sw $a0, 24($s1)
+	lw $t0, 0($sp)
+	lw $s1, 4($sp)
+	lw $ra, 8($sp)
+	lw $s2, 12($sp)
+	addi $sp, $sp, 16
+	add $t0, $t0, $a0
+	sw $t0, 24($s1)
 	lw $t0, 0($sp)
 	addi $sp, $sp, -4
 	sw $t0, 0($sp)
@@ -808,79 +826,88 @@ end_case_4:
 	lw $ra, 4($sp)
 	lw $s2, 8($sp)
 	addi $sp, $sp, 12
-	lw $t0, 0($sp)
-	lw $t0, 12($t0)
-	move $s2, $t0
-	addi $sp, $sp, -12
-	sw $s1, 0($sp)
-	sw $ra, 4($sp)
-	sw $s2, 8($sp)
+	move $t0, $a0
+	lw $t1, 0($sp)
+	lw $t1, 12($t1)
+	move $s2, $t1
+	addi $sp, $sp, -16
+	sw $t0, 0($sp)
+	sw $s1, 4($sp)
+	sw $ra, 8($sp)
+	sw $s2, 12($sp)
 	addi $sp, $sp, -4
 	sw $s2, 0($sp)
-	lw $s2, 12($sp)
-	move $t0, $s2
-	lw $t0, 4($t0)
-	lw $t0, 40($t0)
-	jalr $t0
+	lw $s2, 16($sp)
+	move $t1, $s2
+	lw $t1, 4($t1)
+	lw $t1, 40($t1)
+	jalr $t1
 	addi $sp, $sp, 4
-	lw $s1, 0($sp)
-	lw $ra, 4($sp)
-	lw $s2, 8($sp)
-	addi $sp, $sp, 12
-	add $a0, $a0, $a0
 	lw $t0, 0($sp)
-	lw $t0, 28($t0)
-	move $s2, $t0
-	addi $sp, $sp, -12
-	sw $s1, 0($sp)
-	sw $ra, 4($sp)
-	sw $s2, 8($sp)
+	lw $s1, 4($sp)
+	lw $ra, 8($sp)
+	lw $s2, 12($sp)
+	addi $sp, $sp, 16
+	add $t0, $t0, $a0
+	lw $t1, 0($sp)
+	lw $t1, 28($t1)
+	move $s2, $t1
+	addi $sp, $sp, -16
+	sw $t0, 0($sp)
+	sw $s1, 4($sp)
+	sw $ra, 8($sp)
+	sw $s2, 12($sp)
 	addi $sp, $sp, -4
 	sw $s2, 0($sp)
-	lw $s2, 12($sp)
-	move $t0, $s2
-	lw $t0, 4($t0)
-	lw $t0, 40($t0)
-	jalr $t0
+	lw $s2, 16($sp)
+	move $t1, $s2
+	lw $t1, 4($t1)
+	lw $t1, 40($t1)
+	jalr $t1
 	addi $sp, $sp, 4
-	lw $s1, 0($sp)
-	lw $ra, 4($sp)
-	lw $s2, 8($sp)
-	addi $sp, $sp, 12
-	add $a0, $a0, $a0
 	lw $t0, 0($sp)
-	move $s2, $t0
-	addi $sp, $sp, -12
-	sw $s1, 0($sp)
-	sw $ra, 4($sp)
-	sw $s2, 8($sp)
+	lw $s1, 4($sp)
+	lw $ra, 8($sp)
+	lw $s2, 12($sp)
+	addi $sp, $sp, 16
+	add $t0, $t0, $a0
+	lw $t1, 0($sp)
+	move $s2, $t1
+	addi $sp, $sp, -16
+	sw $t0, 0($sp)
+	sw $s1, 4($sp)
+	sw $ra, 8($sp)
+	sw $s2, 12($sp)
 	addi $sp, $sp, -4
 	sw $s2, 0($sp)
-	lw $s2, 12($sp)
+	lw $s2, 16($sp)
 	jal Razz_doh
 	addi $sp, $sp, 4
-	lw $s1, 0($sp)
-	lw $ra, 4($sp)
-	lw $s2, 8($sp)
-	addi $sp, $sp, 12
-	add $a0, $a0, $a0
 	lw $t0, 0($sp)
-	move $s2, $t0
-	addi $sp, $sp, -12
-	sw $s1, 0($sp)
-	sw $ra, 4($sp)
-	sw $s2, 8($sp)
+	lw $s1, 4($sp)
+	lw $ra, 8($sp)
+	lw $s2, 12($sp)
+	addi $sp, $sp, 16
+	add $t0, $t0, $a0
+	lw $t1, 0($sp)
+	move $s2, $t1
+	addi $sp, $sp, -16
+	sw $t0, 0($sp)
+	sw $s1, 4($sp)
+	sw $ra, 8($sp)
+	sw $s2, 12($sp)
 	addi $sp, $sp, -4
 	sw $s2, 0($sp)
-	lw $s2, 12($sp)
+	lw $s2, 16($sp)
 	jal Razz_printh
 	addi $sp, $sp, 4
-	lw $s1, 0($sp)
-	lw $ra, 4($sp)
-	lw $s2, 8($sp)
-	addi $sp, $sp, 12
-	add $a0, $a0, $a0
-	sw $a0, 32($s1)
+	lw $t0, 0($sp)
+	lw $s1, 4($sp)
+	lw $ra, 8($sp)
+	lw $s2, 12($sp)
+	addi $sp, $sp, 16
+	add $t0, $t0, $a0
+	sw $t0, 32($s1)
 	lw $t0, 0($sp)
 	move $s2, $t0
 	addi $sp, $sp, -12
@@ -1132,59 +1159,66 @@ end_case_6:
 	lw $ra, 4($sp)
 	lw $s2, 8($sp)
 	addi $sp, $sp, 12
-	lw $t0, 0($sp)
-	lw $t0, 12($t0)
-	move $s2, $t0
-	addi $sp, $sp, -12
-	sw $s1, 0($sp)
-	sw $ra, 4($sp)
-	sw $s2, 8($sp)
+	move $t0, $a0
+	lw $t1, 0($sp)
+	lw $t1, 12($t1)
+	move $s2, $t1
+	addi $sp, $sp, -16
+	sw $t0, 0($sp)
+	sw $s1, 4($sp)
+	sw $ra, 8($sp)
+	sw $s2, 12($sp)
 	addi $sp, $sp, -4
 	sw $s2, 0($sp)
-	lw $s2, 12($sp)
-	move $t0, $s2
-	lw $t0, 4($t0)
-	lw $t0, 40($t0)
-	jalr $t0
+	lw $s2, 16($sp)
+	move $t1, $s2
+	lw $t1, 4($t1)
+	lw $t1, 40($t1)
+	jalr $t1
 	addi $sp, $sp, 4
-	lw $s1, 0($sp)
-	lw $ra, 4($sp)
-	lw $s2, 8($sp)
-	addi $sp, $sp, 12
-	add $a0, $a0, $a0
 	lw $t0, 0($sp)
-	move $s2, $t0
-	addi $sp, $sp, -12
-	sw $s1, 0($sp)
-	sw $ra, 4($sp)
-	sw $s2, 8($sp)
+	lw $s1, 4($sp)
+	lw $ra, 8($sp)
+	lw $s2, 12($sp)
+	addi $sp, $sp, 16
+	add $t0, $t0, $a0
+	lw $t1, 0($sp)
+	move $s2, $t1
+	addi $sp, $sp, -16
+	sw $t0, 0($sp)
+	sw $s1, 4($sp)
+	sw $ra, 8($sp)
+	sw $s2, 12($sp)
 	addi $sp, $sp, -4
 	sw $s2, 0($sp)
-	lw $s2, 12($sp)
+	lw $s2, 16($sp)
 	jal Foo_doh
 	addi $sp, $sp, 4
-	lw $s1, 0($sp)
-	lw $ra, 4($sp)
-	lw $s2, 8($sp)
-	addi $sp, $sp, 12
-	add $a0, $a0, $a0
 	lw $t0, 0($sp)
-	move $s2, $t0
-	addi $sp, $sp, -12
-	sw $s1, 0($sp)
-	sw $ra, 4($sp)
-	sw $s2, 8($sp)
+	lw $s1, 4($sp)
+	lw $ra, 8($sp)
+	lw $s2, 12($sp)
+	addi $sp, $sp, 16
+	add $t0, $t0, $a0
+	lw $t1, 0($sp)
+	move $s2, $t1
+	addi $sp, $sp, -16
+	sw $t0, 0($sp)
+	sw $s1, 4($sp)
+	sw $ra, 8($sp)
+	sw $s2, 12($sp)
 	addi $sp, $sp, -4
 	sw $s2, 0($sp)
-	lw $s2, 12($sp)
+	lw $s2, 16($sp)
 	jal Foo_printh
 	addi $sp, $sp, 4
-	lw $s1, 0($sp)
-	lw $ra, 4($sp)
-	lw $s2, 8($sp)
-	addi $sp, $sp, 12
-	add $a0, $a0, $a0
-	sw $a0, 24($s1)
+	lw $t0, 0($sp)
+	lw $s1, 4($sp)
+	lw $ra, 8($sp)
+	lw $s2, 12($sp)
+	addi $sp, $sp, 16
+	add $t0, $t0, $a0
+	sw $t0, 24($s1)
 	lw $t0, 0($sp)
 	addi $sp, $sp, -4
 	sw $t0, 0($sp)
@@ -1252,79 +1286,88 @@ end_case_7:
 	lw $ra, 4($sp)
 	lw $s2, 8($sp)
 	addi $sp, $sp, 12
-	lw $t0, 0($sp)
-	lw $t0, 12($t0)
-	move $s2, $t0
-	addi $sp, $sp, -12
-	sw $s1, 0($sp)
-	sw $ra, 4($sp)
-	sw $s2, 8($sp)
+	move $t0, $a0
+	lw $t1, 0($sp)
+	lw $t1, 12($t1)
+	move $s2, $t1
+	addi $sp, $sp, -16
+	sw $t0, 0($sp)
+	sw $s1, 4($sp)
+	sw $ra, 8($sp)
+	sw $s2, 12($sp)
 	addi $sp, $sp, -4
 	sw $s2, 0($sp)
-	lw $s2, 12($sp)
-	move $t0, $s2
-	lw $t0, 4($t0)
-	lw $t0, 40($t0)
-	jalr $t0
+	lw $s2, 16($sp)
+	move $t1, $s2
+	lw $t1, 4($t1)
+	lw $t1, 40($t1)
+	jalr $t1
 	addi $sp, $sp, 4
-	lw $s1, 0($sp)
-	lw $ra, 4($sp)
-	lw $s2, 8($sp)
-	addi $sp, $sp, 12
-	add $a0, $a0, $a0
 	lw $t0, 0($sp)
-	lw $t0, 28($t0)
-	move $s2, $t0
-	addi $sp, $sp, -12
-	sw $s1, 0($sp)
-	sw $ra, 4($sp)
-	sw $s2, 8($sp)
+	lw $s1, 4($sp)
+	lw $ra, 8($sp)
+	lw $s2, 12($sp)
+	addi $sp, $sp, 16
+	add $t0, $t0, $a0
+	lw $t1, 0($sp)
+	lw $t1, 28($t1)
+	move $s2, $t1
+	addi $sp, $sp, -16
+	sw $t0, 0($sp)
+	sw $s1, 4($sp)
+	sw $ra, 8($sp)
+	sw $s2, 12($sp)
 	addi $sp, $sp, -4
 	sw $s2, 0($sp)
-	lw $s2, 12($sp)
-	move $t0, $s2
-	lw $t0, 4($t0)
-	lw $t0, 40($t0)
-	jalr $t0
+	lw $s2, 16($sp)
+	move $t1, $s2
+	lw $t1, 4($t1)
+	lw $t1, 40($t1)
+	jalr $t1
 	addi $sp, $sp, 4
-	lw $s1, 0($sp)
-	lw $ra, 4($sp)
-	lw $s2, 8($sp)
-	addi $sp, $sp, 12
-	add $a0, $a0, $a0
 	lw $t0, 0($sp)
-	move $s2, $t0
-	addi $sp, $sp, -12
-	sw $s1, 0($sp)
-	sw $ra, 4($sp)
-	sw $s2, 8($sp)
+	lw $s1, 4($sp)
+	lw $ra, 8($sp)
+	lw $s2, 12($sp)
+	addi $sp, $sp, 16
+	add $t0, $t0, $a0
+	lw $t1, 0($sp)
+	move $s2, $t1
+	addi $sp, $sp, -16
+	sw $t0, 0($sp)
+	sw $s1, 4($sp)
+	sw $ra, 8($sp)
+	sw $s2, 12($sp)
 	addi $sp, $sp, -4
 	sw $s2, 0($sp)
-	lw $s2, 12($sp)
+	lw $s2, 16($sp)
 	jal Razz_doh
 	addi $sp, $sp, 4
-	lw $s1, 0($sp)
-	lw $ra, 4($sp)
-	lw $s2, 8($sp)
-	addi $sp, $sp, 12
-	add $a0, $a0, $a0
 	lw $t0, 0($sp)
-	move $s2, $t0
-	addi $sp, $sp, -12
-	sw $s1, 0($sp)
-	sw $ra, 4($sp)
-	sw $s2, 8($sp)
+	lw $s1, 4($sp)
+	lw $ra, 8($sp)
+	lw $s2, 12($sp)
+	addi $sp, $sp, 16
+	add $t0, $t0, $a0
+	lw $t1, 0($sp)
+	move $s2, $t1
+	addi $sp, $sp, -16
+	sw $t0, 0($sp)
+	sw $s1, 4($sp)
+	sw $ra, 8($sp)
+	sw $s2, 12($sp)
 	addi $sp, $sp, -4
 	sw $s2, 0($sp)
-	lw $s2, 12($sp)
+	lw $s2, 16($sp)
 	jal Razz_printh
 	addi $sp, $sp, 4
-	lw $s1, 0($sp)
-	lw $ra, 4($sp)
-	lw $s2, 8($sp)
-	addi $sp, $sp, 12
-	add $a0, $a0, $a0
-	sw $a0, 32($s1)
+	lw $t0, 0($sp)
+	lw $s1, 4($sp)
+	lw $ra, 8($sp)
+	lw $s2, 12($sp)
+	addi $sp, $sp, 16
+	add $t0, $t0, $a0
+	sw $t0, 32($s1)
 	addi $sp, $sp, 4
 	move $a0, $s1
 	jr $ra

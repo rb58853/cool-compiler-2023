@@ -69,8 +69,11 @@ class TempNames:
         for i in range(len(TempNames.s_id)):
             if TempNames.s_id[i]:     
                 result.append(f'$s{i}')
+        
         result.append('$ra')        
         result.append('$s2')        
+        # result.append('$s1')        
+        # result.append('$a0')        
         return result        
     
 class NameTempExpression:
@@ -1338,31 +1341,61 @@ class DivExpression:
 
     def arithmetic(aritmetic: ArithmeticOP, body:Body, scope:dict = {}):
         mult_div = (aritmetic.op == '/' or aritmetic.op == '*')
+        #Las operaciones aritmeticas se peden guardar en el mismo temporal de uno de los que use siempre que sea un temporal
+        # if (IsType.int(aritmetic.left)) and (IsType.int(aritmetic.right) ) and not mult_div and USE_i:
+        #     body.add_expr(CILAssign(TempNames.get_name(),aritmetic.left))
+        #     left_value = body.current_value()
 
-        if (IsType.int(aritmetic.left)) and (IsType.int(aritmetic.right) ) and not mult_div and USE_i:
-            body.add_expr(CILAssign(TempNames.get_name(),aritmetic.left))
-            left_value = body.current_value()
-            body.add_expr(CILAssign(left_value,CILArithmeticOp(left_value,aritmetic.right, aritmetic.op, constant=True)))
-            # TempNames.free([left_value])
-        elif isinstance(aritmetic.left, IntNode) and (aritmetic.op == '+') and not mult_div and USE_i:# or lefth_is_id_and_not_atr):
-            DivExpression(aritmetic.right,body,scope)
-            rigth_value = body.current_value()
-            body.add_expr(CILAssign(rigth_value,CILArithmeticOp(rigth_value,aritmetic.left,aritmetic.op, constant=True)))
-            # TempNames.free([rigth_value])
-        elif (isinstance(aritmetic.right, IntNode))and not mult_div and USE_i:
-            DivExpression(aritmetic.left,body,scope)
-            left_value = body.current_value()
-            body.add_expr(CILAssign(left_value,CILArithmeticOp(body.current_value(),aritmetic.right,aritmetic.op, constant=True)))
-            # TempNames.free([ left_value])
-        else:
-            DivExpression(aritmetic.left,body,scope)
-            left_value = body.current_value()
-            DivExpression(aritmetic.right,body,scope)
-            rigth_value = body.current_value()
-            body.add_expr(CILAssign(left_value,CILArithmeticOp(left_value,rigth_value,aritmetic.op)))
-            #cuando yo termino una operacion aritmetica, yo puedo volver a utilizar los variables donde no guarde el resultado, dado la naturaleza del codigo recursivo que va desde hijos a padres, solo me interesa conservar la varable donde se asigno el valor de la operacion. Luego las variables que use en el cuerpo de la operacion no las necesito, por lo tanto pueden volver a usarse.
-            TempNames.free([rigth_value])
-            # TempNames.free([left_value,rigth_value])
+        #     if left_value[0]!='$' and left_value != 'a0': 
+        #         body.add_expr(CILAssign(left_value,CILArithmeticOp(left_value,rigth_value,aritmetic.op)))
+        #         TempNames.free([rigth_value])
+        #     else:
+        #         body.add_expr(CILAssign(TempNames.get_name(),CILArithmeticOp(left_value,rigth_value,aritmetic.op)))
+        #         TempNames.free([left_value,rigth_value])
+            
+        #     # TempNames.free([left_value])
+        # elif isinstance(aritmetic.left, IntNode) and (aritmetic.op == '+') and not mult_div and USE_i:# or lefth_is_id_and_not_atr):
+        #     DivExpression(aritmetic.right,body,scope)
+        #     rigth_value = body.current_value()
+            
+        #     if rigth_value[0]!='$' and left_value != 'a0': 
+        #         body.add_expr(CILAssign(rigth_value,CILArithmeticOp(left_value,rigth_value,aritmetic.op)))
+        #         TempNames.free([rigth_value])
+        #     else:
+        #         body.add_expr(CILAssign(TempNames.get_name(),CILArithmeticOp(left_value,rigth_value,aritmetic.op)))
+        #         TempNames.free([left_value,rigth_value])
+            
+        #     # body.add_expr(CILAssign(rigth_value,CILArithmeticOp(rigth_value,aritmetic.left,aritmetic.op, constant=True)))
+        #     # TempNames.free([rigth_value])
+        # elif (isinstance(aritmetic.right, IntNode))and not mult_div and USE_i:
+        #     DivExpression(aritmetic.left,body,scope)
+        #     left_value = body.current_value()
+            
+        #     if left_value[0]!='$' and left_value != 'a0': 
+        #         body.add_expr(CILAssign(left_value,CILArithmeticOp(left_value,rigth_value,aritmetic.op)))
+        #         TempNames.free([rigth_value])
+        #     else:
+        #         body.add_expr(CILAssign(TempNames.get_name(),CILArithmeticOp(left_value,rigth_value,aritmetic.op)))
+        #         TempNames.free([left_value,rigth_value])
+        #     # body.add_expr(CILAssign(left_value,CILArithmeticOp(body.current_value(),aritmetic.right,aritmetic.op, constant=True)))
+            
+        #     # TempNames.free([ left_value])
+        # else:
+        
+        DivExpression(aritmetic.left,body,scope)
+        left_value = body.current_value()
+        left = left_value
+        if left_value[0]=='$' or left_value == 'a0': 
+            #si no es un registro temporal lo que sale de la expresion izquierda hay que meterlo en un temporal
+            left = TempNames.get_name()
+            body.add_expr(MoveMips(left,left_value))
+        
+        DivExpression(aritmetic.right,body,scope)
+        rigth_value = body.current_value()
+        
+        body.add_expr(CILAssign(left,CILArithmeticOp(left,rigth_value,aritmetic.op)))
+        TempNames.free([rigth_value])
+        #cuando yo termino una operacion aritmetica, yo puedo volver a utilizar los variables donde no guarde el resultado, dado la naturaleza del codigo recursivo que va desde hijos a padres, solo me interesa conservar la varable donde se asigno el valor de la operacion. Luego las variables que use en el cuerpo de la operacion no las necesito, por lo tanto pueden volver a usarse.
     
     def logical(logicar:Logicar, body:Body, scope:dict = {}):
         if logicar.op != '=':
@@ -1767,7 +1800,7 @@ class DivExpression:
 
         #TODO hay que asignarle el self
         if instance is not None:
-            body.add_expr(StoreLocal(name='self',pos= 0,value='$s2'))
+            body.add_expr(StoreLocal(name='instance',pos= 0,value='$s2'))
 
         pos = 4
         for arg in arguments:
@@ -1779,8 +1812,12 @@ class DivExpression:
 
         #Cuando se llega a aqui hay que recuperar el s2 usado, el ultimo en cuestion, ya que despues de varios llamados s2 puede cambiar
         temp = "$s2" 
-        while f'{temp}0' in used_temps:
-            temp =  f'{temp}0' #esto va a buscar el ultimo s2 usado
+        # while f'{temp}0' in used_temps:
+        #     temp =  f'{temp}0' #esto va a buscar el ultimo s2 usado
+        for temp0 in used_temps:
+            if temp0[:3] == "$s2":
+                temp = temp0 
+
         body.add_expr(CILAssign("$s2",CILCallLocal(temp[:3], scope[temp]))) #asiginar a $s2 su anterior valor
 
 
@@ -1799,14 +1836,23 @@ class DivExpression:
 
         #Aqui hay que recuperar el valor de los registros temporales. Para ello hay que liberar la pila de los argumentos con los que se llamo la funcion, luego de ello recueperar la posicion en pila de los temporales restando el desplaziento que se libero
         body.add_expr(FreeStack(space))
+        
+        # recuperated_temps = [] #esto se reinicia para cada llamado
         for temp in used_temps:
+            # if temp[:6] in recuperated_temps:
+            #     #ya se recupero el temporal en cuestion
+            #     continue
+            # while temp+"0" in used_temps:
+            #     #Esto es para recuperar solo el ultimo temporal de su tipo. si temp1 se guardo 2 veces recupera el ultimo guardado, y dice que ya se recupero el de su tipo
+            #     temp +='0'
+            #     recuperated_temps.append(temp[:6]) #guarda que ya se recupero ese tipo de temporal
+            
             scope[temp] -= space
             #ademas asignar a los valores temporales el valor que se guardo en la pila:
             if temp[0] != '$':
                 body.add_expr(CILAssign(temp[:6],CILCallLocal(temp[:6], scope.pop(temp)))) #esto toma el valor de la pila en la posicion que se encuentra el temp, el .pop elimina el elemento y devuelve el valor. Ya no son necesarios los temporales en la pila
             else:
                 body.add_expr(CILAssign(temp[:3],CILCallLocal(temp[:3], scope.pop(temp)))) 
-
 
         #Como ya se recuperaron todos los teporales entonces se puede liberar ese espacio en la pila 
         if len(used_temps) >0:
@@ -1868,8 +1914,16 @@ class DivExpression:
             body.add_expr(CallMethod(label))
 
             #Aqui hay que recuperar el valor de los registros temporales.
+            # recuperated_temps = [] #esto se reinicia para cada llamado
             for temp in used_temps:
-                #asignar a los valores temporales el valor que se guardo en la pila
+                # if temp[:6] in recuperated_temps:
+                #     #ya se recupero el temporal en cuestion
+                #     continue
+                # while temp+"0" in used_temps:
+                #     #Esto es para recuperar solo el ultimo temporal de su tipo. si temp1 se guardo 2 veces recupera el ultimo guardado, y dice que ya se recupero el de su tipo
+                #     temp +='0'
+                #     recuperated_temps.append(temp[:6]) #guarda que ya se recupero ese tipo de temporal
+                
                 if temp[0] != '$':
                     body.add_expr(CILAssign(temp[:6],CILCallLocal(temp[:6], scope.pop(temp)))) #esto toma el valor de la pila en la posicion que se encuentra el temp, el .pop elimina el elemento y devuelve el valor. Ya no son necesarios los temporales en la pila
                 else:    

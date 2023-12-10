@@ -70,29 +70,30 @@ str51: .asciiz "Class type is now C\n"
 str52: .asciiz "Class type is now D\n"
 str53: .asciiz "Class type is now E\n"
 str54: .asciiz "Oooops\n"
+str56: .asciiz ""
 str55: .asciiz " "
-str56: .asciiz "number "
-str57: .asciiz "is even!\n"
-str58: .asciiz "is odd!\n"
-str59: .asciiz "a"
-str60: .asciiz "b"
-str61: .asciiz "Oooops\n"
-str62: .asciiz "c"
-str63: .asciiz "d"
-str64: .asciiz "e"
-str65: .asciiz "f"
-str66: .asciiz "g"
-str67: .asciiz "number "
-str68: .asciiz "is divisible by 3.\n"
-str69: .asciiz "number "
-str70: .asciiz "is not divisible by 3.\n"
-str71: .asciiz "h"
-str72: .asciiz "number "
-str73: .asciiz "is equal to "
-str74: .asciiz "times 8 with a remainder of "
-str75: .asciiz "\n"
-str76: .asciiz "j"
-str77: .asciiz "q"
+str57: .asciiz "number "
+str58: .asciiz "is even!\n"
+str59: .asciiz "is odd!\n"
+str60: .asciiz "a"
+str61: .asciiz "b"
+str62: .asciiz "Oooops\n"
+str63: .asciiz "c"
+str64: .asciiz "d"
+str65: .asciiz "e"
+str66: .asciiz "f"
+str67: .asciiz "g"
+str68: .asciiz "number "
+str69: .asciiz "is divisible by 3.\n"
+str70: .asciiz "number "
+str71: .asciiz "is not divisible by 3.\n"
+str72: .asciiz "h"
+str73: .asciiz "number "
+str74: .asciiz "is equal to "
+str75: .asciiz "times 8 with a remainder of "
+str76: .asciiz "\n"
+str77: .asciiz "j"
+str78: .asciiz "q"
 str28: .asciiz ""
 StaticVoid: .word Void, StaticVoid, VoidError, VoidError, VoidError, VoidError, VoidError, VoidError, VoidError, VoidError, VoidError, VoidError, VoidError, VoidError, VoidError, VoidError, VoidError, VoidError
 StaticObject: .word Object_inherits, 8, Object_type_name, Object_abort, Object_copy
@@ -315,7 +316,8 @@ loop_0:
 	mul $t0, $t0, $t1
 	sw $t0, 4($sp)
 	lw $t0, 0($sp)
-	addi $t0, $t0, 1
+	li $t1, 1
+	add $t0, $t0, $t1
 	sw $t0, 0($sp)
 	j loop_0
 end_while_0:
@@ -1091,7 +1093,8 @@ else_7:
 	addi $sp, $sp, -8
 	sw $s2, 0($sp)
 	lw $t0, 16($sp)
-	addi $t0, $t0, -3
+	li $t1, 3
+	sub $t0, $t0, $t1
 	sw $t0, 4($sp)
 	lw $s2, 12($sp)
 	jal D_method7
@@ -1389,7 +1392,8 @@ else_12:
 	addi $sp, $sp, -8
 	sw $s2, 0($sp)
 	lw $t0, 16($sp)
-	addi $t0, $t0, 3
+	li $t1, 3
+	sub $t0, $t0, $t1
 	sw $t0, 4($sp)
 	lw $s2, 12($sp)
 	jal D_method7
@@ -1999,14 +2003,16 @@ else_33:
 	sw $s2, 4($sp)
 	addi $sp, $sp, -4
 	sw $s2, 0($sp)
-	lw $s2, 44($sp)
+	lw $s2, 8($sp)
 	jal length
 	addi $sp, $sp, 4
 	lw $ra, 0($sp)
 	lw $s2, 4($sp)
 	addi $sp, $sp, 8
-	addi $a0, $a0, -1
-	sw $a0, 8($sp)
+	move $t0, $a0
+	li $t1, 1
+	sub $t0, $t0, $t1
+	sw $t0, 8($sp)
 	lw $s2, 16($sp)
 	jal substr
 	addi $sp, $sp, 12
@@ -2077,14 +2083,16 @@ else_34:
 	sw $s2, 4($sp)
 	addi $sp, $sp, -4
 	sw $s2, 0($sp)
-	lw $s2, 44($sp)
+	lw $s2, 8($sp)
 	jal length
 	addi $sp, $sp, 4
 	lw $ra, 0($sp)
 	lw $s2, 4($sp)
 	addi $sp, $sp, 8
-	addi $a0, $a0, -1
-	sw $a0, 8($sp)
+	move $t0, $a0
+	li $t1, 1
+	sub $t0, $t0, $t1
+	sw $t0, 8($sp)
 	lw $s2, 16($sp)
 	jal substr
 	addi $sp, $sp, 12
@@ -2192,7 +2200,8 @@ loop_1:
 	add $t0, $t0, $a0
 	sw $t0, 8($sp)
 	lw $t0, 0($sp)
-	addi $t0, $t0, 1
+	li $t1, 1
+	add $t0, $t0, $t1
 	sw $t0, 0($sp)
 	j loop_1
 end_while_1:
@@ -3172,7 +3181,8 @@ else_41:
 	addi $sp, $sp, -8
 	sw $s2, 0($sp)
 	lw $t0, 16($sp)
-	addi $t0, $t0, -2
+	li $t1, 2
+	sub $t0, $t0, $t1
 	sw $t0, 4($sp)
 	lw $s2, 12($sp)
 	jal Main_is_even
@@ -3448,6 +3458,20 @@ Main_print:
 	addi $sp, $sp, 8
 	move $t0, $a0
 	sw $t0, 0($sp)
+	addi $sp, $sp, -4
+	li $a0, 1
+	li $v0, 9
+	syscall
+	move $s4, $v0
+	la $s3, str56
+	copy_40:
+	lb $t0, 0($s3)
+	sb $t0, 0($s4)
+	addiu $s3, $s3, 1
+	addiu $s4, $s4, 1
+	bnez $t0, copy_40
+	move $t0, $v0
+	sw $t0, 0($sp)
 	lw $t0, 4($sp)
 	move $s2, $t0
 	addi $sp, $sp, -8
@@ -3455,21 +3479,14 @@ Main_print:
 	sw $s2, 4($sp)
 	addi $sp, $sp, -8
 	sw $s2, 0($sp)
-	lw $t0, 16($sp)
-	move $s2, $t0
-	addi $sp, $sp, -8
-	sw $ra, 0($sp)
-	sw $s2, 4($sp)
-	addi $sp, $sp, -8
-	sw $s2, 0($sp)
-	lw $t0, 40($sp)
+	lw $t0, 28($sp)
 	move $s2, $t0
 	addi $sp, $sp, -8
 	sw $ra, 0($sp)
 	sw $s2, 4($sp)
 	addi $sp, $sp, -4
 	sw $s2, 0($sp)
-	lw $s2, 40($sp)
+	lw $s2, 8($sp)
 	move $t0, $s2
 	lw $t0, 4($t0)
 	lw $t0, 20($t0)
@@ -3488,14 +3505,23 @@ Main_print:
 	lw $ra, 0($sp)
 	lw $s2, 4($sp)
 	addi $sp, $sp, 8
-	sw $a0, 4($sp)
+	sw $a0, 0($sp)
+	lw $t0, 8($sp)
+	move $s2, $t0
+	addi $sp, $sp, -8
+	sw $ra, 0($sp)
+	sw $s2, 4($sp)
+	addi $sp, $sp, -8
+	sw $s2, 0($sp)
+	lw $t0, 16($sp)
+	sw $t0, 4($sp)
 	lw $s2, 12($sp)
 	jal Main_out_string
 	addi $sp, $sp, 8
 	lw $ra, 0($sp)
 	lw $s2, 4($sp)
 	addi $sp, $sp, 8
-	lw $t0, 4($sp)
+	lw $t0, 8($sp)
 	move $s2, $t0
 	addi $sp, $sp, -8
 	sw $ra, 0($sp)
@@ -3507,12 +3533,12 @@ Main_print:
 	syscall
 	move $s4, $v0
 	la $s3, str55
-	copy_40:
+	copy_41:
 	lb $t0, 0($s3)
 	sb $t0, 0($s4)
 	addiu $s3, $s3, 1
 	addiu $s4, $s4, 1
-	bnez $t0, copy_40
+	bnez $t0, copy_41
 	move $t0, $v0
 	sw $t0, 4($sp)
 	lw $s2, 12($sp)
@@ -3521,7 +3547,7 @@ Main_print:
 	lw $ra, 0($sp)
 	lw $s2, 4($sp)
 	addi $sp, $sp, 8
-	addi $sp, $sp, 4
+	addi $sp, $sp, 8
 	#End Region Let
 	jr $ra
 Main_main:
@@ -3551,13 +3577,13 @@ loop_2:
 	li $v0, 9
 	syscall
 	move $s4, $v0
-	la $s3, str56
-	copy_41:
+	la $s3, str57
+	copy_42:
 	lb $t0, 0($s3)
 	sb $t0, 0($s4)
 	addiu $s3, $s3, 1
 	addiu $s4, $s4, 1
-	bnez $t0, copy_41
+	bnez $t0, copy_42
 	move $t0, $v0
 	sw $t0, 4($sp)
 	lw $s2, 12($sp)
@@ -3625,13 +3651,13 @@ loop_2:
 	li $v0, 9
 	syscall
 	move $s4, $v0
-	la $s3, str57
-	copy_42:
+	la $s3, str58
+	copy_43:
 	lb $t0, 0($s3)
 	sb $t0, 0($s4)
 	addiu $s3, $s3, 1
 	addiu $s4, $s4, 1
-	bnez $t0, copy_42
+	bnez $t0, copy_43
 	move $t0, $v0
 	sw $t0, 4($sp)
 	lw $s2, 12($sp)
@@ -3653,13 +3679,13 @@ else_42:
 	li $v0, 9
 	syscall
 	move $s4, $v0
-	la $s3, str58
-	copy_43:
+	la $s3, str59
+	copy_44:
 	lb $t0, 0($s3)
 	sb $t0, 0($s4)
 	addiu $s3, $s3, 1
 	addiu $s4, $s4, 1
-	bnez $t0, copy_43
+	bnez $t0, copy_44
 	move $t0, $v0
 	sw $t0, 4($sp)
 	lw $s2, 12($sp)
@@ -3702,7 +3728,7 @@ endif_42:
 	sw $a0, 8($t0)
 	lw $t0, 0($sp)
 	lw $t0, 8($t0)
-	la $t1, str59
+	la $t1, str60
 	loop_compare_12:
 	lb $s5, 0($t0)
 	lb $s6, 0($t1)
@@ -3822,7 +3848,7 @@ endif_42:
 else_43:
 	lw $t0, 0($sp)
 	lw $t0, 8($t0)
-	la $t1, str60
+	la $t1, str61
 	loop_compare_13:
 	lb $s5, 0($t0)
 	lb $s6, 0($t1)
@@ -3966,13 +3992,13 @@ case_8:
 	li $v0, 9
 	syscall
 	move $s4, $v0
-	la $s3, str61
-	copy_44:
+	la $s3, str62
+	copy_45:
 	lb $t0, 0($s3)
 	sb $t0, 0($s4)
 	addiu $s3, $s3, 1
 	addiu $s4, $s4, 1
-	bnez $t0, copy_44
+	bnez $t0, copy_45
 	move $t0, $v0
 	sw $t0, 4($sp)
 	lw $s2, 12($sp)
@@ -4002,7 +4028,7 @@ end_case_1:
 else_44:
 	lw $t0, 0($sp)
 	lw $t0, 8($t0)
-	la $t1, str62
+	la $t1, str63
 	loop_compare_14:
 	lb $s5, 0($t0)
 	lb $s6, 0($t1)
@@ -4122,7 +4148,7 @@ else_44:
 else_45:
 	lw $t0, 0($sp)
 	lw $t0, 8($t0)
-	la $t1, str63
+	la $t1, str64
 	loop_compare_15:
 	lb $s5, 0($t0)
 	lb $s6, 0($t1)
@@ -4181,7 +4207,7 @@ else_45:
 else_46:
 	lw $t0, 0($sp)
 	lw $t0, 8($t0)
-	la $t1, str64
+	la $t1, str65
 	loop_compare_16:
 	lb $s5, 0($t0)
 	lb $s6, 0($t1)
@@ -4240,7 +4266,7 @@ else_46:
 else_47:
 	lw $t0, 0($sp)
 	lw $t0, 8($t0)
-	la $t1, str65
+	la $t1, str66
 	loop_compare_17:
 	lb $s5, 0($t0)
 	lb $s6, 0($t1)
@@ -4299,7 +4325,7 @@ else_47:
 else_48:
 	lw $t0, 0($sp)
 	lw $t0, 8($t0)
-	la $t1, str66
+	la $t1, str67
 	loop_compare_18:
 	lb $s5, 0($t0)
 	lb $s6, 0($t1)
@@ -4367,13 +4393,13 @@ else_48:
 	li $v0, 9
 	syscall
 	move $s4, $v0
-	la $s3, str67
-	copy_45:
+	la $s3, str68
+	copy_46:
 	lb $t0, 0($s3)
 	sb $t0, 0($s4)
 	addiu $s3, $s3, 1
 	addiu $s4, $s4, 1
-	bnez $t0, copy_45
+	bnez $t0, copy_46
 	move $t0, $v0
 	sw $t0, 4($sp)
 	lw $s2, 12($sp)
@@ -4409,13 +4435,13 @@ else_48:
 	li $v0, 9
 	syscall
 	move $s4, $v0
-	la $s3, str68
-	copy_46:
+	la $s3, str69
+	copy_47:
 	lb $t0, 0($s3)
 	sb $t0, 0($s4)
 	addiu $s3, $s3, 1
 	addiu $s4, $s4, 1
-	bnez $t0, copy_46
+	bnez $t0, copy_47
 	move $t0, $v0
 	sw $t0, 4($sp)
 	lw $s2, 12($sp)
@@ -4437,13 +4463,13 @@ else_50:
 	li $v0, 9
 	syscall
 	move $s4, $v0
-	la $s3, str69
-	copy_47:
+	la $s3, str70
+	copy_48:
 	lb $t0, 0($s3)
 	sb $t0, 0($s4)
 	addiu $s3, $s3, 1
 	addiu $s4, $s4, 1
-	bnez $t0, copy_47
+	bnez $t0, copy_48
 	move $t0, $v0
 	sw $t0, 4($sp)
 	lw $s2, 12($sp)
@@ -4479,13 +4505,13 @@ else_50:
 	li $v0, 9
 	syscall
 	move $s4, $v0
-	la $s3, str70
-	copy_48:
+	la $s3, str71
+	copy_49:
 	lb $t0, 0($s3)
 	sb $t0, 0($s4)
 	addiu $s3, $s3, 1
 	addiu $s4, $s4, 1
-	bnez $t0, copy_48
+	bnez $t0, copy_49
 	move $t0, $v0
 	sw $t0, 4($sp)
 	lw $s2, 12($sp)
@@ -4499,7 +4525,7 @@ endif_50:
 else_49:
 	lw $t0, 0($sp)
 	lw $t0, 8($t0)
-	la $t1, str71
+	la $t1, str72
 	loop_compare_19:
 	lb $s5, 0($t0)
 	lb $s6, 0($t1)
@@ -4579,26 +4605,30 @@ else_49:
 	lw $ra, 0($sp)
 	lw $s2, 4($sp)
 	addi $sp, $sp, 8
-	lw $t0, 4($sp)
-	move $s2, $t0
-	addi $sp, $sp, -8
-	sw $ra, 0($sp)
-	sw $s2, 4($sp)
+	move $t0, $a0
+	lw $t1, 4($sp)
+	move $s2, $t1
+	addi $sp, $sp, -12
+	sw $t0, 0($sp)
+	sw $ra, 4($sp)
+	sw $s2, 8($sp)
 	addi $sp, $sp, -4
 	sw $s2, 0($sp)
-	lw $s2, 8($sp)
-	move $t0, $s2
-	lw $t0, 4($t0)
-	lw $t0, 20($t0)
-	jalr $t0
+	lw $s2, 12($sp)
+	move $t1, $s2
+	lw $t1, 4($t1)
+	lw $t1, 20($t1)
+	jalr $t1
 	addi $sp, $sp, 4
-	lw $ra, 0($sp)
-	lw $s2, 4($sp)
-	addi $sp, $sp, 8
-	li $t0, 8
-	mul $a0, $a0, $t0
-	sub $a0, $a0, $a0
-	sw $a0, 0($sp)
+	lw $t0, 0($sp)
+	lw $ra, 4($sp)
+	lw $s2, 8($sp)
+	addi $sp, $sp, 12
+	move $t1, $a0
+	li $t2, 8
+	mul $t1, $t1, $t2
+	sub $t0, $t0, $t1
+	sw $t0, 0($sp)
 	lw $t0, 8($sp)
 	move $s2, $t0
 	addi $sp, $sp, -8
@@ -4610,13 +4640,13 @@ else_49:
 	li $v0, 9
 	syscall
 	move $s4, $v0
-	la $s3, str72
-	copy_49:
+	la $s3, str73
+	copy_50:
 	lb $t0, 0($s3)
 	sb $t0, 0($s4)
 	addiu $s3, $s3, 1
 	addiu $s4, $s4, 1
-	bnez $t0, copy_49
+	bnez $t0, copy_50
 	move $t0, $v0
 	sw $t0, 4($sp)
 	lw $s2, 12($sp)
@@ -4652,13 +4682,13 @@ else_49:
 	li $v0, 9
 	syscall
 	move $s4, $v0
-	la $s3, str73
-	copy_50:
+	la $s3, str74
+	copy_51:
 	lb $t0, 0($s3)
 	sb $t0, 0($s4)
 	addiu $s3, $s3, 1
 	addiu $s4, $s4, 1
-	bnez $t0, copy_50
+	bnez $t0, copy_51
 	move $t0, $v0
 	sw $t0, 4($sp)
 	lw $s2, 12($sp)
@@ -4693,13 +4723,13 @@ else_49:
 	li $v0, 9
 	syscall
 	move $s4, $v0
-	la $s3, str74
-	copy_51:
+	la $s3, str75
+	copy_52:
 	lb $t0, 0($s3)
 	sb $t0, 0($s4)
 	addiu $s3, $s3, 1
 	addiu $s4, $s4, 1
-	bnez $t0, copy_51
+	bnez $t0, copy_52
 	move $t0, $v0
 	sw $t0, 4($sp)
 	lw $s2, 12($sp)
@@ -4763,13 +4793,13 @@ else_49:
 	li $v0, 9
 	syscall
 	move $s4, $v0
-	la $s3, str75
-	copy_52:
+	la $s3, str76
+	copy_53:
 	lb $t0, 0($s3)
 	sb $t0, 0($s4)
 	addiu $s3, $s3, 1
 	addiu $s4, $s4, 1
-	bnez $t0, copy_52
+	bnez $t0, copy_53
 	move $t0, $v0
 	sw $t0, 4($sp)
 	lw $s2, 12($sp)
@@ -4791,7 +4821,7 @@ else_49:
 else_51:
 	lw $t0, 0($sp)
 	lw $t0, 8($t0)
-	la $t1, str76
+	la $t1, str77
 	loop_compare_20:
 	lb $s5, 0($t0)
 	lb $s6, 0($t1)
@@ -4820,7 +4850,7 @@ else_51:
 else_52:
 	lw $t0, 0($sp)
 	lw $t0, 8($t0)
-	la $t1, str77
+	la $t1, str78
 	loop_compare_21:
 	lb $s5, 0($t0)
 	lb $s6, 0($t1)
@@ -5011,12 +5041,12 @@ __init_Main__:
 	syscall
 	move $s4, $v0
 	la $s3, str28
-	copy_53:
+	copy_54:
 	lb $t0, 0($s3)
 	sb $t0, 0($s4)
 	addiu $s3, $s3, 1
 	addiu $s4, $s4, 1
-	bnez $t0, copy_53
+	bnez $t0, copy_54
 	move $t0, $v0
 	sw $t0, 8($s1)
 	la $a0, StaticVoid

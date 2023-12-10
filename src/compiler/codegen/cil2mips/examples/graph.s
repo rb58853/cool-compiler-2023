@@ -1541,8 +1541,10 @@ else_12:
 	lw $ra, 0($sp)
 	lw $s2, 4($sp)
 	addi $sp, $sp, 8
-	addi $a0, $a0, -1
-	sw $a0, 8($sp)
+	move $t0, $a0
+	li $t1, 1
+	sub $t0, $t0, $t1
+	sw $t0, 8($sp)
 	lw $s2, 16($sp)
 	jal substr
 	addi $sp, $sp, 12
@@ -1619,8 +1621,10 @@ else_13:
 	lw $ra, 0($sp)
 	lw $s2, 4($sp)
 	addi $sp, $sp, 8
-	addi $a0, $a0, -1
-	sw $a0, 8($sp)
+	move $t0, $a0
+	li $t1, 1
+	sub $t0, $t0, $t1
+	sw $t0, 8($sp)
 	lw $s2, 16($sp)
 	jal substr
 	addi $sp, $sp, 12
@@ -1730,7 +1734,8 @@ loop_2:
 	addi $sp, $sp, -12
 	sw $s2, 0($sp)
 	lw $t0, 24($sp)
-	addi $t0, $t0, 1
+	li $t1, 1
+	add $t0, $t0, $t1
 	sw $t0, 4($sp)
 	lw $t0, 40($sp)
 	move $s2, $t0
@@ -1745,10 +1750,12 @@ loop_2:
 	lw $ra, 0($sp)
 	lw $s2, 4($sp)
 	addi $sp, $sp, 8
-	lw $t0, 24($sp)
-	sub $a0, $a0, $t0
-	addi $a0, $a0, -1
-	sw $a0, 8($sp)
+	move $t0, $a0
+	lw $t1, 24($sp)
+	sub $t0, $t0, $t1
+	li $t1, 1
+	sub $t0, $t0, $t1
+	sw $t0, 8($sp)
 	lw $s2, 16($sp)
 	jal substr
 	addi $sp, $sp, 12
@@ -1784,7 +1791,8 @@ else_15:
 	addi $sp, $sp, -12
 	sw $s2, 0($sp)
 	lw $t0, 24($sp)
-	addi $t0, $t0, 1
+	li $t1, 1
+	add $t0, $t0, $t1
 	sw $t0, 4($sp)
 	lw $t0, 40($sp)
 	move $s2, $t0
@@ -1799,10 +1807,12 @@ else_15:
 	lw $ra, 0($sp)
 	lw $s2, 4($sp)
 	addi $sp, $sp, 8
-	lw $t0, 24($sp)
-	sub $a0, $a0, $t0
-	addi $a0, $a0, -1
-	sw $a0, 8($sp)
+	move $t0, $a0
+	lw $t1, 24($sp)
+	sub $t0, $t0, $t1
+	li $t1, 1
+	sub $t0, $t0, $t1
+	sw $t0, 8($sp)
 	lw $s2, 16($sp)
 	jal substr
 	addi $sp, $sp, 12
@@ -1856,7 +1866,8 @@ else_16:
 	add $t0, $t0, $a0
 	sw $t0, 12($sp)
 	lw $t0, 4($sp)
-	addi $t0, $t0, 1
+	li $t1, 1
+	add $t0, $t0, $t1
 	sw $t0, 4($sp)
 	lw $t0, 4($sp)
 	lw $t1, 8($sp)
@@ -2523,8 +2534,10 @@ else_28:
 	lw $ra, 0($sp)
 	lw $s2, 4($sp)
 	addi $sp, $sp, 8
-	addi $a0, $a0, 1
-	sw $a0, 8($sp)
+	move $t0, $a0
+	li $t1, 1
+	sub $t0, $t0, $t1
+	sw $t0, 8($sp)
 	lw $s2, 16($sp)
 	jal substr
 	addi $sp, $sp, 12
@@ -2601,8 +2614,10 @@ else_29:
 	lw $ra, 0($sp)
 	lw $s2, 4($sp)
 	addi $sp, $sp, 8
-	addi $a0, $a0, 1
-	sw $a0, 8($sp)
+	move $t0, $a0
+	li $t1, 1
+	sub $t0, $t0, $t1
+	sw $t0, 8($sp)
 	lw $s2, 16($sp)
 	jal substr
 	addi $sp, $sp, 12
@@ -2712,7 +2727,8 @@ loop_5:
 	addi $sp, $sp, -12
 	sw $s2, 0($sp)
 	lw $t0, 24($sp)
-	addi $t0, $t0, 1
+	li $t1, 1
+	add $t0, $t0, $t1
 	sw $t0, 4($sp)
 	lw $t0, 40($sp)
 	move $s2, $t0
@@ -2727,10 +2743,12 @@ loop_5:
 	lw $ra, 0($sp)
 	lw $s2, 4($sp)
 	addi $sp, $sp, 8
-	lw $t0, 24($sp)
-	sub $a0, $a0, $t0
-	addi $a0, $a0, 1
-	sw $a0, 8($sp)
+	move $t0, $a0
+	lw $t1, 24($sp)
+	sub $t0, $t0, $t1
+	li $t1, 1
+	sub $t0, $t0, $t1
+	sw $t0, 8($sp)
 	lw $s2, 16($sp)
 	jal substr
 	addi $sp, $sp, 12
@@ -2766,7 +2784,8 @@ else_31:
 	addi $sp, $sp, -12
 	sw $s2, 0($sp)
 	lw $t0, 24($sp)
-	addi $t0, $t0, 1
+	li $t1, 1
+	add $t0, $t0, $t1
 	sw $t0, 4($sp)
 	lw $t0, 40($sp)
 	move $s2, $t0
@@ -2781,10 +2800,12 @@ else_31:
 	lw $ra, 0($sp)
 	lw $s2, 4($sp)
 	addi $sp, $sp, 8
-	lw $t0, 24($sp)
-	sub $a0, $a0, $t0
-	addi $a0, $a0, 1
-	sw $a0, 8($sp)
+	move $t0, $a0
+	lw $t1, 24($sp)
+	sub $t0, $t0, $t1
+	li $t1, 1
+	sub $t0, $t0, $t1
+	sw $t0, 8($sp)
 	lw $s2, 16($sp)
 	jal substr
 	addi $sp, $sp, 12
@@ -2838,7 +2859,8 @@ else_32:
 	add $t0, $t0, $a0
 	sw $t0, 12($sp)
 	lw $t0, 4($sp)
-	addi $t0, $t0, 1
+	li $t1, 1
+	add $t0, $t0, $t1
 	sw $t0, 4($sp)
 	lw $t0, 4($sp)
 	lw $t1, 8($sp)

@@ -1,45 +1,45 @@
 class A{
-    x:Int<-13;
-    y:Int;
-    z:Int;
-
-    f(n:Int):Int
-    {
-        {
-            n <- x + n + y;
-            set_y(10);
-            z <- n+y;
-            test1(2);
-        }
-    };
-    
-    set_y(n:Int):Int{
-        y<-n
-    };
-    test1(k:Int):Int{
-        {
-            k <- k * z;
-            set_y(10);
-            test2(k);
-        }  
-    };
-    test2(x1:Int):Int{
-        y+x1
-    };
+    a():Int{1};
+    -- b():Int{2};
+    -- c():Int{a()+b()};
+    -- d():Int{c()+a()};
+    -- e():Int{a()+b()+d()};
+    -- plus(x:Int, y:Int):Int{ x + y };
+    -- minus(x:Int, y:Int):Int{ x - y };
 };
 class B{
-    b():B{ new B};
-    a():A{ new A};
+    a():Int{1};
+    -- b():Int{2};
+    -- c():Int{a()+b()};
+    -- d():Int{c()+a()};
+    -- e():Int{a()+b()+d()};
 };
 
-class Main{
-    main(): Int { 
-    {
-        let a:A <- new A in {
-            a <- new B.a();
-            a.set_y(5);
-            a.f(2);
-        };
-    }    
+
+class Main inherits IO{
+    main(): IO 
+    { 
+        {
+            let a:A <- new A, int:Int in {
+            value(value(a.a()));
+            --     -- int<-(a.plus (a.e(),a.plus(a.minus(a.e(),a.a()),b.d())));
+                -- int<-value(value(a.a()));
+            --     -- int<-value(a.plus(a.b(),a.a()));
+            --     -- print(a.plus(a.b(),a.a()));
+                -- out_int(int);
+                out_int(1);
+            };
+        }
     };
+    value(x:Int):Int{
+        x
+        -- plus(x,10)
+    };
+    plus(x:Int,y:Int):Int{
+        x+y
+    };
+
+    print(value:Int):IO{
+        out_int(value)
+    }; 
 };
