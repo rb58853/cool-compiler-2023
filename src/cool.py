@@ -4,19 +4,10 @@ from compiler.semantic.semantic_visitor import validate_program
 from compiler.codegen.cil2mips.to_mips import MIPS, CIL2MIPS
 from compiler.codegen.cool2cil.codegener import CILProgram
 import os
-import sys
-
-import warnings
-warnings.filterwarnings("ignore")
 
 
-
-# INPUT_FILE = os.path.join(os.getcwd(), "tests/codegen/arith.cl")
-# OUTPUT_FILE = os.path.join(os.getcwd(), "tests/codegen/arith.mips")
 INPUT_FILE = f'{sys.argv[1]}'
 OUTPUT_FILE = f'{sys.argv[2]}'
-
-# raise Exception("Error adrede")
 
 with open(INPUT_FILE, "r") as f:
     code = f.read()
