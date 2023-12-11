@@ -3,6 +3,7 @@ from compiler.semantic.semantic_ import semantic
 from compiler.semantic.semantic_visitor import validate_program
 from compiler.codegen.cil2mips.to_mips import MIPS, CIL2MIPS
 from compiler.codegen.cool2cil.codegener import CILProgram
+import sys
 
 INPUT_FILE = f'{sys.argv[1]}'
 OUTPUT_FILE = f'{sys.argv[2]}'
