@@ -8,4 +8,4 @@ echo "COOL-COMPILER 1.0"        # TODO: Recuerde cambiar estas
 echo "Copyright (c) 2023: Raúl Beltrán, Víctor Amador"    # TODO: líneas a los valores correctos
 
 # Llamar al compilador
-python3 cool $INPUT_FILE $OUTPUT_FILE
+python cool.py $INPUT_FILE $OUTPUT_FILE
