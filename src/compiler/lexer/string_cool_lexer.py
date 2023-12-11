@@ -29,9 +29,9 @@ class StringAnalizer():
             '\\n':self.new_line_character,
             '\\\n':self.new_line,
             '\0': self.null_error,
-            '"': self.close
+            '"': self.close,
+            '\\t':self.tab_character,
             # '\\b':self.b_func,
-            # '\\t':self.t_func,
             }
         
     def close(self):
@@ -76,6 +76,12 @@ class StringAnalizer():
         self.lexer.index+=1
         self.lexer.end=self.lexer.index+1
         self.lexer.new_line()
+        return None
+    
+    def tab_character(self):
+        self.lexer.index+=1
+        self.lexer.end=self.lexer.index+1
+        self.end_str += '\\t'
         return None
     
     def new_line_character(self):

@@ -1269,6 +1269,9 @@ String_abort:
 	la $a0, String
 	li $v0, 4
 	syscall
+	la $a0, newline
+	li $v0, 4
+	syscall
 	li $v0, 10
 	syscall
 Int_abort:
@@ -1278,6 +1281,9 @@ Int_abort:
 	la $a0, Int
 	li $v0, 4
 	syscall
+	la $a0, newline
+	li $v0, 4
+	syscall
 	li $v0, 10
 	syscall
 Bool_abort:
@@ -1285,6 +1291,9 @@ Bool_abort:
 	li $v0, 4
 	syscall
 	la $a0, Bool
+	li $v0, 4
+	syscall
+	la $a0, newline
 	li $v0, 4
 	syscall
 	li $v0, 10

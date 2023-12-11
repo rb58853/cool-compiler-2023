@@ -273,6 +273,10 @@ class ConstantAbort:
         f'\tla $a0, {self.type}', #texto del tipo
         '\tli $v0, 4',      #El 4 es para imprimir string
 	    '\tsyscall',        #llamanda al sistema
+        '\tla $a0, newline',  #salto de linea
+        '\tli $v0, 4',      #El 4 es para imprimir string
+	    '\tsyscall',        #llamanda al sistema
+        
         '\tli $v0, 10',     #Codigo para cerrar el programa
         '\tsyscall'
         ]

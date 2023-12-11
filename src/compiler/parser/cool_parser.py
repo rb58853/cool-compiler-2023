@@ -9,6 +9,7 @@ class CoolParser(Parser):
     tokens = CoolLexer.tokens
     start = 'program'
     precedence = (
+        ('nonassoc','IN'),           #Esto es para evitar warnings en confilctos
         ('right', 'ASSIGN'),        #lv1
         ('left','NOT'),             #lv2
         ('nonassoc', '=','<','LE'), #lv3
