@@ -52,9 +52,16 @@ class VariableContext():
                     return True    
         else:
             if atr_case:
-                SemanticError(pos=vvar.token_pos[1],
-                            lineno=vvar.token_pos[0]
-                            )(f"SemanticError: Attribute {vvar.id} is multiply defined in class.")
+                if self.variables.__contains__(vvar.id):
+                    SemanticError(pos=vvar.token_pos[1],
+                                lineno=vvar.token_pos[0]
+                                )(f"SemanticError: Attribute {vvar.id} is multiply defined in class.")
+                else:
+                    SemanticError(pos=vvar.token_pos[1],
+                                lineno=vvar.token_pos[0]
+                                )(f"SemanticError: Attribute {vvar.id} is an attribute of an inherited class.")
+                
+
             else:
                 SemanticError(pos=vvar.token_pos[1],
                             lineno=vvar.token_pos[0]
@@ -404,10 +411,14 @@ class CaseContex(LetContext):
             return False
         
         if not self.is_defined_type(vvar.get_type()):
-            SemanticError(pos=vvar.type_pos[1],
-                        lineno=vvar.type_pos[0]
-                        )(f"TypeError: Class {vvar.get_type()} is undefined.")
-        #   raise Exception(f"Se esta tratando de usar un tipo que no esta defnido {vvar.get_type()}")
+            if vvar.father.name =='case':
+                SemanticError(pos=vvar.type_pos[1],
+                            lineno=vvar.type_pos[0]
+                            )(f"TypeError: Class {vvar.get_type()} of case branch is undefined.")
+            else:
+                SemanticError(pos=vvar.type_pos[1],
+                            lineno=vvar.type_pos[0]
+                            )(f"TypeError: Class {vvar.get_type()} is undefined.")
             return False
             
         if not self.contex_have_same_type(vvar.type):
