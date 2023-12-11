@@ -91,7 +91,10 @@ Book_print:
 	move $t0, $v0
 	sw $t0, 4($sp)
 	lw $s2, 12($sp)
-	jal Book_out_string
+	move $t0, $s2
+	lw $t0, 4($t0)
+	lw $t0, 20($t0)
+	jalr $t0
 	addi $sp, $sp, 8
 	lw $ra, 0($sp)
 	lw $s2, 4($sp)
@@ -163,7 +166,10 @@ Book_print:
 	move $t0, $v0
 	sw $t0, 4($sp)
 	lw $s2, 12($sp)
-	jal Book_out_string
+	move $t0, $s2
+	lw $t0, 4($t0)
+	lw $t0, 20($t0)
+	jalr $t0
 	addi $sp, $sp, 8
 	lw $ra, 0($sp)
 	lw $s2, 4($sp)
@@ -240,7 +246,10 @@ Article_initArticle:
 	lw $t0, 28($sp)
 	sw $t0, 8($sp)
 	lw $s2, 16($sp)
-	jal Article_initBook
+	move $t0, $s2
+	lw $t0, 4($t0)
+	lw $t0, 36($t0)
+	jalr $t0
 	addi $sp, $sp, 12
 	lw $ra, 0($sp)
 	lw $s2, 4($sp)
@@ -286,7 +295,10 @@ Article_print:
 	move $t0, $v0
 	sw $t0, 4($sp)
 	lw $s2, 12($sp)
-	jal Article_out_string
+	move $t0, $s2
+	lw $t0, 4($t0)
+	lw $t0, 20($t0)
+	jalr $t0
 	addi $sp, $sp, 8
 	lw $ra, 0($sp)
 	lw $s2, 4($sp)
@@ -349,7 +361,10 @@ BookList_isNil:
 	addi $sp, $sp, -4
 	sw $s2, 0($sp)
 	lw $s2, 8($sp)
-	jal BookList_abort
+	move $t0, $s2
+	lw $t0, 4($t0)
+	lw $t0, 12($t0)
+	jalr $t0
 	addi $sp, $sp, 4
 	lw $ra, 0($sp)
 	lw $s2, 4($sp)
@@ -402,7 +417,10 @@ BookList_car:
 	addi $sp, $sp, -4
 	sw $s2, 0($sp)
 	lw $s2, 8($sp)
-	jal BookList_abort
+	move $t0, $s2
+	lw $t0, 4($t0)
+	lw $t0, 12($t0)
+	jalr $t0
 	addi $sp, $sp, 4
 	lw $ra, 0($sp)
 	lw $s2, 4($sp)
@@ -427,7 +445,10 @@ BookList_cdr:
 	addi $sp, $sp, -4
 	sw $s2, 0($sp)
 	lw $s2, 8($sp)
-	jal BookList_abort
+	move $t0, $s2
+	lw $t0, 4($t0)
+	lw $t0, 12($t0)
+	jalr $t0
 	addi $sp, $sp, 4
 	lw $ra, 0($sp)
 	lw $s2, 4($sp)
@@ -452,7 +473,10 @@ BookList_print_list:
 	addi $sp, $sp, -4
 	sw $s2, 0($sp)
 	lw $s2, 8($sp)
-	jal BookList_abort
+	move $t0, $s2
+	lw $t0, 4($t0)
+	lw $t0, 12($t0)
+	jalr $t0
 	addi $sp, $sp, 4
 	lw $ra, 0($sp)
 	lw $s2, 4($sp)
@@ -589,7 +613,10 @@ case_0:
 	move $t0, $v0
 	sw $t0, 4($sp)
 	lw $s2, 12($sp)
-	jal Cons_out_string
+	move $t0, $s2
+	lw $t0, 4($t0)
+	lw $t0, 20($t0)
+	jalr $t0
 	addi $sp, $sp, 8
 	lw $ra, 0($sp)
 	lw $s2, 4($sp)
@@ -617,7 +644,10 @@ case_1:
 	move $t0, $v0
 	sw $t0, 4($sp)
 	lw $s2, 12($sp)
-	jal Cons_out_string
+	move $t0, $s2
+	lw $t0, 4($t0)
+	lw $t0, 20($t0)
+	jalr $t0
 	addi $sp, $sp, 8
 	lw $ra, 0($sp)
 	lw $s2, 4($sp)
@@ -688,7 +718,10 @@ Nil_car:
 	addi $sp, $sp, -4
 	sw $s2, 0($sp)
 	lw $s2, 8($sp)
-	jal BookList_abort
+	move $t0, $s2
+	lw $t0, 4($t0)
+	lw $t0, 12($t0)
+	jalr $t0
 	addi $sp, $sp, 4
 	lw $ra, 0($sp)
 	lw $s2, 4($sp)
@@ -713,7 +746,10 @@ Nil_cdr:
 	addi $sp, $sp, -4
 	sw $s2, 0($sp)
 	lw $s2, 8($sp)
-	jal BookList_abort
+	move $t0, $s2
+	lw $t0, 4($t0)
+	lw $t0, 12($t0)
+	jalr $t0
 	addi $sp, $sp, 4
 	lw $ra, 0($sp)
 	lw $s2, 4($sp)

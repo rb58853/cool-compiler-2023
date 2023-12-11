@@ -1699,9 +1699,14 @@ class DivExpression:
             #Se guardo en instance la direccion de la instancia que hay en la pila en la posicion indicada por self
             #El tipo de self es el tipo de la clase que contiene a self
             type = dispatch.statictype
-            if dispatch.statictype is None:
-                type = dispatch.expr.get_class_context().type
-            DivExpression.callable(callable,body,scope,instance, type)
+            dinamyc_type = dispatch.expr.get_type()
+            # type = dispatch.statictype
+            
+            # if dispatch.statictype is None:
+            #     type = dispatch.expr.get_class_context().type
+
+            # DivExpression.callable(callable,body,scope,instance,type)
+            DivExpression.callable(callable,body,scope,instance, cclass_type = type, dinamyc_type=dinamyc_type)
             TempNames.free([instance])
             return
         
@@ -1731,7 +1736,8 @@ class DivExpression:
         #Se guardo en instance la direccion de la instancia que hay en la pila en la posicion indicada por self
         #El tipo de self es el tipo de la clase que contiene a self
         type = meth.get_class_context().type
-        DivExpression.callable(meth,body,scope,instance, type)
+        DivExpression.callable(meth,body,scope,instance,dinamyc_type=type)
+        # DivExpression.callable(meth,body,scope,instance,dinamyc_type=type)
         TempNames.free([instance])
 
     def callable(callable:CoolCallable, body:Body, scope:dict = {},instance= None, cclass_type = None, dinamyc_type= None, basic = False):

@@ -39,13 +39,18 @@ class Graph {
 
    vertices : VList <- new VList;
    edges    : EList <- new EList;
-
+   temp: EList;
    add_vertice(v : Vertice) : Object { {
+      new IO.out_string("en add vertice llega un v con outgoing con tipo ");
+      new IO.out_string(v.outgoing().type_name());
+      new IO.out_string("\n");
+      -- temp<-v.outgoing();
+      -- edges <- temp.append(edges);
       edges <- v.outgoing().append(edges);
       vertices <- vertices.cons(v);
    } };
 
-   print_E() : Object { edges.print() };
+   print_E() : Object {{ edges.print();} };
    print_V() : Object { vertices.print() };
 
 };
@@ -55,7 +60,7 @@ class Vertice inherits IO {
    num  : Int;
    out  : EList <- new EList;
 
-   outgoing() : EList { out };
+   outgoing() : EList { out }; --De ete tipo no hereda nadie
 
    number() : Int { num };
 
@@ -69,7 +74,15 @@ class Vertice inherits IO {
 
    add_out(s : Edge) : Vertice {
       {
-	 out <- out.cons(s);
+	      out <- out.cons(s);
+         
+         -- new IO.out_string("despues de hacer out <- out.cons, lo que sale de ahi es del tipo ");
+         -- new IO.out_string(out.type_name());
+         -- new IO.out_string("\n");
+         -- new IO.out_string("luego la funcion outgoing() de este vertice devuelve un tipo ");
+         -- new IO.out_string(self.outgoing().type_name());
+         -- new IO.out_string("\n");
+         
          self;
       }
    };
@@ -136,9 +149,18 @@ class EList inherits IO {
    };
 
    append(l : EList) : EList {
-     if self.isNil() then l
-     else tail().append(l).cons(head())
-     fi
+      {
+         out_string("llego a append con una instacia _self del tipo ");
+         out_string(self.type_name());
+         out_string("\n");
+         
+         -- self.tail();
+         if self.isNil() then {out_string("Entro thenm asi que isNil es true\n");l;}
+         else {
+          out_string("Entro al else de append\n");
+          tail().append(l).cons(head());
+         }fi;
+      }
    };
 
    print() : Object {
@@ -187,9 +209,6 @@ class ECons inherits EList {
    };
 
 };
-
-
-
 
 class VList inherits IO {
    -- Define operations on empty lists of vertices.
@@ -287,7 +306,7 @@ class Parse inherits IO {
       )
    };
 
-     c2i(char : String) : Int {
+    c2i(char : String) : Int {
 	if char = "0" then 0 else
 	if char = "1" then 1 else
 	if char = "2" then 2 else
@@ -304,7 +323,7 @@ class Parse inherits IO {
 
      rest : String;
 
-     a2i(s : String) : Int {
+   a2i(s : String) : Int {
         if s.length() = 0 then 0 else
 	if s.substr(0,1) = "-" then ~a2i_aux(s.substr(1,s.length()-1)) else
         if s.substr(0,1) = " " then a2i(s.substr(1,s.length()-1)) else
@@ -360,7 +379,7 @@ class Main inherits Parse {
 
    main() : Object {
       {
-	 g.print_V();
+	      -- g.print_V();
          g.print_E();
       }
    };

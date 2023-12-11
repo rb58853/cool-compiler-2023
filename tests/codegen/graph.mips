@@ -230,7 +230,10 @@ Vertice_print:
 	lw $t0, 8($t0)
 	sw $t0, 4($sp)
 	lw $s2, 12($sp)
-	jal Vertice_out_int
+	move $t0, $s2
+	lw $t0, 4($t0)
+	lw $t0, 24($t0)
+	jalr $t0
 	addi $sp, $sp, 8
 	lw $ra, 0($sp)
 	lw $s2, 4($sp)
@@ -288,7 +291,10 @@ Edge_print:
 	move $t0, $v0
 	sw $t0, 4($sp)
 	lw $s2, 12($sp)
-	jal Edge_out_string
+	move $t0, $s2
+	lw $t0, 4($t0)
+	lw $t0, 20($t0)
+	jalr $t0
 	addi $sp, $sp, 8
 	lw $ra, 0($sp)
 	lw $s2, 4($sp)
@@ -304,7 +310,10 @@ Edge_print:
 	lw $t0, 8($t0)
 	sw $t0, 4($sp)
 	lw $s2, 12($sp)
-	jal Edge_out_int
+	move $t0, $s2
+	lw $t0, 4($t0)
+	lw $t0, 24($t0)
+	jalr $t0
 	addi $sp, $sp, 8
 	lw $ra, 0($sp)
 	lw $s2, 4($sp)
@@ -330,7 +339,10 @@ Edge_print:
 	move $t0, $v0
 	sw $t0, 4($sp)
 	lw $s2, 12($sp)
-	jal Edge_out_string
+	move $t0, $s2
+	lw $t0, 4($t0)
+	lw $t0, 20($t0)
+	jalr $t0
 	addi $sp, $sp, 8
 	lw $ra, 0($sp)
 	lw $s2, 4($sp)
@@ -346,7 +358,10 @@ Edge_print:
 	lw $t0, 12($t0)
 	sw $t0, 4($sp)
 	lw $s2, 12($sp)
-	jal Edge_out_int
+	move $t0, $s2
+	lw $t0, 4($t0)
+	lw $t0, 24($t0)
+	jalr $t0
 	addi $sp, $sp, 8
 	lw $ra, 0($sp)
 	lw $s2, 4($sp)
@@ -372,7 +387,10 @@ Edge_print:
 	move $t0, $v0
 	sw $t0, 4($sp)
 	lw $s2, 12($sp)
-	jal Edge_out_string
+	move $t0, $s2
+	lw $t0, 4($t0)
+	lw $t0, 20($t0)
+	jalr $t0
 	addi $sp, $sp, 8
 	lw $ra, 0($sp)
 	lw $s2, 4($sp)
@@ -388,7 +406,10 @@ Edge_print:
 	lw $t0, 16($t0)
 	sw $t0, 4($sp)
 	lw $s2, 12($sp)
-	jal Edge_out_int
+	move $t0, $s2
+	lw $t0, 4($t0)
+	lw $t0, 24($t0)
+	jalr $t0
 	addi $sp, $sp, 8
 	lw $ra, 0($sp)
 	lw $s2, 4($sp)
@@ -407,7 +428,10 @@ EList_head:
 	addi $sp, $sp, -4
 	sw $s2, 0($sp)
 	lw $s2, 8($sp)
-	jal EList_abort
+	move $t0, $s2
+	lw $t0, 4($t0)
+	lw $t0, 12($t0)
+	jalr $t0
 	addi $sp, $sp, 4
 	lw $ra, 0($sp)
 	lw $s2, 4($sp)
@@ -425,7 +449,10 @@ EList_tail:
 	addi $sp, $sp, -4
 	sw $s2, 0($sp)
 	lw $s2, 8($sp)
-	jal EList_abort
+	move $t0, $s2
+	lw $t0, 4($t0)
+	lw $t0, 12($t0)
+	jalr $t0
 	addi $sp, $sp, 4
 	lw $ra, 0($sp)
 	lw $s2, 4($sp)
@@ -472,7 +499,10 @@ EList_append:
 	addi $sp, $sp, -4
 	sw $s2, 0($sp)
 	lw $s2, 8($sp)
-	jal EList_isNil
+	move $t0, $s2
+	lw $t0, 4($t0)
+	lw $t0, 36($t0)
+	jalr $t0
 	addi $sp, $sp, 4
 	lw $ra, 0($sp)
 	lw $s2, 4($sp)
@@ -489,7 +519,10 @@ else_0:
 	addi $sp, $sp, -4
 	sw $s2, 0($sp)
 	lw $s2, 8($sp)
-	jal EList_tail
+	move $t0, $s2
+	lw $t0, 4($t0)
+	lw $t0, 44($t0)
+	jalr $t0
 	addi $sp, $sp, 4
 	lw $ra, 0($sp)
 	lw $s2, 4($sp)
@@ -525,7 +558,10 @@ else_0:
 	addi $sp, $sp, -4
 	sw $s2, 0($sp)
 	lw $s2, 8($sp)
-	jal EList_head
+	move $t0, $s2
+	lw $t0, 4($t0)
+	lw $t0, 40($t0)
+	jalr $t0
 	addi $sp, $sp, 4
 	lw $ra, 0($sp)
 	lw $s2, 4($sp)
@@ -566,7 +602,10 @@ EList_print:
 	move $t0, $v0
 	sw $t0, 4($sp)
 	lw $s2, 12($sp)
-	jal EList_out_string
+	move $t0, $s2
+	lw $t0, 4($t0)
+	lw $t0, 20($t0)
+	jalr $t0
 	addi $sp, $sp, 8
 	lw $ra, 0($sp)
 	lw $s2, 4($sp)
@@ -611,7 +650,10 @@ ECons_append:
 	addi $sp, $sp, -4
 	sw $s2, 0($sp)
 	lw $s2, 8($sp)
-	jal EList_isNil
+	move $t0, $s2
+	lw $t0, 4($t0)
+	lw $t0, 36($t0)
+	jalr $t0
 	addi $sp, $sp, 4
 	lw $ra, 0($sp)
 	lw $s2, 4($sp)
@@ -628,7 +670,10 @@ else_1:
 	addi $sp, $sp, -4
 	sw $s2, 0($sp)
 	lw $s2, 8($sp)
-	jal EList_tail
+	move $t0, $s2
+	lw $t0, 4($t0)
+	lw $t0, 44($t0)
+	jalr $t0
 	addi $sp, $sp, 4
 	lw $ra, 0($sp)
 	lw $s2, 4($sp)
@@ -664,7 +709,10 @@ else_1:
 	addi $sp, $sp, -4
 	sw $s2, 0($sp)
 	lw $s2, 8($sp)
-	jal EList_head
+	move $t0, $s2
+	lw $t0, 4($t0)
+	lw $t0, 40($t0)
+	jalr $t0
 	addi $sp, $sp, 4
 	lw $ra, 0($sp)
 	lw $s2, 4($sp)
@@ -756,7 +804,10 @@ VList_head:
 	addi $sp, $sp, -4
 	sw $s2, 0($sp)
 	lw $s2, 8($sp)
-	jal VList_abort
+	move $t0, $s2
+	lw $t0, 4($t0)
+	lw $t0, 12($t0)
+	jalr $t0
 	addi $sp, $sp, 4
 	lw $ra, 0($sp)
 	lw $s2, 4($sp)
@@ -774,7 +825,10 @@ VList_tail:
 	addi $sp, $sp, -4
 	sw $s2, 0($sp)
 	lw $s2, 8($sp)
-	jal VList_abort
+	move $t0, $s2
+	lw $t0, 4($t0)
+	lw $t0, 12($t0)
+	jalr $t0
 	addi $sp, $sp, 4
 	lw $ra, 0($sp)
 	lw $s2, 4($sp)
@@ -834,7 +888,10 @@ VList_print:
 	move $t0, $v0
 	sw $t0, 4($sp)
 	lw $s2, 12($sp)
-	jal VList_out_string
+	move $t0, $s2
+	lw $t0, 4($t0)
+	lw $t0, 20($t0)
+	jalr $t0
 	addi $sp, $sp, 8
 	lw $ra, 0($sp)
 	lw $s2, 4($sp)
@@ -953,7 +1010,10 @@ Parse_read_input:
 	addi $sp, $sp, -4
 	sw $s2, 0($sp)
 	lw $s2, 8($sp)
-	jal Parse_in_string
+	move $t0, $s2
+	lw $t0, 4($t0)
+	lw $t0, 28($t0)
+	jalr $t0
 	addi $sp, $sp, 4
 	lw $ra, 0($sp)
 	lw $s2, 4($sp)
@@ -1029,7 +1089,10 @@ loop_0:
 	lw $t0, 32($sp)
 	sw $t0, 4($sp)
 	lw $s2, 12($sp)
-	jal Parse_parse_line
+	move $t0, $s2
+	lw $t0, 4($t0)
+	lw $t0, 40($t0)
+	jalr $t0
 	addi $sp, $sp, 8
 	lw $ra, 0($sp)
 	lw $s2, 4($sp)
@@ -1052,7 +1115,10 @@ loop_0:
 	addi $sp, $sp, -4
 	sw $s2, 0($sp)
 	lw $s2, 8($sp)
-	jal Parse_in_string
+	move $t0, $s2
+	lw $t0, 4($t0)
+	lw $t0, 28($t0)
+	jalr $t0
 	addi $sp, $sp, 4
 	lw $ra, 0($sp)
 	lw $s2, 4($sp)
@@ -1096,7 +1162,10 @@ Parse_parse_line:
 	lw $t0, 40($sp)
 	sw $t0, 4($sp)
 	lw $s2, 12($sp)
-	jal Parse_a2i
+	move $t0, $s2
+	lw $t0, 4($t0)
+	lw $t0, 48($t0)
+	jalr $t0
 	addi $sp, $sp, 8
 	lw $ra, 0($sp)
 	lw $s2, 4($sp)
@@ -1150,7 +1219,10 @@ loop_1:
 	lw $t0, 12($t0)
 	sw $t0, 4($sp)
 	lw $s2, 12($sp)
-	jal Parse_a2i
+	move $t0, $s2
+	lw $t0, 4($t0)
+	lw $t0, 48($t0)
+	jalr $t0
 	addi $sp, $sp, 8
 	lw $ra, 0($sp)
 	lw $s2, 4($sp)
@@ -1169,7 +1241,10 @@ loop_1:
 	lw $t0, 12($t0)
 	sw $t0, 4($sp)
 	lw $s2, 12($sp)
-	jal Parse_a2i
+	move $t0, $s2
+	lw $t0, 4($t0)
+	lw $t0, 48($t0)
+	jalr $t0
 	addi $sp, $sp, 8
 	lw $ra, 0($sp)
 	lw $s2, 4($sp)
@@ -1438,7 +1513,10 @@ else_11:
 	addi $sp, $sp, -4
 	sw $s2, 0($sp)
 	lw $s2, 8($sp)
-	jal Parse_abort
+	move $t0, $s2
+	lw $t0, 4($t0)
+	lw $t0, 12($t0)
+	jalr $t0
 	addi $sp, $sp, 4
 	lw $ra, 0($sp)
 	lw $s2, 4($sp)
@@ -1553,7 +1631,10 @@ else_12:
 	addi $sp, $sp, 8
 	sw $a0, 4($sp)
 	lw $s2, 12($sp)
-	jal Parse_a2i_aux
+	move $t0, $s2
+	lw $t0, 4($t0)
+	lw $t0, 52($t0)
+	jalr $t0
 	addi $sp, $sp, 8
 	lw $ra, 0($sp)
 	lw $s2, 4($sp)
@@ -1633,7 +1714,10 @@ else_13:
 	addi $sp, $sp, 8
 	sw $a0, 4($sp)
 	lw $s2, 12($sp)
-	jal Parse_a2i
+	move $t0, $s2
+	lw $t0, 4($t0)
+	lw $t0, 48($t0)
+	jalr $t0
 	addi $sp, $sp, 8
 	lw $ra, 0($sp)
 	lw $s2, 4($sp)
@@ -1650,7 +1734,10 @@ else_14:
 	lw $t0, 20($sp)
 	sw $t0, 4($sp)
 	lw $s2, 12($sp)
-	jal Parse_a2i_aux
+	move $t0, $s2
+	lw $t0, 4($t0)
+	lw $t0, 52($t0)
+	jalr $t0
 	addi $sp, $sp, 8
 	lw $ra, 0($sp)
 	lw $s2, 4($sp)
@@ -1857,7 +1944,10 @@ else_16:
 	addi $sp, $sp, 12
 	sw $a0, 4($sp)
 	lw $s2, 16($sp)
-	jal Parse_c2i
+	move $t1, $s2
+	lw $t1, 4($t1)
+	lw $t1, 44($t1)
+	jalr $t1
 	addi $sp, $sp, 8
 	lw $t0, 0($sp)
 	lw $ra, 4($sp)
@@ -1946,7 +2036,10 @@ Main_read_input:
 	addi $sp, $sp, -4
 	sw $s2, 0($sp)
 	lw $s2, 8($sp)
-	jal Parse_in_string
+	move $t0, $s2
+	lw $t0, 4($t0)
+	lw $t0, 28($t0)
+	jalr $t0
 	addi $sp, $sp, 4
 	lw $ra, 0($sp)
 	lw $s2, 4($sp)
@@ -2022,7 +2115,10 @@ loop_3:
 	lw $t0, 32($sp)
 	sw $t0, 4($sp)
 	lw $s2, 12($sp)
-	jal Parse_parse_line
+	move $t0, $s2
+	lw $t0, 4($t0)
+	lw $t0, 40($t0)
+	jalr $t0
 	addi $sp, $sp, 8
 	lw $ra, 0($sp)
 	lw $s2, 4($sp)
@@ -2045,7 +2141,10 @@ loop_3:
 	addi $sp, $sp, -4
 	sw $s2, 0($sp)
 	lw $s2, 8($sp)
-	jal Parse_in_string
+	move $t0, $s2
+	lw $t0, 4($t0)
+	lw $t0, 28($t0)
+	jalr $t0
 	addi $sp, $sp, 4
 	lw $ra, 0($sp)
 	lw $s2, 4($sp)
@@ -2089,7 +2188,10 @@ Main_parse_line:
 	lw $t0, 40($sp)
 	sw $t0, 4($sp)
 	lw $s2, 12($sp)
-	jal Parse_a2i
+	move $t0, $s2
+	lw $t0, 4($t0)
+	lw $t0, 48($t0)
+	jalr $t0
 	addi $sp, $sp, 8
 	lw $ra, 0($sp)
 	lw $s2, 4($sp)
@@ -2143,7 +2245,10 @@ loop_4:
 	lw $t0, 12($t0)
 	sw $t0, 4($sp)
 	lw $s2, 12($sp)
-	jal Parse_a2i
+	move $t0, $s2
+	lw $t0, 4($t0)
+	lw $t0, 48($t0)
+	jalr $t0
 	addi $sp, $sp, 8
 	lw $ra, 0($sp)
 	lw $s2, 4($sp)
@@ -2162,7 +2267,10 @@ loop_4:
 	lw $t0, 12($t0)
 	sw $t0, 4($sp)
 	lw $s2, 12($sp)
-	jal Parse_a2i
+	move $t0, $s2
+	lw $t0, 4($t0)
+	lw $t0, 48($t0)
+	jalr $t0
 	addi $sp, $sp, 8
 	lw $ra, 0($sp)
 	lw $s2, 4($sp)
@@ -2431,7 +2539,10 @@ else_27:
 	addi $sp, $sp, -4
 	sw $s2, 0($sp)
 	lw $s2, 8($sp)
-	jal Parse_abort
+	move $t0, $s2
+	lw $t0, 4($t0)
+	lw $t0, 12($t0)
+	jalr $t0
 	addi $sp, $sp, 4
 	lw $ra, 0($sp)
 	lw $s2, 4($sp)
@@ -2546,7 +2657,10 @@ else_28:
 	addi $sp, $sp, 8
 	sw $a0, 4($sp)
 	lw $s2, 12($sp)
-	jal Parse_a2i_aux
+	move $t0, $s2
+	lw $t0, 4($t0)
+	lw $t0, 52($t0)
+	jalr $t0
 	addi $sp, $sp, 8
 	lw $ra, 0($sp)
 	lw $s2, 4($sp)
@@ -2626,7 +2740,10 @@ else_29:
 	addi $sp, $sp, 8
 	sw $a0, 4($sp)
 	lw $s2, 12($sp)
-	jal Parse_a2i
+	move $t0, $s2
+	lw $t0, 4($t0)
+	lw $t0, 48($t0)
+	jalr $t0
 	addi $sp, $sp, 8
 	lw $ra, 0($sp)
 	lw $s2, 4($sp)
@@ -2643,7 +2760,10 @@ else_30:
 	lw $t0, 20($sp)
 	sw $t0, 4($sp)
 	lw $s2, 12($sp)
-	jal Parse_a2i_aux
+	move $t0, $s2
+	lw $t0, 4($t0)
+	lw $t0, 52($t0)
+	jalr $t0
 	addi $sp, $sp, 8
 	lw $ra, 0($sp)
 	lw $s2, 4($sp)
@@ -2850,7 +2970,10 @@ else_32:
 	addi $sp, $sp, 12
 	sw $a0, 4($sp)
 	lw $s2, 16($sp)
-	jal Parse_c2i
+	move $t1, $s2
+	lw $t1, 4($t1)
+	lw $t1, 44($t1)
+	jalr $t1
 	addi $sp, $sp, 8
 	lw $t0, 0($sp)
 	lw $ra, 4($sp)
@@ -3210,7 +3333,10 @@ __init_Main__:
 	addi $sp, $sp, -4
 	sw $s2, 0($sp)
 	lw $s2, 12($sp)
-	jal Main_read_input
+	move $t0, $s2
+	lw $t0, 4($t0)
+	lw $t0, 36($t0)
+	jalr $t0
 	addi $sp, $sp, 4
 	lw $s1, 0($sp)
 	lw $ra, 4($sp)
@@ -3879,6 +4005,9 @@ String_abort:
 	la $a0, String
 	li $v0, 4
 	syscall
+	la $a0, newline
+	li $v0, 4
+	syscall
 	li $v0, 10
 	syscall
 Int_abort:
@@ -3888,6 +4017,9 @@ Int_abort:
 	la $a0, Int
 	li $v0, 4
 	syscall
+	la $a0, newline
+	li $v0, 4
+	syscall
 	li $v0, 10
 	syscall
 Bool_abort:
@@ -3895,6 +4027,9 @@ Bool_abort:
 	li $v0, 4
 	syscall
 	la $a0, Bool
+	li $v0, 4
+	syscall
+	la $a0, newline
 	li $v0, 4
 	syscall
 	li $v0, 10
