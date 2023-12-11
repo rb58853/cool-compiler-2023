@@ -19,37 +19,44 @@ def test_all_cases():
         with open(dir, "r") as f:
             code = f.read()
         with open(dir_error, "r") as f:
-            errors:list[str] = []
-            for line in f:
-                errors.append(line)
+            errors = f.read()
+            # errors:list[str] = []
+            # for line in f:
+            #     errors.append(line)
         
         lexer = CoolLexer()
         
         for token in lexer.tokenize(code): pass
         
         equals = True
-        if len(errors) == len(lexer.errors):
-            for e0,e1 in zip(errors,lexer.errors):
-                if e0.replace('\n', '').replace(' ','') != str(e1).replace(' ','').replace('\n', ''):
-                    equals = False
-                    break    
+        # if len(errors) == len(lexer.errors):
+        if True:
+            full_lines = ""
+            for e in lexer.errors:
+                full_lines +=f'{e}\n'
+
+            # full_lines = full_lines[:-1]
+            if full_lines != errors:
+                equals = False
+
+            # for e0,e1 in zip(errors,lexer.errors):
+            #     if e0.replace('\n', '').replace(' ','') != str(e1).replace(' ','').replace('\n', ''):
+            #         equals = False
+            #         break    
 
             if equals:
                 print(Fore.GREEN)
                 # print(f'{case} PASSED')
                 print(f'\n######################### {case} #############################')
-                for e in lexer.errors:
-                    print(e)
+                print(lexer.errors)
             else:
                 print(Fore.RED)
                 print(f'\n######################### {case} #############################')
 
                 print('----------------------LEXER ERRORS---------------------------')
-                for e in lexer.errors:
-                    print(e)
+                print(full_lines)
                 print ("\n---------------------EXPECTED ERRORS:-------------------------")
-                for e in errors:
-                    print(e.replace('\n', ''))   
+                print(errors)   
         else:
             print(Fore.RED)
             print(f'\n######################### {case} #############################')

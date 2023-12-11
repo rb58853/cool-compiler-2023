@@ -9,4 +9,4 @@ echo "Copyright (c) 2019: Nombre1, Nombre2, Nombre3"    # TODO: líneas a los va
 
 # Llamar al compilador
 # python $INPUT_FILE into $OUTPUT_FILE"
-python3 comp.py $INPUT_FILE $OUTPUT_FILE
+python3 cool.py $INPUT_FILE $OUTPUT_FILE
