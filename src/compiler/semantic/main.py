@@ -2,13 +2,14 @@ from compiler.parser.cool_parser import CoolLexer, CoolParser
 from compiler.AST.ast import CoolProgram
 from compiler.semantic.semantic_ import semantic, Semantic
 from compiler.semantic.semantic_visitor import init_classes, init_types, validate_program
-
+from env import PASSED
 import os
 import colorama
 from colorama import Fore
 colorama.init()
 
-base_dir = os.getcwd()
+base_dir = "../"
+# base_dir = os.getcwd()
 base_url = os.path.join(base_dir, "tests/semantic/")
 
 def test_all_cases(index = 0):
@@ -44,6 +45,7 @@ def simple_case(case):
     
     validate_program(program)
 
+    PASSED[1]+=1
     if len(semantic.errors) > 0:
         e = str(semantic.errors[0])
         # if e != error:
@@ -56,11 +58,12 @@ def simple_case(case):
             print ("\n---------------------EXPECTED ERRORS:-------------------------")
             print(error) 
         else:
+            PASSED[0]+=1
             print(Fore.GREEN)
             print(f'{case} ',end='')
             for i in range(0,20-len(case)):
                 print('-',end='')
-            print(f' | {semantic.errors[0]}')
+            print(f' | {semantic.errors[0]}', end = "")
     else:
         print(Fore.RED)
         print(f'\n\n\n######################### {case} #############################')
@@ -69,6 +72,8 @@ def simple_case(case):
         print ("\n---------------------EXPECTED ERRORS:-------------------------")
         print(error) 
 
+    print(Fore.WHITE)
+    
 def get_token(case,token):
     print (Fore.YELLOW)
     dir = '/'.join([base_url,case])
@@ -79,5 +84,3 @@ def get_token(case,token):
     for t in lexer.tokenize(code):
         if t.value == token:
             print(t)
-
-

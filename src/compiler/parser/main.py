@@ -1,12 +1,14 @@
 from compiler.parser.cool_parser import CoolLexer, CoolParser
+from env import PASSED
 import os
 import colorama
 from colorama import Fore
 colorama.init()
 
 def test_all_cases():
-    print("\n___________________LEXER TESTS____________________")
-    base_dir = os.getcwd()
+    print("\n___________________PARSER TESTS____________________")
+    # base_dir = os.getcwd()
+    base_dir = "../"
     base_url = os.path.join(base_dir, "tests/parser/")
     cases = [case for case in os.listdir(base_url) if case.endswith('.cl')] 
     cases.sort()
@@ -26,7 +28,7 @@ def test_all_cases():
         lexer = CoolLexer()
         parser = CoolParser(lexer=lexer)
         parser.parse(lexer.tokenize(code)) 
-        
+        PASSED[1] +=1
         equals = True
         if len(errors) == len(parser.errors):
             for e0,e1 in zip(errors,parser.errors):
@@ -35,6 +37,7 @@ def test_all_cases():
                     break    
 
             if equals:
+                PASSED[0] +=1
                 print(Fore.GREEN)
                 print(f'{case}: {errors[0]}')
             else:
@@ -55,4 +58,4 @@ def test_all_cases():
             print ("\n---------------------LEXER ERRORS:-------------------------")
             for e in errors:
                 print(e)        
-        
+    print(Fore.WHITE)    

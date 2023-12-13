@@ -1,4 +1,5 @@
 from compiler.lexer.cool_lexer import CoolLexer
+from env import PASSED
 import os
 import colorama
 from colorama import Fore
@@ -6,7 +7,8 @@ colorama.init()
 
 def test_all_cases():
     print("\n___________________LEXER TESTS____________________")
-    base_dir = os.getcwd()
+    # base_dir = os.getcwd()
+    base_dir = "../"
     base_url = os.path.join(base_dir, "tests/lexer/")
     cases = [case for case in os.listdir(base_url) if case.endswith('.cl')] 
     cases.sort()
@@ -29,32 +31,27 @@ def test_all_cases():
         for token in lexer.tokenize(code): pass
         
         equals = True
-        # if len(errors) == len(lexer.errors):
-        if True:
-            full_lines = ""
-            for e in lexer.errors:
-                full_lines +=f'{e}\n'
+        full_lines = ""
+        for e in lexer.errors:
+            full_lines +=f'{e}\n'
 
-            # full_lines = full_lines[:-1]
-            if full_lines.replace(" ", "").replace("\n", "") != errors.replace(" ", "").replace("\n", ""):
-                equals = False
-
-            # for e0,e1 in zip(errors,lexer.errors):
-            #     if e0.replace('\n', '').replace(' ','') != str(e1).replace(' ','').replace('\n', ''):
-            #         equals = False
-            #         break    
-
-            if equals:
-                print(Fore.GREEN)
-                # print(f'{case} PASSED')
-                print(f'\n######################### {case} #############################')
-                print(full_lines)
-            else:
-                print(Fore.RED)
-                print(f'\n######################### {case} #############################')
-
-                print('----------------------LEXER ERRORS---------------------------')
-                print(full_lines)
-                print ("\n---------------------EXPECTED ERRORS:-------------------------")
-                print(errors)   
+        if full_lines.replace(" ", "").replace("\n", "") != errors.replace(" ", "").replace("\n", ""):
+            equals = False
         
+        PASSED[1]+=1
+
+        if equals:
+            print(Fore.GREEN)
+            # print(f'{case} PASSED')
+            print(f'\n######################### {case} #############################')
+            print(full_lines)
+            PASSED[0]+=1
+        else:
+            print(Fore.RED)
+            print(f'\n######################### {case} #############################')
+            print('----------------------LEXER ERRORS---------------------------')
+            print(full_lines)
+            print ("\n---------------------EXPECTED ERRORS:-------------------------")
+            print(errors)   
+            
+    print(Fore.WHITE)
