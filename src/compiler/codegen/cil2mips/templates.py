@@ -1,5 +1,16 @@
 from compiler.codegen.cool2cil.codegener import NameLabel
 
+class VoidError:
+    def code():
+        return [
+        f'VoidError:',
+        '\tla $a0, void_error',  #texto del abort en la seccion de data
+        '\tli $v0, 4',      #El 4 es para imprimir string
+	    '\tsyscall',        #llamanda al sistema
+        '\tli $v0, 10',     #Codigo para cerrar el programa
+        '\tsyscall'
+        ]  
+    
 class OutString:
     '''Imprime en consola el primer argumento (distinto de self), devuelve una instancia de si mismo'''
     name = 'out_string'
@@ -80,7 +91,6 @@ class InString:
         ]
   # Leer el string ingresado por el usuario
   
-    
 class TypeName:
     '''Imprime texto con el nombre del tipo de una instancia dada'''
     name = 'type_name'
@@ -114,8 +124,29 @@ class Abort:
 class Copy: #TODO
     name = 'copy'
     def code():
+        label = NameLabel('loop_copy_instance').get()
         return [
         'copy:',
+        '\tlw $t0, 0($sp)',  #intancia que entra al metodo, t0 es la posicion de la instancia
+        '\tlw $t1, 4($t0)',  #parte estatica de la instancia de entrada
+        '\tlw $t1, 4($t1)',  #en la posicion 4 de la parte estatica esta el espacio que ocupa el tipo de esa instancia
+        '\tmove $t4, $t1',   #mueve a t4 El espacio que se reservo, la cantidad
+        '\tmove $a0, $t1' ,  #mueve a $a0 el espacio que se debe reservar
+        '\tli $v0, 9',       # Código de sistema para sbrk
+        '\tsyscall',
+        
+        '\tli $t2, 0',       #pone valor zero en t2, este sera el contador del espacio que se ha estado llenandoy cargado, comienza en 5 xq el primer ciclo lo cuenta
+        '\tmove $t1, $v0',  #mueve a t1 la direccion de memoria que se reservo
+        
+        f'\t{label}:',          #label para repetir el ciclo y copiar la instancia
+        '\tlw $t3, 0($t0)'  ,   #guarda en t3 la palabra en cuestion de la instancia
+        '\tsw $t3, 0($t1)'  ,   #mueve t3 a la direccin en cuestion que esta en t1
+        '\taddi $t0, $t0, 4',   #auenta t0 en 4
+        '\taddi $t1, $t1, 4',   #auenta t1 en 4
+        '\taddi $t2, $t2, 4',   #auenta t2 en 4
+        f'\tblt $t2, $t4, {label}',       #en t4 esta el espacio el valor del espacio reservado, si el contador es menor que el espacio repetir el ciclo, en otro caso salir
+        
+        '\tmove $a0, $v0',     #mueve el valor de la direccion que se reservo a a0
         '\tjr $ra'
         ]        
 
@@ -164,7 +195,7 @@ class Substring:
         ########################### Reservar Memoria
         '\taddi $t4, $t1, 1',         #Guarda en $t4 el tamanno que debe tener el nuevo substring +1 (caracter nulo)
         '\tadd $a0, $zero, $t4',      # Reservar espacio igual a $t1 + 1 que es el length del nuevo substring
-        '\tli $v0, 9',               # Código de sistema para sbrk
+        '\tli $v0, 9',                # Código de sistema para sbrk
         '\tsyscall',  
         '\tmove $t3, $v0',            #Guarda en 3 la direccion de memoria donde se va a guardar el nuevo substring
         
@@ -280,15 +311,17 @@ class ConstantAbort:
         '\tli $v0, 10',     #Codigo para cerrar el programa
         '\tsyscall'
         ]
+    
+class ConstantCopy:
+    '''Devuelve la misma instancia que se le pasa, esto es asi con las constantes'''
+    def __init__(self, type) -> None:
+        self.name = f'{type}_copy:'
+        self.type = type
 
-class VoidError:
-    def code():
+    def code(self):
         return [
-        f'VoidError:',
-        '\tla $a0, void_error',  #texto del abort en la seccion de data
-        '\tli $v0, 4',      #El 4 es para imprimir string
-	    '\tsyscall',        #llamanda al sistema
-        '\tli $v0, 10',     #Codigo para cerrar el programa
+        f'{self.name}',
+        '\tlw $a0, 0($sp)',     #las constantes no necesitan crear espacio en memoria, se usa el mismo puntero
         '\tsyscall'
         ]    
     
@@ -297,7 +330,8 @@ uninherits_methods = [Length, Substring, Concat, VoidError]
  
 #TODO usar los nombres de env
 contants = [ConstantTypeName("String"),ConstantTypeName("Int"),ConstantTypeName("Bool"),
-            ConstantAbort("String"),ConstantAbort("Int"),ConstantAbort("Bool")]
+            ConstantAbort("String"),ConstantAbort("Int"),ConstantAbort("Bool"),
+            ConstantCopy("String"),ConstantCopy("Int"),ConstantCopy("Bool")]
 
 class IO:
     '''Crea una instancia de la clase IO, la guarda en memoria y devuelve su putero'''

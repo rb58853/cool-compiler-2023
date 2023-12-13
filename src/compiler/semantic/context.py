@@ -277,6 +277,7 @@ class FunctionContext(TypeContext):
             
             self.functions[func.ID.id] = func
             context.name = str(func)
+            context.type = func.type
             return context  #define la funcion y devuelve el nuevo contexto interno de esta, hijo del contexto desde el cual fue definida la funcion, lo cal seria el contexto de una clase
         else:
             return False     
@@ -550,7 +551,10 @@ class Context(PrintContext):
         token_pos_1 = obj.token_pos[1]
 
         if func != False:
-            obj.id.set_type(func.type)
+            #Esto hace que en caso de ser SELF_TYPE le aigna el tipo del contexto dado, porque todos los contextos tienen SELF_TYPE: self
+            obj.id.set_type(self.get_context_from_type(func.type).type)
+            # obj.id.set_type(func.type)
+                     
             # obj.type = func.get_type()
             if len(func.params.childs()) == len(obj.params):
                 for param_func, param_call in zip(func.params.childs(), obj.params):

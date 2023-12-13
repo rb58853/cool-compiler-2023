@@ -3,9 +3,10 @@ import compiler.lexer.main as lexer
 import compiler.parser.main as parser
 import compiler.codegen.cool2cil.main as cil
 import compiler.codegen.cil2mips.main as mips
+from compiler.codegen.tests import run as codegen
 
-file = 'graph'
-mips.mips_code(cil.cil_program(file), file)
+INPUT = f'case4'
+codegen(INPUT)
 
 # lexer.test_all_cases()
 # parser.test_all_cases()

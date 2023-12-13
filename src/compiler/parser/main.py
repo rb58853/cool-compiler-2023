@@ -36,7 +36,7 @@ def test_all_cases():
 
             if equals:
                 print(Fore.GREEN)
-                print(f'{case} PASSED')
+                print(f'{case}: {errors[0]}')
             else:
                 print(Fore.RED)
                 print(f'\n######################### {case} #############################')

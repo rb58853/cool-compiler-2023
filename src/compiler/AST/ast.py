@@ -127,9 +127,10 @@ class Node(PlotNode):
         return cclass.inherit_from_type(type)
 
     def get_type_as_class(self):
-        # temp_cotext = self.context.get_context_from_type(self.type)
+        '''Busca en el contexto el contexto que representa a este tipo, el diccionario context.types se enceuntra una asignacion str:Context que dado un tipo en string devuelve el contexto de este, luego de este contexto obtiene la clase, ya que es un contexto de un tipo, tendra asosiada una clase(un tipo).'''
         if self.context == None:
             self.get_contex_from_father()
+        
         temp_cotext = self.context.get_context_from_type(self.get_type())
         if temp_cotext == False:
             return None
@@ -138,9 +139,9 @@ class Node(PlotNode):
     
     def get_type(self):
         if self.check_type: return self.type
-        if self.type == env.self_type_name:
-            self.type = self.context.get_context_from_type(env.self_type_name).type
-            self.check_type = True
+        # if self.type == env.self_type_name:
+        #     self.type = self.context.get_context_from_type(env.self_type_name).type
+        #     self.check_type = True
         return self.type
 
     def validate(self): #override this
@@ -1116,6 +1117,8 @@ class Feature():
                 if isinstance(scope_type, list):
                     return case_multiple_types(self.scope, type)
                 
+                type = self.context.get_context_from_type(type).type# esto hace que si el tipo es SELF_TYPE sea entonces el mismo, en caso contrario sera el mismo
+
                 if scope_type == type or self.scope.inherit_from_type(type) :
                     return True
                 else:

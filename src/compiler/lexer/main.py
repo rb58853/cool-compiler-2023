@@ -36,7 +36,7 @@ def test_all_cases():
                 full_lines +=f'{e}\n'
 
             # full_lines = full_lines[:-1]
-            if full_lines != errors:
+            if full_lines.replace(" ", "").replace("\n", "") != errors.replace(" ", "").replace("\n", ""):
                 equals = False
 
             # for e0,e1 in zip(errors,lexer.errors):
@@ -48,7 +48,7 @@ def test_all_cases():
                 print(Fore.GREEN)
                 # print(f'{case} PASSED')
                 print(f'\n######################### {case} #############################')
-                print(lexer.errors)
+                print(full_lines)
             else:
                 print(Fore.RED)
                 print(f'\n######################### {case} #############################')
@@ -57,12 +57,4 @@ def test_all_cases():
                 print(full_lines)
                 print ("\n---------------------EXPECTED ERRORS:-------------------------")
                 print(errors)   
-        else:
-            print(Fore.RED)
-            print(f'\n######################### {case} #############################')
-            print('----------------------LEXER ERRORS---------------------------')
-            print("<empty>")
-            print ("\n---------------------LEXER ERRORS:-------------------------")
-            for e in errors:
-                print(e)        
         

@@ -18,7 +18,6 @@ class CoolParser(Parser):
         ('left', "ISVOID"),         #lv6
         ('left', '~'),              #lv7 
         ('left', '@'),              #lv8
-        # ('right', 'IN'),            #lv9  Se agrega esta precedence extra dado que let se puede declarar sin usar IN, luego hay que dar prioridad cuando este aparece
         ('left', '.'),              #lv10
     )
     
@@ -94,11 +93,6 @@ class CoolParser(Parser):
     def class_list(self, p):
         return [p.cclass] + p.class_list
     
-    # # @_('CLASS TYPE INHERITS TYPE "{" class_feature "}"')
-    # # def cclass(self, p):
-    # #     return CoolClass(type=p[1],inherit=p[3],features=p.class_feature,token_pos=(p.lineno,self.token_pos(p)))
-    
-    
     @_('CLASS TYPE INHERITS type "{" class_feature "}"')
     def cclass(self, p):
         type_pos =(p._slice[1].lineno,self.token_pos(p._slice[1]))
@@ -151,26 +145,6 @@ class CoolParser(Parser):
     def expr(self, p):
         #expr::= ID <- expr
         return Assign('<-', CoolID(p[0]), p[2],token_pos=(p.lineno,self.token_pos(p)), op_pos=(p._slice[1].lineno,self.token_pos(p._slice[1])))
-    
-#region old dispatch
-    # @_('expr "@" TYPE "." ID "(" expr_list ")"')#, 'expr "@" TYPE "." ID "(" ")"' )
-    # def expr(self, p):
-    #     ID = CoolCallable(p.ID,p.expr_list)
-    #     return Dispatch(p.expr,p.TYPE,ID, token_pos=(p.lineno,self.token_pos(p)))
-    # @_('expr "@" TYPE "." ID "(" ")"')
-    # def expr(self,p):
-    #     ID = CoolCallable(p.ID,[])
-    #     return Dispatch(p.expr,p.TYPE,ID,token_pos=(p.lineno,self.token_pos(p)))
-    
-    # @_('expr "." ID "(" expr_list ")"')
-    # def expr(self, p):
-    #     ID = CoolCallable(p.ID,p.expr_list)
-    #     return Dispatch(p.expr,None,ID,token_pos=(p.lineno,self.token_pos(p)))
-    # @_('expr "." ID "(" ")"')
-    # def expr(self, p):
-    #     ID = CoolCallable(p.ID,[])
-    #     return Dispatch(p.expr,None,ID,token_pos=(p.lineno,self.token_pos(p)))
-    #endregion
     
     @_('expr "@" TYPE "." callable')#, 'expr "@" TYPE "." ID "(" ")"' )
     def expr(self, p):

@@ -38,7 +38,7 @@ class ObjectClass:
             return Feature.CoolDef('abort',env.object_type_name, [], CoolNew(env.object_type_name), token_pos=(0,0))
         def copy():
             #copy() : SELF_TYPE
-            return Feature.CoolDef('copy',env.object_type_name, [], CoolNew(env.object_type_name), token_pos=(0,0))
+            return Feature.CoolDef('copy',env.self_type_name, [], CoolID(env.self_name,env.self_type_name), token_pos=(0,0))
     
 class StringClass:
     type = env.string_type_name

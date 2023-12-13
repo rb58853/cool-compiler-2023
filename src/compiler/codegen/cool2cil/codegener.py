@@ -11,7 +11,7 @@ from compiler.AST.ast import CoolProgram, CoolClass, Feature, expr, IntNode, Coo
 6. El registro $s7 se usa en isVoid. Si esta expresion es usada, este reistro es sobreescrito.
 7. El registro $s5, $s6 y$s7 se usa para comparar tipos estatico en el case, en la parte izquierda del case no se usa operaciones de igualdad, si se comparan dos cases se compara la salida, en ese momento los registros s5 y s6 ya no son usados por el case. Pasa igual con $s7
 '''
-#esto es para usar operaciones con valores inmediatos, por ejemplo addi $s0, $1, 5 . Las constantes solo admiten 16 bytes. Valor default = False
+#esto es para usar operaciones con valores inmediatos, por ejemplo addi $s0, $1, 5 . Las constantes solo admiten 16 bytes. Valor default = True
 USE_i = True
 
 ATRS_INIT_INDEX = 8 #en la posicion cero va TYPE_SELF(type_name), en la posicion 4 va parte estatica
@@ -91,9 +91,10 @@ class Data:
     def free():
         Data.body = [
                     'abort: .asciiz "Abort called from class "',
-                    'case_error: .asciiz "error case not have dinamyc type"',
-                    'void_error: .asciiz "void error"',
-                    'substring_error: .asciiz "error substring is out of range"',
+                    'case_error: .asciiz "Error: case not have dinamyc type\\n"',
+                    'void_error: .asciiz "Error: void type can not use dispatch\\n"',
+                    'void_error_in_case: .asciiz "Error: the expression in case is void\\n"',
+                    'substring_error: .asciiz "Error: substring is out of range\\n"',
                     'String: .asciiz "String"',
                     'Bool: .asciiz "Bool"',
                     'Int: .asciiz "Int"',
@@ -481,10 +482,12 @@ class CILVoid(CILExpr):
         return [f'la {self.dest}, StaticVoid'] #Este es el none de Cool   
 
 class CILIsVoid(CILExpr):
-    def __init__(self, dest) -> None:
+    def __init__(self, value, dest = "$s7") -> None:
         super().__init__()
-        '''Recibe una variable y devuelve si es void o no, sobrescribe el valor del temporal por su condicion isVoid, es decir 0 o 1'''
+        '''Recibe una variable y devuelve si es void o no, guarda el resultado en el registro $s7, es decir 0 o 1, dado que los booleanos tinen un uso directo sin operacion binaria, una vez se pda isVoid se usa su valor de retorno al momento, luego este puede ser sobresrito, en caso de ser usado en una expresion `=` la misma se encarga de guardar guardar su valor en un temoral para compararlo con otro. Este seria el caso `isvoid <expr> = isvoid <expr>`'''
+
         super().__init__()
+        self.value = value
         self.dest = dest
         self.label_equals = NameLabel('equals').get()
         self.label_end = NameLabel('end_equals').get()
@@ -493,13 +496,17 @@ class CILIsVoid(CILExpr):
     def __str__(self) -> str:
         return f'isVoid({self.dest})'
     def to_mips(self):
+        value = self.value         
+        if self.value[0]!='$':
+            value = f'$t{value[5:]}'
+        
         dest = self.dest         
         if self.dest[0]!='$':
             dest = f'$t{dest[5:]}'
         
         return[
             'la $s7, StaticVoid',
-            f'beq {dest}, $s7, {self.label_equals}',
+            f'beq {value}, $s7, {self.label_equals}',
             f'li {dest}, 0', #no es igual a void
             f'j {self.label_end}', #salta a la etiqueta final
             f'{self.label_equals}:', #eiqueta equals
@@ -553,11 +560,6 @@ class CILReturn(CILExpr):
         return f'return {self.ret}'
     def __repr__(self) -> str:
         return self.__str__()    
-
-class CILAttribute():
-    def __init__(self, name):
-        super().__init__()
-        self.name = name
 
 class CILAssign(CILExpr):
     def __init__(self, dest:str, source, is_temp = True):
@@ -700,17 +702,6 @@ class CILCallAtr(CILExpr):
     def to_mips(self):
         lines = ['']
     
-class CILCall(CILExpr):
-    def __init__(self, instance, method, arguments):
-        super().__init__()
-        self.instance = instance  
-        self.method = method     
-        self.arguments = arguments 
-
-    def __str__(self):
-        args_str = ", ".join(arg.get_id() for arg in self.arguments)
-        return f"{self.get_id()} = call {self.instance.get_id()}.{self.method}({args_str})"
-
 class CILBlock(CILExpr):
 
     def __init__(self, instructions):
@@ -720,24 +711,6 @@ class CILBlock(CILExpr):
     def __str__(self):
         instr_str = " ".join(str(instr) for instr in self.instructions)
         return f"{{ {instr_str} }}"
-
-class CILAllocate(CILExpr):
-    
-    def __init__(self, type_name):
-        super().__init__()
-        self.type_name = type_name  # El nombre del tipo que se asigna memoria
-
-    def __str__(self):
-        return f"{self.get_id()} = ALLOCATE {self.type_name}"
-
-class CILFree(CILExpr):
-    
-    def __init__(self, instance):
-        super().__init__()
-        self.instance = instance  # La instancia de memoria qse libera
-
-    def __str__(self):
-        return f"FREE {self.instance.get_id()}"
 
 class CILCommet(CILExpr):
     def __init__(self, text = '#comment') -> None:
@@ -1024,6 +997,20 @@ class CaseError(CILExpr):
             '\tli $v0, 10',         #Codigo para cerrar el programa
             '\tsyscall'
         ]    
+    
+class CaseErrorVoid(CaseError):
+    def __init__(self) -> None:
+        super().__init__()
+    def __str__(self) -> str:
+        return "runtime error in case, expression is void"
+    def to_mips(self):
+        return [
+            'la $a0, void_error_in_case',  #texto del abort en la seccion de data
+            'li $v0, 4',           #El 4 es para imprimir string
+	        'syscall',             #llamanda al sistema
+            '\tli $v0, 10',         #Codigo para cerrar el programa
+            '\tsyscall'
+        ]    
 
 class MipsExpr(CILExpr):
     def __init__(self) -> None:
@@ -1112,6 +1099,7 @@ class IfMips(MipsExpr):
         self.body = body
         # self.dest = body.dest
         self.label = NameLabel("end_if_temps").get()
+        self.use_as_current = False
 
     def __str__(self) -> str:
         return f'if {self.condition}: {self.body}'
@@ -1340,48 +1328,6 @@ class DivExpression:
         # TempNames.free([temp])
 
     def arithmetic(aritmetic: ArithmeticOP, body:Body, scope:dict = {}):
-        mult_div = (aritmetic.op == '/' or aritmetic.op == '*')
-        #Las operaciones aritmeticas se peden guardar en el mismo temporal de uno de los que use siempre que sea un temporal
-        # if (IsType.int(aritmetic.left)) and (IsType.int(aritmetic.right) ) and not mult_div and USE_i:
-        #     body.add_expr(CILAssign(TempNames.get_name(),aritmetic.left))
-        #     left_value = body.current_value()
-
-        #     if left_value[0]!='$' and left_value != 'a0': 
-        #         body.add_expr(CILAssign(left_value,CILArithmeticOp(left_value,rigth_value,aritmetic.op)))
-        #         TempNames.free([rigth_value])
-        #     else:
-        #         body.add_expr(CILAssign(TempNames.get_name(),CILArithmeticOp(left_value,rigth_value,aritmetic.op)))
-        #         TempNames.free([left_value,rigth_value])
-            
-        #     # TempNames.free([left_value])
-        # elif isinstance(aritmetic.left, IntNode) and (aritmetic.op == '+') and not mult_div and USE_i:# or lefth_is_id_and_not_atr):
-        #     DivExpression(aritmetic.right,body,scope)
-        #     rigth_value = body.current_value()
-            
-        #     if rigth_value[0]!='$' and left_value != 'a0': 
-        #         body.add_expr(CILAssign(rigth_value,CILArithmeticOp(left_value,rigth_value,aritmetic.op)))
-        #         TempNames.free([rigth_value])
-        #     else:
-        #         body.add_expr(CILAssign(TempNames.get_name(),CILArithmeticOp(left_value,rigth_value,aritmetic.op)))
-        #         TempNames.free([left_value,rigth_value])
-            
-        #     # body.add_expr(CILAssign(rigth_value,CILArithmeticOp(rigth_value,aritmetic.left,aritmetic.op, constant=True)))
-        #     # TempNames.free([rigth_value])
-        # elif (isinstance(aritmetic.right, IntNode))and not mult_div and USE_i:
-        #     DivExpression(aritmetic.left,body,scope)
-        #     left_value = body.current_value()
-            
-        #     if left_value[0]!='$' and left_value != 'a0': 
-        #         body.add_expr(CILAssign(left_value,CILArithmeticOp(left_value,rigth_value,aritmetic.op)))
-        #         TempNames.free([rigth_value])
-        #     else:
-        #         body.add_expr(CILAssign(TempNames.get_name(),CILArithmeticOp(left_value,rigth_value,aritmetic.op)))
-        #         TempNames.free([left_value,rigth_value])
-        #     # body.add_expr(CILAssign(left_value,CILArithmeticOp(body.current_value(),aritmetic.right,aritmetic.op, constant=True)))
-            
-        #     # TempNames.free([ left_value])
-        # else:
-        
         DivExpression(aritmetic.left,body,scope)
         left_value = body.current_value()
         left = left_value
@@ -1396,7 +1342,8 @@ class DivExpression:
         body.add_expr(CILAssign(left,CILArithmeticOp(left,rigth_value,aritmetic.op)))
         TempNames.free([rigth_value])
         #cuando yo termino una operacion aritmetica, yo puedo volver a utilizar los variables donde no guarde el resultado, dado la naturaleza del codigo recursivo que va desde hijos a padres, solo me interesa conservar la varable donde se asigno el valor de la operacion. Luego las variables que use en el cuerpo de la operacion no las necesito, por lo tanto pueden volver a usarse.
-    
+        return body.current_value()
+
     def logical(logicar:Logicar, body:Body, scope:dict = {}):
         if logicar.op != '=':
             DivExpression.logicar_not_eq(logicar, body, scope)
@@ -1406,29 +1353,20 @@ class DivExpression:
     def logicar_eq(logicar:Logicar, body:Body, scope:dict = {}):
         if logicar.left.get_type() != env.string_type_name:
             DivExpression(logicar.left,body,scope)
-            was_call = False
-            if body.current_value() =='$a0':
-                    #si es el retorno de una funcion hay que guardar uno en un temporal
-                    left_value = body.current_value()
-                    # temp = body.current_value()
-                    # temp = TempNames.get_name()
-                    body.add_expr(CILAssign(left_value,'$a0'))
-                    was_call = True
-                    
             left_value = body.current_value()
+            left = left_value
+            if left_value[0]=='$' or left_value == 'a0': 
+                #si no es un registro temporal lo que sale de la expresion izquierda hay que meterlo en un temporal
+                left = TempNames.get_name()
+                body.add_expr(MoveMips(left,left_value))
+
             DivExpression(logicar.right,body,scope)
             rigth_value = body.current_value()
             # temp1 = TempNames.get_name()
-            body.add_expr(CILAssign(left_value,CILLogicalOP(left_value,rigth_value,logicar.op)))
-            TempNames.free([left_value,rigth_value])
+            body.add_expr(CILAssign(left,CILLogicalOP(left_value,rigth_value,logicar.op)))
+            TempNames.free([left_value,rigth_value, left])
             
-            #TODO ERROR antes cuando no se liberaba temp1 funcionaba
-            # TempNames.free([temp1])
-
-            # if was_call:
-            #     TempNames.free([temp])
         else:
-            was_call = False
             #En caso de ser string hay que usar el comparador de strings
             if isinstance(logicar.left, CoolString):
                 #en caso de ser un string constante solo hace falta cargarlo
@@ -1436,14 +1374,13 @@ class DivExpression:
             else:    
                 #en caso contrario hay que dividir la expresion
                 DivExpression(logicar.left,body,scope)
-                if body.current_value() =='$a0':
-                    #si es el retorno de una funcion hay que guardar uno en un temporal
-                    left_value = body.current_value()
-                    body.add_expr(CILAssign(left_value,'$a0'))
-                    was_call = True
-
                 left_value = body.current_value()
-            
+                left = left_value
+                if left_value[0]=='$' or left_value == 'a0': 
+                    #si no es un registro temporal lo que sale de la expresion izquierda hay que meterlo en un temporal
+                    left = TempNames.get_name()
+                    body.add_expr(MoveMips(left,left_value))
+
             if isinstance(logicar.right, CoolString):
                 #en caso de ser un string constante solo hace falta cargarlo
                 rigth_value = DivExpression.load_string(logicar.right,body, scope)
@@ -1452,50 +1389,29 @@ class DivExpression:
                 DivExpression(logicar.right,body,scope)
                 rigth_value = body.current_value()
 
-            # temp = TempNames.get_name()
-            # body.add_expr(CILAssign(temp,CILogicalString(left_value,rigth_value,'=')))
-            body.add_expr(CILogicalString(left_value,rigth_value,'='))
-            TempNames.free([left_value,rigth_value])
+            body.add_expr(CILogicalString(left,rigth_value,'='))
+            TempNames.free([left_value,rigth_value, left])
+        return body.current_value()
             
-            # if was_call:
-            #     TempNames.free([temp])
-
     def logicar_not_eq(logicar:Logicar, body:Body, scope:dict = {}):
-        if (IsType.int(logicar.left)) and (IsType.int(logicar.right)):
-            body.add_expr(CILAssign(TempNames.get_name(),logicar.left))
-            left_value = body.current_value()
-            body.add_expr(CILAssign(TempNames.get_name(),logicar.right))
-            rigth_value = body.current_value()
-            body.add_expr(CILAssign(left_value,CILLogicalOP(left_value,rigth_value, logicar.op)))
-            # TempNames.free([left_value,rigth_value])
-            TempNames.free([left_value,rigth_value])
-
-        elif isinstance(logicar.left, IntNode):
-            body.add_expr(CILAssign(TempNames.get_name(),logicar.left))
-            left_value = body.current_value()
-            DivExpression(logicar.right,body,scope)
-            rigth_value = body.current_value()
-            body.add_expr(CILAssign(left_value,CILLogicalOP(left_value,rigth_value,logicar.op)))
-            TempNames.free([left_value,rigth_value])
+        DivExpression(logicar.left,body,scope)
+        left_value = body.current_value()
+        left = left_value
+        if left_value[0]=='$' or left_value == 'a0': 
+            #si no es un registro temporal lo que sale de la expresion izquierda hay que meterlo en un temporal
+            left = TempNames.get_name()
+            body.add_expr(MoveMips(left,left_value))
         
-        elif isinstance(logicar.right, IntNode):
-            body.add_expr(CILAssign(TempNames.get_name(),logicar.right))
-            rigth_value = body.current_value()
-            DivExpression(logicar.left,body,scope)
-            left_value = body.current_value()
-            body.add_expr(CILAssign(left_value,CILLogicalOP(body.current_value(),rigth_value,logicar.op)))
-            TempNames.free([left_value,rigth_value])
-        else:
-            DivExpression(logicar.left,body,scope)
-            left_value = body.current_value()
-            DivExpression(logicar.right,body,scope)
-            rigth_value = body.current_value()
-            body.add_expr(CILAssign(left_value,CILLogicalOP(left_value,rigth_value,logicar.op)))
-            TempNames.free([left_value,rigth_value])
+        DivExpression(logicar.right,body,scope)
+        rigth_value = body.current_value()
+        body.add_expr(CILAssign(left,CILLogicalOP(left_value,rigth_value,logicar.op)))
+        TempNames.free([left_value,rigth_value, left])
+        return body.current_value()
     
     def int(_int:IntNode, body:Body, scope:dict = {}):
         body.add_expr(CILAssign(TempNames.get_name(),_int))
         # TempNames.free([body.current_value()])
+        return body.current_value()
 
     def bool(_bool:CoolBool, body:Body, scope:dict = {}):
         if _bool.value == 'false':
@@ -1503,6 +1419,7 @@ class DivExpression:
         else:    
             body.add_expr(CILAssign(TempNames.get_name(),IntNode(1)))
         # TempNames.free(body.current_value())    
+        return body.current_value()
 
     def get_atr(id:CoolID, body:Body, scope:dict = {}, instance = 'self', dest= None):
         # body.add_expr(CILCallAtr(scope[instance],id))
@@ -1533,6 +1450,8 @@ class DivExpression:
             # TempNames.free([body.current_value()])
             
         #Si no entra al if el ultimo valor(curent value) sera exactamente dir_instance que es self
+        return body.current_value()
+
 
     def set_atr(id:CoolID, body:Body, scope:dict = {}, instance = 'self', value = None):
         dir_instance_in_stack = scope[instance]
@@ -1546,6 +1465,8 @@ class DivExpression:
             pass
         body.add_expr(StoreInDir(value=value,pos=pos, dir=dir_instance))
         TempNames.free([dir_instance])
+        return body.current_value()
+
     
     def local_var(vvar, body:Body, scope:dict = {}):
         #Si el scope tiene dos posiciones para ua variable entonces, se ha definido que la variable que se usa para definir a una con su mismo nombre estara en la posicion 1, y la variable nueva creada es la que esta en la posision 0.
@@ -1555,7 +1476,8 @@ class DivExpression:
         else:
             body.add_expr(CILAssign(TempNames.get_name(),CILCallLocal(vvar,scope[vvar.id])))
         # TempNames.free([temp])
-    
+        return body.current_value()
+
     def let(let:CoolLet, body:Body, scope:dict = {}):
         body.add_expr(CILCommet(f'#Region Let'))
         
@@ -1616,6 +1538,7 @@ class DivExpression:
         #Liberar espacio de la pila una vez se sale del let, el scope anterior al del let debe salir igual que antes por recursividad
         body.add_expr(FreeStack(length))        
         body.add_expr(CILCommet(f'#End Region Let'))
+        return body.current_value()
 
     def block(block:CoolBlockScope, body:Body, scope:dict = {}):
         for e in block.exprs:
@@ -1625,8 +1548,9 @@ class DivExpression:
             if used_end:
                 body.add_expr(CILAssign(TempNames.get_name(),body.current_value()))
 
-    def id_value(e:CoolID,body, scope:dict = {}):
+    def id_value(e:CoolID,body:Body, scope:dict = {}):
         body.add_expr(CILAssign(TempNames.get_name(),e.id))
+        return body.current_value()
 
     def new(e:CoolNew, body:Body, scope:dict = {}):
         if e.type == env.int_type_name:
@@ -1634,12 +1558,12 @@ class DivExpression:
         elif e.type == env.bool_type_name:
             DivExpression.bool(CoolBool(),body, scope)
         elif e.type == env.string_type_name:
-            pass
+            DivExpression.load_string(CoolString(),body, scope)
         else:
             DivExpression.goto_init(f'__init_{e.type}__',body,scope)
             body.add_expr(CILAssign(TempNames.get_name(),'$a0'))
-
-        # TempNames.free(body.current_value())    
+        
+        return body.current_value()
 
     def _while(_while:CoolWhile, body:Body, context:dict = {}):
         loop = NameLabel(f'loop').get()
@@ -1659,6 +1583,7 @@ class DivExpression:
         body.add_expr(GOTO(loop))
         body.add_expr(Label(end_while))
         body.add_expr(CILVoid()) #esto sirve para que se sepa que si el valor de retorno de la funcion es el while, entonces es tipo void
+        return "a0"
 
     def _if (_if:CoolIf, body:Body, scope:dict = {}):
         condition = _if.condition
@@ -1687,7 +1612,7 @@ class DivExpression:
         # body.add_expr(CILAssign(result_expr,body.current_value()))
         body.add_expr(Label(label_end))
         cil_if.set_des(temp) #el final del if es el temporal dentro del else
-        # TempNames.free([temp]) #Esta linea es nueva, antes pinchaba bien
+        return temp
 
     def dispatch(dispatch:Dispatch, body:Body, scope:dict = {}):
         callable:CoolCallable = dispatch.function
@@ -1826,9 +1751,6 @@ class DivExpression:
 
         body.add_expr(CILAssign("$s2",CILCallLocal(temp[:3], scope[temp]))) #asiginar a $s2 su anterior valor
 
-
-       
-
         if type is not None:
             # llama a la funcion si el type no es none con salto normal xq es estatico
             body.add_expr(CallMethod(label_method))
@@ -1845,14 +1767,6 @@ class DivExpression:
         
         # recuperated_temps = [] #esto se reinicia para cada llamado
         for temp in used_temps:
-            # if temp[:6] in recuperated_temps:
-            #     #ya se recupero el temporal en cuestion
-            #     continue
-            # while temp+"0" in used_temps:
-            #     #Esto es para recuperar solo el ultimo temporal de su tipo. si temp1 se guardo 2 veces recupera el ultimo guardado, y dice que ya se recupero el de su tipo
-            #     temp +='0'
-            #     recuperated_temps.append(temp[:6]) #guarda que ya se recupero ese tipo de temporal
-            
             scope[temp] -= space
             #ademas asignar a los valores temporales el valor que se guardo en la pila:
             if temp[0] != '$':
@@ -1922,14 +1836,6 @@ class DivExpression:
             #Aqui hay que recuperar el valor de los registros temporales.
             # recuperated_temps = [] #esto se reinicia para cada llamado
             for temp in used_temps:
-                # if temp[:6] in recuperated_temps:
-                #     #ya se recupero el temporal en cuestion
-                #     continue
-                # while temp+"0" in used_temps:
-                #     #Esto es para recuperar solo el ultimo temporal de su tipo. si temp1 se guardo 2 veces recupera el ultimo guardado, y dice que ya se recupero el de su tipo
-                #     temp +='0'
-                #     recuperated_temps.append(temp[:6]) #guarda que ya se recupero ese tipo de temporal
-                
                 if temp[0] != '$':
                     body.add_expr(CILAssign(temp[:6],CILCallLocal(temp[:6], scope.pop(temp)))) #esto toma el valor de la pila en la posicion que se encuentra el temp, el .pop elimina el elemento y devuelve el valor. Ya no son necesarios los temporales en la pila
                 else:    
@@ -1950,18 +1856,22 @@ class DivExpression:
     def case(case:CoolCase,  body:Body, scope:dict = {}):
         cases = case.cases_list
         e = case.case
-        if e.get_type() == env.string_type_name or \
-        e.get_type() == env.bool_type_name or \
-        e.get_type() == env.int_type_name:
-            return
+        
+        constant = e.get_type() == env.string_type_name or e.get_type() == env.bool_type_name or e.get_type() == env.int_type_name
         
         cases_types =[c.type for c in cases.keys()] #los tipos de la parte izuierda de los case es estatico
         DivExpression(e, body, scope) #Procesa la expresion e del case
+        
+        expression_e= body.current_value()
+        # Error en caso de que la expresion de case sea void
+        body.add_expr(IfMips(CILIsVoid(expression_e),CaseErrorVoid()))
+
         labels = [NameLabel('case').get() for c in cases_types]
         label_error = NameLabel('error_case').get()
         label_end = NameLabel('end_case').get()
 
-        temp = body.current_value()
+        # temp = body.current_value()
+        temp = expression_e
 
         body.add_expr(ReserveSTACK(WORD))#reserva 4 de pila para guardar la expresion del case
         name_in_scope = "ExpresionCase" 
@@ -1982,40 +1892,49 @@ class DivExpression:
 
         case_scope[name_in_scope] = 0 #luego en la posicion 0 del scope pone la expresion
         
-
-        # temp = TempNames.get_name()
-        # body.add_expr(CILAssign(temp, body.current_value())) #guarda el resultado de procesar e en un temporal
-        # TempNames.free(body.current_value()) 
-
-        body.add_expr(LoadFromDir(temp,4,temp)) #guarda en temp su parte estatica que esta en la posicion 4 de su instancia
-        body.add_expr(LoadFromDir(temp,0,temp)) #guarda en temp sus referencias de herencia que esta en la posicion 0 de su parte estatica
+       
+        
+        if not constant:
+            body.add_expr(LoadFromDir(temp,4,temp)) #guarda en temp su parte estatica que esta en la posicion 4 de su instancia
+            body.add_expr(LoadFromDir(temp,0,temp)) #guarda en temp sus referencias de herencia que esta en la posicion 0 de su parte estatica
 
         temp0 = TempNames.get_name() #guardar el mejor valor
+        
         s5 = "$s5" #guardar el valor actual de distancia
         s6 = "$s6" #guardar la comparacion entre el actual y el mejor
         s7 = "$s7" #guardar el index al cual de entrar
 
         body.add_expr(SetLabel(s7, label_error)) #pone la etiqueta error en s7
-        body.add_expr(SetInt(temp0,100)) #Pone valor -1 en temp0
+        body.add_expr(SetInt(temp0,pow(2,15)-1)) #Este es el valor maximo de herencia, si pasa de aqui una cadena de herencias habra problemas porque no puedo guardar numeros mas grandes que este y usarlos con li
+
+        if  constant:
+            find_same_type = False
+            for c, label in zip (cases_types, labels):
+                if c == e.get_type():
+                    find_same_type = True
+                    body.add_expr(SetLabel(s7, label))
+
+            if not find_same_type:        
+                for c, label in zip(cases_types,labels):
+                    if c == env.object_type_name:
+                        body.add_expr(SetLabel(s7, label))
         
-        #por cada uno de los tipos estaticos del case guarda su distancia y la compara con temp0
-        for c,label in zip(cases_types,labels):
-            body.add_expr(LoadFromDir(s5,TYPES_INHERITS[c], temp)) #guarda en s5 el valor actual de distancia
-            #TODO quitar el 100 de temp0 y crear un comportamiento diferente al priincipio            
-            
-            #compara la distancia hacia el otro tipo con la menor distancia actual, si se cumple que s5< temp0 y que s5>0, guarda s5 en temp0, es decir que la distanca es menor que la actual
-            expression = IfMips(LessCompareTemps(s5,temp0, s6),
-                           IfMips(LessCompareTemps('$zero',s5, s6),
-                                  BlockMips( [MoveMips(temp0,s5),SetLabel(s7, label)])
-                                  )
-                            )
-            body.add_expr(expression)
-            # for line in expression.to_mips():
-            #         print(f'{line}\n')
+        if not constant:
+            #por cada uno de los tipos estaticos del case guarda su distancia y la compara con temp0
+            for c,label in zip(cases_types,labels):
+                body.add_expr(LoadFromDir(s5,TYPES_INHERITS[c], temp)) #guarda en s5 el valor actual de distancia
+                #TODO quitar el 100 de temp0 y crear un comportamiento diferente al priincipio            
+
+                #compara la distancia hacia el otro tipo con la menor distancia actual, si se cumple que s5< temp0 y que s5>0, guarda s5 en temp0, es decir que la distanca es menor que la actual
+                expression = IfMips(LessCompareTemps(s5,temp0, s6),
+                               IfMips(LessCompareTemps('$zero',s5, s6),
+                                      BlockMips( [MoveMips(temp0,s5),SetLabel(s7, label)])
+                                      )
+                                )
+                body.add_expr(expression)
         
 
         TempNames.free([temp, temp0]) #liberar ambos temporales que ya cumplieron su funcion
-        # temp = TempNames.get_name()
         #A partir de este momento se sale del analisis izquierdo del case, los registros s5,s6 y s7 pueden ser sobreescritos     
         
         
@@ -2027,18 +1946,9 @@ class DivExpression:
         for left, right, label in zip (cases.keys(),cases.values(), labels):
             
             body.add_expr(Label(label))
-            # body.add_expr(ReserveSTACK(WORD))#reserva pila para meter la parte izquierda en el scope
             
             #Definir la parte izquierda de la rama actual del case, la rama que esta analizando
             case_scope[left.id] = case_scope[name_in_scope] #asigna la misma posicion de memoria que la expresion, cuando sea llamado entoces buscara en la misma posicion de la pila, que es donde esta guardado la expresion del case
-            
-            
-            # DivExpression(e,body,case_scope) #el valor de la parte izquierda es el valor de la expresion del case
-            # temp = TempNames.get_name()
-            # temp_to_store = body.current_value()
-            # body.add_expr(StoreLocal(left.id, value = temp_to_store, pos= case_scope[left.id]))
-            # TempNames.free([temp])
-            
             
             DivExpression(right,body, case_scope)
             body.add_expr(MoveMips(temp,body.current_value()))
