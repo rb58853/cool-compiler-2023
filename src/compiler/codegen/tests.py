@@ -5,7 +5,7 @@ from compiler.codegen.cil2mips.to_mips import MIPS, CIL2MIPS
 from compiler.codegen.cool2cil.codegener import CILProgram
 import os
 
-def run(INPUT):
+def run(INPUT, show_ast= False):
     INPUT_FILE = os.path.join(os.getcwd(), f"src/compiler/codegen/tests/{INPUT}.cl")
     OUTPUT_FILE = os.path.join(os.getcwd(), f"src/compiler/codegen/tests/{INPUT}.mips")
 
@@ -20,6 +20,11 @@ def run(INPUT):
         for e in parser.errors:
             errors+=f'{e}\n'
         raise Exception(errors)
+
+    if show_ast:
+        print("Para el siguente codigo se genera el AST:")
+        print(code)
+        program.show_tree()
 
     validate_program(program)
     if len(semantic.errors) > 0:

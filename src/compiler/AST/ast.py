@@ -83,6 +83,7 @@ class PlotNode():
             ax.add_patch(plt.Circle(self.draw_pos, 1, fill=True, zorder=2))
             ax.text(self.draw_pos[0], self.draw_pos[1], str(self), ha='center', va='center')
 
+        
         for child in self.childs():
             #Crear una arista entre los dos nodos
             ax.plot([self.draw_pos[0], child.draw_pos[0]], [self.draw_pos[1], child.draw_pos[1]], color='black', zorder=1)
@@ -706,6 +707,7 @@ class CoolCase(expr):
         self.name = 'case'
         self.type = 'case'
         self.possible_types = []
+        self.childs_manual = []
         self.case = case
         self.cases_list:dict[CoolID:expr] = self.convert_to_cases(cases_list)
         self.width = Node.WIDTH
@@ -724,6 +726,7 @@ class CoolCase(expr):
             cases[key] = value
             Node.set_father(self,[value])    
             Node.set_father(self,[key])
+            self.childs_manual.append(key)
         return cases
     
     def get_type(self):
@@ -743,7 +746,8 @@ class CoolCase(expr):
         return self.type
     
     def childs(self):
-        return self.cases_list
+        return self.childs_manual
+        # return self.cases_list
 
     def __repr__(self) -> str:
         return 'case of'
